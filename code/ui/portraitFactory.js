@@ -4,7 +4,7 @@ import { endTurn } from "../game/turnManager.js";
 import { previewTargets, clearAffectedTargets } from "./skillUI.js";
 import { uiStats } from "./uiStats.js";
 import { Debuff } from "../game/debuffs.js";
-import { Effect2 } from "../game/effects.js";
+import { Effect } from "../game/effects.js";
 
 // Creates enemy portraits.
 export function createEnemyPortrait(scene, x, y, imageKey, scale, maxHp, speed, name, team, index){
@@ -131,11 +131,11 @@ function createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, na
     
     // Skills:
     const skills = [
-        { id: 'basicAttack', name: 'Posion Claw', icon: 'Poison Claw.jpg', targets: 'single', effect: new Effect2(40, 'holy', new Debuff("Poison", 3, 25, "holy", null, false, "elemental"), "Poison", '#0fee65')},
+        { id: 'basicAttack', name: 'Posion Claw', icon: 'Poison Claw.jpg', targets: 'single', effect: new Effect(40, 'holy', new Debuff("Poison", 3, 25, "holy", null, false, "elemental"), "Poison", '#0fee65')},
         //{ id: 'fireball', name: 'Fireball', icon: 'Fireball.jpg', targets: 'single', dmg: 60, element: 'fire' },
-        { id: 'fireball', name: "Fireball", icon: "Fireball.jpg", targets: 'adjacent', effect: new Effect2(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental"), "Fire")},
-        { id: 'holy', name: 'Holy Light', icon: 'Holy Light.jpg', targets: 'adjacent', effect: new Effect2(35, 'holy', new Debuff("Blinded", 3, 0, "holy", null, false, "elemental"), "Holy", '#f0ff20')},
-        { id: 'nova', name: 'Dark Nova', icon: 'Dark Nova.jpg', targets: 'all', effect: new Effect2(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc"), "Dark", '#b700ff')}
+        { id: 'fireball', name: "Fireball", icon: "Fireball.jpg", targets: 'adjacent', effect: new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental"), "Fire")},
+        { id: 'holy', name: 'Holy Light', icon: 'Holy Light.jpg', targets: 'adjacent', effect: new Effect(35, 'holy', new Debuff("Blinded", 3, 0, "holy", null, false, "elemental"), "Holy", '#f0ff20')},
+        { id: 'nova', name: 'Dark Nova', icon: 'Dark Nova.jpg', targets: 'all', effect: new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc"), "Dark", '#b700ff')}
     ];
     // Store data in container:
     setContainerData(portraitContainer, {

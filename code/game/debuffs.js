@@ -1,4 +1,5 @@
 import { updateHP } from "../ui/portraitFactory.js";
+import { uiStats } from "../ui/uiStats.js";
 
 export class Debuff{
     constructor(name, duration, dmgPerTurn = 0, element = null, triggerEffect = null, skipTurn = false, type = "elemental"){
@@ -38,6 +39,20 @@ export class Debuff{
         return contains;
     }
 
+    // Shows debuff popup. (ISSUE: Need async stuff (Promise) to not display all at once!)
+    static showDebuffPopup(scene, x, y, text, textColor, dmgPerTurn){
+        let displayText = dmgPerTurn ? `-${dmgPerTurn}\ntext` : text;
+
+        const debuffText = scene.add.text(x, y, displayText, {fontSize: uiStats.dmgPopupFontsize, color: textColor}).setOrigin(0.5);
+        scene.tweens.add({
+            targets: debuffText,
+            y: '-=100',
+            alpha: 0,
+            duration: 800,
+            onComplete: () => debuffText.destroy()
+        });
+    }
+
     // Return a new instance of Debuff with the exact same stats.
     createCopy(){
         return new Debuff(this.name, this.duration, this.dmgPerTurn, this.element, this.triggerEffect, this.skipTurn, this.type);
@@ -49,13 +64,13 @@ export class Debuff{
     }
 
     // Activates debuff's effect/dmg on target.
-    tick(target){
+    tick(scene, target){
         if(this.dmgPerTurn > 0){
             const currentHp = target.getData('hp');
             const newHp = Math.max(0, currentHp - this.dmgPerTurn);
             target.setData('hp', newHp);
             updateHP(target, newHp);
-            // TODO: POPUP
+            //Debuff.showDebuffPopup(scene, target.x, target.y, this.text, this.textColor, this.dmgPerTurn);
         }
         if (this.triggerEffect) {
             // Trigger extra effect if set (TODO):

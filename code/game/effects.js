@@ -3,49 +3,6 @@ import { Debuff } from "./debuffs.js";
 import { dmgTarget } from "./combat.js";
 
 export class Effect{
-    constructor(name, dmg, targets='single', element=null, debuff=null){
-        this.name = name;
-        this.dmg = dmg;
-        this.targets = targets;
-        this.element = element;
-        this.debuff = debuff;
-    }
-
-    // Override for custom reactions:
-    applyReactions(target){
-        const debuffs = target.getData('debuffs') || [];
-        const newDebuffs = debuffs.filter(debuff => {
-            if (this.element === 'water' && debuff.name === 'Burn') return false;
-            if (this.element === 'fire' && debuff.name === 'Shock'){
-                this.dmg+= 50;
-                // getReactionEffect(dmg, (debuff))  // element = null => no insane cascading
-                return false;
-            }
-            if (this.element === 'fire' && debuff.name === 'Wet'){
-                this.dmg*=0.5;
-                return false;
-            }
-            return true;
-        })
-        target.setData('debuffs', newDebuffs);
-    }
-
-    // Applies debuffs if set.
-    applyDebuff(target){
-        if (this.debuff){  // change to debuff bluebrint and build new debuff!!! otherwise the duration is shared for AoE skills...
-            const debuffs = target.getData('debuffs') || [];
-            debuffs.push(this.debuff);
-            target.setData('debuffs', debuffs);
-        }
-    }
-
-    // Gets affectedTargets
-    getAffectedTargets(team, index){
-        
-    }
-}
-
-export class Effect2{
     constructor(dmg, element=null, debuff=null, text, textColor= '#ED0000'){
         // this.id = id;
         this.dmg = dmg;
@@ -104,5 +61,5 @@ export class Effect2{
 
 // Creates a custom effect for a Reaction, i.e., no element.
 function getReactionEffect(dmg, debuff, text, textColor){
-    return new Effect2(dmg, null, debuff, text, textColor);
+    return new Effect(dmg, null, debuff, text, textColor);
 }

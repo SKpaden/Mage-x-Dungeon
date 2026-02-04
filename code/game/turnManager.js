@@ -86,7 +86,7 @@ function processDebuffs(scene, target){
     let debuffs = target.getData('debuffs') || [];
     debuffs = debuffs.filter(deb => {
         if (deb.skip()) skipTurn = deb.name;  // skip turn?
-        deb.tick(target);
+        deb.tick(scene, target);
         return deb.duration > 0;
     });
 

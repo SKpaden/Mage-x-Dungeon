@@ -4,6 +4,7 @@ export const uiStats = {
     paddingHpBar: 3,  // how much padding of HP bar rectangle (outer vs inner bar)
     hpBarHeight: 30,
     borderRadius: 5,
+    dmgPopupFontsize: '32px',
     skillIconScale: 0.05,
     skillIconDims: 32,
     portraitScale: 0.3,

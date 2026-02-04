@@ -1,6 +1,7 @@
 import { gameState } from "./gameState.js";
 import { showDmgPopup } from "../ui/skillUI.js";
 import { updateDebuffDsiplay, updateHP } from "../ui/portraitFactory.js";
+import { uiStats } from "../ui/uiStats.js";
 import { endTurn } from "./turnManager.js";
 
 // Applies skill to current target.
@@ -102,7 +103,7 @@ export function dmgTarget(scene, dmg, source, target, text=null, textColor = '#E
           prefix += " ";
         }
     }
-    showDmgPopup(scene, enemyX, enemyY, text ? prefix + `-${dmg}\n${text}` : `-${dmg}`, { fontSize: '32px', color: textColor});
+    showDmgPopup(scene, enemyX, enemyY, text ? prefix + `-${dmg}\n${text}` : `-${dmg}`, {fontSize: uiStats.dmgPopupFontsize, color: textColor});
 
     scene.message.setText(`${sourceName} dealt ${dmg} damage to ${targetName}!`);
 
