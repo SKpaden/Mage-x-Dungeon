@@ -1,0 +1,36 @@
+body{
+    background-color: rgb(20, 20, 20);
+    margin: 0;
+    /* overflow: auto; */
+}
+
+#game-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+canvas {
+    display: block;             /* removes any inline whitespace */
+}
+
+
+/* --------------------------------------------------------------- Character Images: --------------------------------------------------------------- */
+.img-display{
+    display: flex;
+}
+.character-display{
+    margin: 5px;
+}
+.character-img-wrapper{
+    display: inline;
+}
+/* Caharcter display: */
+.character-portrait{
+    width: 200px;
+    border: 2px solid gold;
+}
+
+/* --------------------------------------------------------------- Character Images: --------------------------------------------------------------- */

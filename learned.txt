@@ -1,0 +1,660 @@
+#####################################################################################################################################################
+### SCENES:
+
+- divide your game up into logical sections
+- use cases: Loading Screen, Main Menu, Game Level, Boss Fight, Item Shop, High Score Table...
+- have as many Scenes in your game as you like
+- important: you do not have to have one Scene per file, but you can do so ==> all scenes in single file or in one
+- Scene Manager: add, remove, switch scenes
+- You have full control over the order in which the Scenes are rendered in your game.
+    - E.g., it's a common practise to have a Scene dedicated entirely to handling the UI for your game, that is rendered above all other Scenes
+- you can pause, resume and sleep a Scene at will
+- run multiple Scenes at the same time
+- entirely self-contained Game Worlds in their own right
+- manage their own input, tweens, game objects, display list, cameras and more
+- 'this' in scene callbacks is the scene
+
+A Scene consists of a Scene Configuration object and a bunch of functions. Here we'll create an example Scene using an ES6 approach:
+class MyScene extends Phaser.Scene {
+
+    constructor ()
+    {
+        super('MyFirstScene');  // unique key
+    }
+
+    preload ()
+    {
+        this.load.image('logo', 'assets/sprites/logo.png');
+    }
+
+    create ()  // needed for a valid scene
+    {
+        this.add.image(400, 300, 'logo');
+    }
+
+}
+
+
+Creating the Scene on its own isn't enough though, it also needs to be added to the Game.
+You can do this when the Game is created, using the game config like this:
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    scene: MyScene  // can be an array of scenes
+};
+
+var game = new Phaser.Game(config);
+
+###################################################################
+# Scene Settings:
+When your Scene is created it extracts any settings you may have defined in its config.
+class Level1Scene extends Phaser.Scene {
+
+    constructor ()
+    {
+        super({
+            key: 'Level1',
+            physics: {
+                arcade: {
+                    debug: true,
+                    gravity: { y: 200 }
+                }
+            }
+        });
+    }
+
+}
+
+The Settings object can also be used to load files.
+You should really only use this for loading small files as no progress feedback is ever given to the user. Use the following syntax:
+class BootScene extends Phaser.Scene {
+
+    constructor ()
+    {
+        super({
+            key: 'boot',
+            files: [
+                { type: 'image', key: 'bar', url: 'loaderBar.png' },
+                { type: 'image', key: 'bg', url: 'background.png' }
+            ]
+        });
+    }
+
+}
+The assets are loaded before your Scene Preload method is called.
+It's perfect for loading a very small number of graphics, i.e. a background and progress bar image, that your Preloader Scene can then display while loading all the rest of the game assets.
+
+The Scene Systems class is the heart of your Scene.
+It will automatically install 7 Core Plugins into your Scenes:
+
+    An Event Emitter
+    The 2D Camera Manager
+    The Game Object Creator
+    The Game Object Factory
+    The Scene Plugin
+    The Display List
+    The Update List
+
+Remove other default plugins:
+class BootScene extends Phaser.Scene {
+
+    constructor ()
+    {
+        super({
+            key: 'boot',
+            plugins: []  // empty
+            // plugins: [ 'Loader', 'TweenManager' ]  // just Loader and Tween
+        });
+    }
+
+}
+
+
+By default all of the following properties are installed into a Scene:
+'anims' = Animation Manager (Global) 'cache' = Cache (Global) 'game' = Phaser.Game instance
+(Global) 'registry' = Game Data Manager (Global) 'sound' = Sound Manager (Global) 'textures' = Texture Manager (Global)
+
+'add' = Game Object Factory (Local, Core) 'cameras' = 2D Camera Manager (Local, Core)
+'children' = Display List (Local, Core) 'events' = Event Emitter (Local, Core) 'make' = Game
+Object Creator (Local, Core) 'scene' = Scene Manager Plugin (Local, Core)
+
+(Add map: {} in constructor to not have any property added to scene.)
+Or use custon names:
+class BootScene extends Phaser.Scene {
+
+    constructor ()
+    {
+        super({
+            key: 'boot',
+            map: {
+                add: 'agregar',
+                anims: 'animaciones',
+                cameras: 'camaras',
+                events: 'eventos',
+                load: 'cargar',
+                sound: 'sonido'
+            }
+        });
+    }
+
+    preload ()
+    {
+        this.cargar.image('face', 'assets/bw-face.png');
+    }
+
+    create ()
+    {
+        this.agregar.image(400, 300, 'face');
+    }
+
+}
+
+###################################################################
+# SCENCE CALLBACKS:
+
+The scene callback methods are:
+// Configure this scene cycle
+function init(data) {}
+
+// Queue assets for downloading
+function preload() {}
+
+// Create game objects with loaded assets
+function create(data) {}
+
+// Work on game objects at each game step
+function update(time, delta) {}
+
+###################################################################
+# SCENCE CREATION:
+
+- Scenes can be created from a class or a config object.
+- added via config or add()
+
+class MyScene extends Phaser.Scene {
+  constructor(config) {
+    super(config);
+  }
+
+  init(data) {}
+  preload() {}
+  create(data) {}
+  update(time, delta) {}
+}
+
+- data : Parameters passed from adding new scene, or starting scene
+
+
+Multi-Scene-Game:
+The first scene plus any additional scenes with { active: true } are started automatically.
+const bootSceneConfig = { key: 'boot', /*…*/ };
+const playSceneConfig = { key: 'play', /*…*/ };
+const uiSceneConfig = { key: 'ui', active: true };
+
+new Phaser.Game({
+  // 'boot' and 'ui' will be started
+  scene: [ bootSceneConfig, playSceneConfig, uiSceneConfig ]
+});
+
+###################################################################
+# SCENCE CONFIGURATION OBJECT:
+
+var config = {
+  key: "",  // must be unique
+  // active: false,  // start as active or not?
+  // visible: true,  // start visible or not?
+  // pack: false,
+  // cameras: null,
+  // map: {},  // Overwrites the default injection map for a scene.
+  // physics: {},
+  // loader: {},
+  // plugins: false,
+  // input: {}
+};
+
+###################################################################
+# SCENCE LIVE CYCLE:
+
+A scene is booted once and can be started any number of times (or never). It lasts until it's removed (destroyed).
+Look at flowchart diagram at: https://docs.phaser.io/phaser/concepts/scenes
+
+- Run : Update and render
+- Pause : Render but no update
+- Sleep : No update, no render
+- Stop : Shutdown
+
+
+###################################################################
+# CHANGING SCENES:
+
+The basic operation pairs are pause–resume, sleep–wake, and shutdown–start.
+Usually, with a typical gameplay scene, you will enter the scene with start and exit with shutdown. Gameplay starts over each time.
+
+But to move to an intermission scene and back, you might exit the gameplay scene with sleep and then reenter with wake.
+It's hidden in the meantime, but then the player returns to the same state they left.
+
+// Pause menu maybe:
+And to move to a modal scene and back, you might exit the gameplay scene with pause and then reenter with resume.
+In this case it's still visible but suspended.
+
+With scenes like menu or title screens that you expect the player to revisit, you have a choice of sleep–wake or shutdown–start.
+The sleep–wake pattern may be more manageable. It's easier to reason about scenes that start only once.
+
+Scene control methods:
+The simple methods
+
+- launch() and stop() do start and shutdown.
+- sleep() and wake() do sleep and wake.
+- pause() and resume() do pause and resume.
+
+The conditional methods
+
+- run() may start, wake, or resume a scene
+- switch() may start or wake a scene
+
+The "double" methods
+
+These affect both the target scene and the calling scene. They're convenient for moving through scenes one at a time.
+
+- start() stops the calling scene.
+- switch() sleeps the calling scene.
+
+start():
+start('target') starts the target scene and stops the calling scene. It's equivalent to stop().launch('target').
+If you want to start a second scene without stopping anything, use launch('target') instead.
+// In scene A: stop A, start B
+this.scene.start("B");
+
+// In scene B: stop B, start C
+this.scene.start("C");
+
+// In scene C: stop C, start A again
+this.scene.start("A");
+
+switch():
+switch('target') starts or wakes the target scene and sleeps the calling scene.
+// In scene A: sleep A, start B
+this.scene.switch("B");
+
+// In scene B: sleep B, start C
+this.scene.switch("C");
+
+// In scene C: sleep C, *wake* A
+this.scene.switch("A");
+
+- switch() restarts a paused scene, never resumes it 
+
+launch():
+launch() starts or restarts the target scene. It never resumes or wakes — cf. run().
+
+run():
+run() resumes the target scene if paused; wakes it if sleeping; restarts it if running; and starts it otherwise.
+
+
+###################################################################
+# PROBLEMS WITH SCENES:
+
+Example: bad state after restart
+
+let gameOver = false;
+
+function update() {
+  if (gameOver) {
+    // GAME OVER :(
+  }
+}
+
+After restarting the scene it's GAME OVER immediately, because the gameOver variable hasn't been reset. Rewrite as:
+
+let gameOver;
+
+function init() {
+  gameOver = false;
+}
+
+function update() {
+  if (gameOver) {
+    // GAME OVER :(
+  }
+}
+
+In a scene class, you might introduce the same problem in the scene constructor:
+
+class Scene extends Phaser.Scene {
+  constructor() {
+    super();
+
+    this.gameOver = false;
+  }
+}
+
+Rewrite it similarly:
+
+class Scene extends Phaser.Scene {
+  constructor() {
+    super();
+
+    this.gameOver;
+  }
+
+  init() {
+    this.gameOver = false;
+  }
+}
+
+==> use init!
+
+- this.scene.destroy(); ==> use if scene never used again
+
+See this link for table of systems and plugins: https://docs.phaser.io/phaser/concepts/scenes
+
+
+###################################################################
+# RENDERING:
+
+Scenes render from first to last (bottom to top).
+You can rearrange them with Scene Manager methods like bringToTop(), or sendToBack(), but this is unusual, except for some visual effects.
+You can toggle a scene's visibility with scene.setVisible(). This doesn't change the scene's status.
+
+###################################################################
+# SCENE EVENTS:
+
+Start (Before scene.init())
+
+    scene.events.on("start", function () {});
+
+Ready (After start)
+
+    scene.events.on("ready", function () {});
+
+Every tick
+
+    Preupdate
+
+        scene.events.on("preupdate", function (time, delta) {});
+
+    Update
+
+        scene.events.on("update", function (time, delta) {});
+
+    Postupdate
+
+        scene.events.on("postupdate", function (time, delta) {});
+
+    Render
+
+        scene.events.on("render", function () {});
+
+State changed
+
+    Pause (from scene.scene.pause())
+
+        scene.events.on("pause", function () {});
+
+    Resume (from scene.scene.resume())
+
+        scene.events.on("resume", function () {});
+
+    Sleep (from scene.scene.sleep())
+
+        scene.events.on("sleep", function () {});
+
+    Wake (from scene.scene.wake())
+
+        scene.events.on("wake", function () {});
+
+    Stop/shutdown (from scene.scene.stop())
+
+        scene.events.on("shutdown", function () {});
+
+            Free-up any resources that may be in use by this scene
+
+Destroy (from scene.scene.remove())
+
+    scene.events.on("destroy", function () {});
+
+Resize
+
+    scene.events.on("resize", function () {});
+
+Boot
+
+    scene.events.on("boot", function () {});
+
+Game object added to scene
+
+    Add
+
+        scene.events.on("addedtoscene", function (gameObject, scene) {});
+
+    Remove
+
+        scene.events.on("removedfromscene", function (gameObject, scene) {});
+
+
+###################################################################
+# CROSS SCENE COMMUNICATION:
+
+several ways to achieve this:
+- Calling a function directly
+- listening for an event
+- exchanging data via the registry
+
+Calling a Scene Function:
+class SceneA extends Phaser.Scene {
+
+    constructor ()
+    {
+        super('MyFirstScene');
+    }
+
+    preload ()
+    {
+        this.load.image('asuna', 'assets/sprites/asuna_by_vali233.png');
+    }
+
+    create ()
+    {
+        this.input.on('pointerup', this.clickHandler, this);  // event listener
+
+        this.add.text(10, 10, 'Click to get image', { font: '16px Courier', fill: '#00ff00' }).setDepth(1000);
+    }
+
+    clickHandler ()
+    {
+        let sceneB = this.scene.get('MySecondScene');  // get instance of SceneB
+
+        let position = sceneB.getPosition();
+
+        this.add.image(position.x, position.y, 'asuna');
+    }
+
+}
+
+class SceneB extends Phaser.Scene {
+
+    constructor ()
+    {
+        super('MySecondScene');
+    }
+
+    getPosition ()
+    {
+        let x = Phaser.Math.Between(0, 800);
+        let y = Phaser.Math.Between(0, 600);
+
+        return new Phaser.Math.Vector2(x, y);
+    }
+
+}
+
+- SceneA listens out for pointer events
+- When it receives one it calls the clickHandler method
+- grab a reference to SceneB by using the Scenes key ('MySecondScene')
+- call getPosition()
+
+
+Listening for Scene Events: Listen to event from SceneA
+class SceneA extends Phaser.Scene {
+
+    constructor ()
+    {
+        super('GameScene');
+    }
+
+    preload ()
+    {
+        this.load.image('bg', 'assets/skies/sky4.png');
+        this.load.image('crate', 'assets/sprites/crate.png');
+    }
+
+    create ()
+    {
+        this.add.image(400, 300, 'bg');
+
+        for (let i = 0; i < 64; i++)
+        {
+            let x = Phaser.Math.Between(0, 800);
+            let y = Phaser.Math.Between(0, 600);
+
+            this.add.image(x, y, 'crate').setInteractive();
+        }
+
+        this.input.on('gameobjectup', this.clickHandler, this);
+    }
+
+    clickHandler (pointer, box)
+    {
+        //  Disable our box
+        box.input.enabled = false;
+        box.setVisible(false);
+
+        //  Dispatch a Scene event
+        this.events.emit('addScore');  // fire event
+    }
+
+}
+
+-  when a box is clicked, we dispatch the addScore event
+SceneB:
+class SceneB extends Phaser.Scene {
+
+    constructor ()
+    {
+        super({ key: 'UIScene', active: true });
+
+        this.score = 0;
+    }
+
+    create ()
+    {
+        //  Our Text object to display the Score
+        let info = this.add.text(10, 10, 'Score: 0', { font: '48px Arial', fill: '#000000' });
+
+        //  Grab a reference to the Game Scene
+        let ourGame = this.scene.get('GameScene');
+
+        //  Listen for events from it
+        ourGame.events.on('addScore', function () {  // listen to SceneA event 'addScore'
+
+            this.score += 10;
+
+            info.setText('Score: ' + this.score);
+
+        }, this);
+    }
+}
+
+It creates a text object to display the score, gets a reference to SceneA and then listens for addScore events from it.
+When it receives one it updates the local score and Text object.
+- still reference to SceneA required...
+
+Exchange Data via the Game Registry:
+In SceneA: 
+//  Store the score and lives in the Game Registry
+this.registry.set('score', this.score);
+this.registry.set('lives', this.lives);
+
+In SceneB:
+...
+    //  Check the Registry and hit our callback every time the 'score' value is updated
+        this.registry.events.on('changedata', this.updateData, this);  // every time data changes
+    }
+
+updateData (parent, key, data)  // key is the variable that changed, data is the value
+{
+    if (key === 'score')
+    {
+        this.scoreText.setText('Score: ' + data);
+    }
+    else if (key === 'lives')
+    {
+        this.livesText.setText('Lives: ' + data);
+    }
+}
+
+==> no reference to other scene needed
+
+
+#####################################################################################################################################################
+### ON THE FLY:
+
+- add rectangle: this.add.rectangle(x, y, width, height, colorHex)
+- make interactive rectangle (with mouse events): this.add.rectangle(x, y, width, height, colorHex).setInteractive()
+    - pointer when hovering element: .setInteractive({ useHandCursor: true })
+- change color of rectangle: .setFillStyle(0x181818)
+- access color of rectangle: if (rectangle.fillColor === 0x444444) {...}
+- put center positioned object in the middle of viewport: this.scale.width/2, this.scale.height/2
+// Text:
+- add text that is perfectly centered:
+    this.add.text(this.scale.width/2, this.scale.height/2, 'Click a rectangle!', { fontSize: '32px', color: '#ffffff'}).setOrigin(0.5)
+    - .setOrigin(0.5) important for text as it is positioned top-left-based per default
+- change text: message.setText()
+// Image:
+- preload image: function preload(){ this.load.image('my-hero', 'assets/portraits/Draconoid - Dark Mage.jpg'); }
+- check if image exists: if (!this.textures.exists('my-hero')) {  // couldn't load
+            console.warn("Portrait image not found!");
+        }
+- add to scene: const portrait = this.add.image(this.scale.width/2, this.scale.height/4, 'my-hero').setScale(0.3);
+- make interactive aka listen to click events (with pointer): portrait.setInteractive({ useHandCursor: true});
+- add tint on hover: portrait.on('pointerover', () => portrait.setTint(0xffffaa));
+- remove tint: portrait.on('pointerout', () => portrait.clearTint());
+// Access display dimensions of an element:
+const halfW = portrait.displayWidth / 2;
+const halfH = portrait.displayHeight / 2;
+// Add graphics/shapes:
+var borderGraphics = this.add.graphics();
+borderGraphics.lineStyle(2, 0xFFE836, 1);  // line width, color, opacity
+- draw rectangle with graphics: borderGraphics.strokeRoundedRect(-halfW, -halfH, portrait.displayWidth, portrait.displayHeight, 5);  // x,y,width,height,border radius
+// Add container for multiple elements:
+const portraitContainer = this.add.container(this.scale.width/2, this.scale.height/4);
+// Add both children to the container (order matters!):
+portraitContainer.add(portrait);
+portraitContainer.add(borderGraphics);
+
+// Tweens:
+var portraitTween = this.tweens.add({
+    targets: portraitContainer,
+    scale: '+=0.1',
+    duration: 150,
+    yoyo: true,  // return to starting state
+    ease: 'Sine.easeOut',
+    paused: true,  // don't play immediately
+    persist: true,  // necessary when calling play(), otherwise it gets completed and can't be called again
+    onComplete: () => {
+        portraitContainer.setScale(1);  // force exact reset, safer
+    }
+});
+
+// Add tween + event listeners to container with pointer cursor:
+portraitContainer.setInteractive({hitArea: new Phaser.Geom.Rectangle(-halfW, -halfH, portrait.displayWidth,portrait.displayHeight),
+                                  hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+                                  useHandCursor: true})  // pointer!!!
+.on('pointerover', () => portrait.setTint(0x820000))  // light tint on hover
+.on('pointerout', () => portrait.clearTint())  // remove tint
+.on('pointerdown', () => {
+    if (portraitTween.isPlaying()) return;
+    message.setText('Portrait clicked!');
+    portraitTween.play();
+});
