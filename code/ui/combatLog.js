@@ -1,0 +1,50 @@
+let logDom = null;
+
+export function initCombatLog(scene, x, y, width = 500, height = 180) {
+    if (logDom) return logDom;  // singleton
+
+    const div = document.createElement('div');
+    div.className = 'combat-log';
+    div.style.cssText = `
+        width: ${width}px;
+        height: ${height}px;
+        background: rgba(0,0,0,0.65);
+        color: #e0e0e0;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        padding: 12px;
+        overflow-y: auto;
+        border-radius: 8px;
+        pointer-events: auto;
+        user-select: text;
+        line-height: 1.4;
+    `;
+
+    // Scrollbar styling
+    div.style.scrollbarWidth = 'thin';
+    div.style.scrollbarColor = 'rgba(150,150,150,0.5) transparent';
+
+    logDom = scene.add.dom(x, y, div);
+    logDom.setOrigin(0.5, 1);  // bottom center
+
+    return logDom;
+}
+
+export function logCombat(scene, message, color = '#e0e0e0', prefix = '') {
+    if (!logDom) {
+        console.warn("Combat log not initialized");
+        return;
+    }
+
+    const entry = document.createElement('div');
+    entry.style.cssText = `color: ${color}; margin-bottom: 4px;`;
+    entry.innerHTML = prefix ? `<span style="color:#888;">${prefix}</span> ${message}` : message;
+    // Keep it at a reasonable length (or maybe remove later):
+    while (logDom.node.children.length > 50) {
+        logDom.node.removeChild(logDom.node.firstChild);
+    }
+    logDom.node.appendChild(entry);
+
+    // Auto-scroll to bottom:
+    logDom.node.scrollTop = logDom.node.scrollHeight;
+}

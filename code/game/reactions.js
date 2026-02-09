@@ -36,3 +36,9 @@ export class Explosion extends Reaction{
         super("Explosion", 'adjacent', effect);  // effect should stay variable because dmg and duration could be dynamic
     }
 }
+
+export class VoidSurge extends Reaction{
+    constructor(effect){
+        super('Void Surge', 'all', effect);
+    }
+}

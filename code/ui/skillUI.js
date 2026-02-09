@@ -2,6 +2,8 @@ import { uiStats } from "./uiStats.js";
 import { gameState } from "../game/gameState.js";
 import { getAffectedTargets } from "../game/combat.js";
 
+let escBtn = null;  // register keyboard key
+
 // Removes tints from preview targets.
 export function clearAffectedTargets(){
     gameState.enemyContainers.forEach(container => {
@@ -9,8 +11,15 @@ export function clearAffectedTargets(){
     });
 }
 
+// Inits event listeners for skill display.
+export function initSkillEventListener(scene){
+    if (escBtn) return;
+    escBtn = scene.input.keyboard.addKey("ESC");
+    escBtn.on('down', () => handleEscDown(scene));
+}
+
 // Shows visual cue (tint) on all targets that would be affected by gameState.pendingSkill.
-export function previewTargets(skill, index){
+export function previewTargets(scene, skill, index){
     const affectedTargets = getAffectedTargets(skill, index, gameState.enemyContainers);
     gameState.enemyContainers.forEach((enemy, i) => {
         const isAffected = affectedTargets.includes(i) && enemy.getData('hp') > 0;
@@ -41,16 +50,8 @@ export function showSkills(scene, container){
     const startX = 0 + buttonWidth/2 - (skills.length * buttonWidth + (skills.length - 1) * spacing) / 2;  // offset in container is 0!
 
     const skillContainer = scene.add.container(container.x, y);
-
-    const escBtn = scene.input.keyboard.addKeys("ESC");
-    escBtn['ESC'].on("down", () => {
-        if (gameState.turn === 'player' && gameState.pendingSkill){
-            skillContainer.destroy();
-            gameState.pendingSkill = null;
-            clearAffectedTargets();
-            showSkills(scene, container);
-        }
-    });
+    scene.currentContainer = skillContainer;
+    const background = scene.add.rectangle(0,0, (buttonWidth+skills.length * buttonWidth + (skills.length - 1) * spacing), buttonWidth*2, 0x111111).setInteractive( { useHandCursor: false});
     skills.forEach((skill, i) => {
         const btn = scene.add.rectangle(startX + i * (buttonWidth + spacing), 0, buttonWidth, buttonWidth, 0x333333);
         const skillText = scene.add.text(btn.x, - 40, skill.name, { fontSize: '16px', color: '#fff' }).setOrigin(0.5).setVisible(false);
@@ -65,10 +66,24 @@ export function showSkills(scene, container){
             .on('pointerout', () => skillText.setVisible(false));
 
         const icon = scene.add.image(btn.x, btn.y, skill.icon).setScale(uiStats.skillIconScale);
-        skillContainer.add([btn, icon, skillText]);
+        skillContainer.add([background,btn, icon, skillText]);
     });
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // INTERNAL HELPER FUNCTIONS:
+
+function handleEscDown(scene){
+    if (gameState.turn !== 'player' || !gameState.pendingSkill) return;
+    
+    if (scene.currentContainer) {
+        scene.currentContainer.destroy();
+        scene.currentContainer = null;
+    }
+    gameState.pendingSkill = null;  // reset skill
+    clearAffectedTargets();  // clear previews
+
+    // Re-show skills for current player:
+    showSkills(scene, gameState.selectedPlayer);
+}

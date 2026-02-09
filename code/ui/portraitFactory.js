@@ -1,6 +1,5 @@
 import { gameState } from "../game/gameState.js";
 import { applySkill } from "../game/combat.js";
-import { endTurn } from "../game/turnManager.js";
 import { previewTargets, clearAffectedTargets } from "./skillUI.js";
 import { uiStats } from "./uiStats.js";
 import { Debuff } from "../game/debuffs.js";
@@ -14,8 +13,9 @@ export function createEnemyPortrait(scene, x, y, imageKey, scale, maxHp, speed, 
         if (pointer.button !== 0) return;  // only left click!
         // Player chose a character AND it's the player's turn AND this target is not dead...
         if (gameState.turn === 'player'  && portraitContainer.getData('hp') > 0 && gameState.pendingSkill){
-            applySkill(scene, portraitContainer.getData('teamIndex'));
-            //dmgTarget(scene, 50, gameState.selectedPlayer, portraitContainer);                
+            const skill = gameState.pendingSkill;
+            gameState.pendingSkill = null;  // prevent spamming!
+            applySkill(scene, portraitContainer.getData('teamIndex'), skill);               
         }
     });
 
@@ -121,7 +121,7 @@ function createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, na
     addToContainer(portraitContainer, [portrait, borderGraphics, hpGraphics, hpText]);  // order matters!
 
     // Make the container interactive:
-    setContainerInteractive(portraitContainer, portrait,
+    setContainerInteractive(scene, portraitContainer, portrait,
                             {
                                 hitArea: new Phaser.Geom.Rectangle(-halfW, -halfH, portrait.displayWidth,portrait.displayHeight),
                                 hitAreaCallback: Phaser.Geom.Rectangle.Contains,
@@ -131,10 +131,10 @@ function createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, na
     
     // Skills:
     const skills = [
-        { id: 'basicAttack', name: 'Posion Claw', icon: 'Poison Claw.jpg', targets: 'single', effect: new Effect(40, 'holy', new Debuff("Poison", 3, 25, "holy", null, false, "elemental"), "Poison", '#0fee65')},
+        { id: 'basicAttack', name: 'Poison Claw', icon: 'Poison Claw.jpg', targets: 'single', effect: new Effect(40, 'holy', new Debuff("Poison", 3, 25, "holy", null, false, "elemental"), "Poison", '#0fee65')},
         //{ id: 'fireball', name: 'Fireball', icon: 'Fireball.jpg', targets: 'single', dmg: 60, element: 'fire' },
         { id: 'fireball', name: "Fireball", icon: "Fireball.jpg", targets: 'adjacent', effect: new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental"), "Fire")},
-        { id: 'holy', name: 'Holy Light', icon: 'Holy Light.jpg', targets: 'adjacent', effect: new Effect(35, 'holy', new Debuff("Blinded", 3, 0, "holy", null, false, "elemental"), "Holy", '#f0ff20')},
+        { id: 'holy', name: 'Holy Light', icon: 'Holy Light.jpg', targets: 'adjacent', effect: new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental"), "Light", '#f0ff20')},
         { id: 'nova', name: 'Dark Nova', icon: 'Dark Nova.jpg', targets: 'all', effect: new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc"), "Dark", '#b700ff')}
     ];
     // Store data in container:
@@ -209,10 +209,10 @@ function setContainerData(container, dataDictionary){
 }
 
 // Sets hover interactivity to container portraits.
-function setContainerInteractive(container, portrait, options, tint){
+function setContainerInteractive(scene, container, portrait, options, tint){
     container.setInteractive(options).on('pointerover', () => {
-        if(gameState.pendingSkill && gameState.turn === 'player'){
-            previewTargets(gameState.pendingSkill, container.getData('teamIndex'));
+        if(gameState.pendingSkill && gameState.turn === 'player' && container.getData('team')){
+            previewTargets(scene, gameState.pendingSkill, container.getData('teamIndex'));
         } else {
             portrait.setTint(tint);
         }

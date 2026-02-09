@@ -1,6 +1,11 @@
 import { uiStats } from "./uiStats.js";
 import { gameState } from "../game/gameState.js";
 
+// Integrates a delay into programm flow.
+export function delay(scene, ms) {
+    return new Promise(resolve => scene.time.delayedCall(ms, resolve));
+}
+
 // Displays the bg image at correct scale.
 export function initBg(scene){
     const tempBg = scene.make.image({
@@ -74,6 +79,22 @@ export function setHighlight(container, enable) {
         }
         gameState.selectedPlayer = container;  // update selected
     }
+}
+
+// Shows computer's selected target.
+export function setPlayerTarget(scene, target){  // clear is already done by clearSelections()
+    if(gameState.turn !== 'enemy') return;
+    // Else:
+    const graphics = target.getData('borderGraphics');
+    const halfW = target.getData('halfW');
+    const halfH = target.getData('halfH');
+    const portraitWidth = target.getData('displayWidth');
+    const portraitHeight = target.getData('displayHeight');
+    graphics.clear();
+
+    graphics.lineStyle(6, 0xff0000, 1);
+    graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, 5);
+    gameState.selectedPlayer = target;
 }
 
 // Updates text and color of text object.

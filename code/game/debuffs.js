@@ -39,17 +39,56 @@ export class Debuff{
         return contains;
     }
 
+    // Returns reaction of debuff with element or null.
+    static getReaction(debuff, element){
+        if (element === 'fire') return Debuff.fireReactions(debuff);  // maybe as lookup arrays [debuff.name] ==> also for multipliers/dmg
+        if (element === 'eletro') return Debuff.electroReactions(debuff);
+        if (element === 'water') return Debuff.waterReactions(debuff);
+        if (element === 'dark') return Debuff.darkReactions(debuff);
+        if (element === 'holy') return Debuff.holyReactions(debuff);
+        if (element === 'ice') return Debuff.iceReactions(debuff);
+        if (element === 'poison') return Debuff.poisonReactions(debuff);
+        if (element === 'blood') return Debuff.bloodReactions(debuff);
+        return null;
+    }
+
     // Shows debuff popup. (ISSUE: Need async stuff (Promise) to not display all at once!)
-    static showDebuffPopup(scene, x, y, text, textColor, dmgPerTurn){
-        let displayText = dmgPerTurn ? `-${dmgPerTurn}\ntext` : text;
+    static showDebuffPopup(scene, x, y, debuffs, index){
+        if (index >= debuffs.length) return;
+        const dmgPT = debuffs[index].dmgPerTurn;
+        const textColor = debuffs[index].textColor;
+        const text = debuffs[index].name;
+        let displayText = dmgPT ? `-${dmgPT}\n`+text : text;
 
         const debuffText = scene.add.text(x, y, displayText, {fontSize: uiStats.dmgPopupFontsize, color: textColor}).setOrigin(0.5);
         scene.tweens.add({
             targets: debuffText,
             y: '-=100',
-            alpha: 0,
-            duration: 800,
-            onComplete: () => debuffText.destroy()
+            alpha: 0.4,
+            duration: 600,
+            onComplete: () => {
+                debuffText.destroy();
+                this.showDebuffPopup(scene, x, y, debuffs, index+1);
+            }
+        });
+    }
+
+    // Shows debuff popup. (ISSUE: Need async stuff (Promise) to not display all at once!)
+    showDebuffPopupAsync(scene, x, y){
+        const dmgPT = this.dmgPerTurn;
+        const textColor = this.textColor;
+        const text = this.name;
+        let displayText = dmgPT ? `-${dmgPT}\n`+text : text;
+
+        const debuffText = scene.add.text(x, y, displayText, {fontSize: uiStats.dmgPopupFontsize, color: textColor}).setOrigin(0.5);
+        scene.tweens.add({
+            targets: debuffText,
+            y: '-=100',
+            alpha: 0.4,
+            duration: uiStats.debuffDelay,
+            onComplete: () => {
+                debuffText.destroy();
+            }
         });
     }
 
@@ -70,7 +109,6 @@ export class Debuff{
             const newHp = Math.max(0, currentHp - this.dmgPerTurn);
             target.setData('hp', newHp);
             updateHP(target, newHp);
-            //Debuff.showDebuffPopup(scene, target.x, target.y, this.text, this.textColor, this.dmgPerTurn);
         }
         if (this.triggerEffect) {
             // Trigger extra effect if set (TODO):

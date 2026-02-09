@@ -1,6 +1,7 @@
-import { initBattle } from '../game/gameState.js';
-import { initBg, initMessage, initTurnText, initPortraitDims, updateText } from '../ui/helpers.js';
+import { initBattle, initEventListeners } from '../game/gameState.js';
 import { advanceToNextTurn } from '../game/turnManager.js';
+import { initBg, initMessage, initTurnText, initPortraitDims, updateText } from '../ui/helpers.js';
+import { initCombatLog, logCombat } from '../ui/combatLog.js';
 
 export default class BattleScene extends Phaser.Scene {
     constructor() { super({ key: 'battle' }); }
@@ -25,8 +26,11 @@ export default class BattleScene extends Phaser.Scene {
 
     create() {
         this.bg = initBg(this);
+        this.log = initCombatLog(this, this.scale.width / 2, this.scale.height - 40);
+        logCombat(this, "The battle begins!", '#e0e0e0', '[START]');
         this.message = initMessage(this);
         this.turnText = initTurnText(this);
+        initEventListeners(this);
         initPortraitDims(this);
 
         initBattle(this);

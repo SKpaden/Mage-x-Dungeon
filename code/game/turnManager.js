@@ -1,8 +1,10 @@
-import { attackLowestPlayer } from "./combat.js";
+import { attackLowestPlayer, checkDeath, checkWinner } from "./combat.js";
 import { gameState } from "./gameState.js";
-import { updateText, setHighlight } from "../ui/helpers.js";
+import { logCombat } from "../ui/combatLog.js";
+import { delay, updateText, setHighlight } from "../ui/helpers.js";
 import { getPortraitTween, updateDebuffDsiplay } from "../ui/portraitFactory.js";
 import { showSkills, clearAffectedTargets } from "../ui/skillUI.js";
+import { uiStats } from "../ui/uiStats.js";
 
 // Decides who acts next in turn order.
 export function advanceToNextTurn(scene){
@@ -18,7 +20,7 @@ export function advanceToNextTurn(scene){
     if(currentUnit.getData('team') === 'player'){
         gameState.turn = 'player';
         updateText(scene.turnText, "Player Turn", '#00ff00');
-        playerTurn(scene, currentUnit);
+        scene.time.delayedCall(800, () => playerTurn(scene, currentUnit));
 
     } else {
         gameState.turn = 'enemy';
@@ -33,7 +35,7 @@ export function clearSelections(){
     if(hero){
         setHighlight(hero, false);
     }
-    clearAffectedTargets();
+    // clearAffectedTargets();
     gameState.pendingSkill = null;
     gameState.selectedEnemy = null;
     gameState.selectedPlayer = null;
@@ -51,26 +53,29 @@ export function endTurn(scene, unit){
 // INTERNAL HELPER FUNCTIONS:
 
 // Processes enemy turn.
-function enemyTurn(scene, unit){
-    const debuffSkip = processDebuffs(scene, unit);
+async function enemyTurn(scene, unit){
+    const debuffSkip = await processDebuffs(scene, unit);
+    if (checkDeath(scene, unit)) checkWinner();
     if (debuffSkip){  // at least one debuff skips turn
-        scene.message.setText(unit.getData('name') + ' skipped turn because of ' + debuffSkip + "!");
+        logCombat(scene, `${unit.getData('name')}  skipped turn because of ${debuffSkip}!`, '#ED0000', '[Enemy]');
         endTurn(scene, unit);
     } else {
         // processBuffs(scene, unit);
         // processCooldowns(scene, unit);
         attackLowestPlayer(scene, unit);
         
-        endTurn(scene, unit);
+        //endTurn(scene, unit);
     }
 }
 
 // Processes player's turn.
-function playerTurn(scene, unit){
-    const debuffSkip = processDebuffs(scene, unit);
+async function playerTurn(scene, unit){
+    const debuffSkip = await processDebuffs(scene, unit);
+    if (checkDeath(scene, unit)) checkWinner();
     if (debuffSkip){  // at least one debuff skips turn
-        scene.message.setText(unit.getData('name') + ' skipped turn because of "' + debuffSkip + '"!');
-        scene.time.delayedCall(1000, () => endTurn(scene, unit));
+        logCombat(scene, `${unit.getData('name')}  skipped turn because of ${debuffSkip}!`, '#00aa00', '[Enemy]');
+        await delay(scene, 1000);
+        endTurn(scene, unit);
     } else {
         // processBuffs(scene, unit);
         // processCooldowns(scene, unit);
@@ -81,12 +86,18 @@ function playerTurn(scene, unit){
     }
 }
 
-function processDebuffs(scene, target){
+async function processDebuffs(scene, target){
     let skipTurn = null;
     let debuffs = target.getData('debuffs') || [];
+    // Sequential popups with await:
+    for (const deb of debuffs) {
+        deb.showDebuffPopupAsync(scene, target.x, target.y);
+        await delay(scene, uiStats.debuffDelay);  // wait for this popup to finish
+    }
     debuffs = debuffs.filter(deb => {
         if (deb.skip()) skipTurn = deb.name;  // skip turn?
         deb.tick(scene, target);
+        //deb.showDebuffPopupAsync(scene, target.x, target.y);
         return deb.duration > 0;
     });
 

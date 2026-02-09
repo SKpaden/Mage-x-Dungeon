@@ -12,4 +12,7 @@ export const uiStats = {
     portraitHeight: null,
     halfW: null,
     halfH: null,
+    // Async:
+    debuffDelay: 600,
+    reactionDelay: 400,
 };
