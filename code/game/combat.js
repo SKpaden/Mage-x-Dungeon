@@ -18,6 +18,7 @@ export function applySkill(scene, index, skill){
 // Applies pendingSkill to enemy at index.
 function applySkillToEnemy(scene, index, skill){
     logCombat(scene, `You used ${skill.name}!`, '#e0e0e0', '[You]');
+    skill.putCooldown();
     const affectedTargets = getAffectedTargets(skill, index, gameState.enemyContainers);
     clearAffectedTargets();
 

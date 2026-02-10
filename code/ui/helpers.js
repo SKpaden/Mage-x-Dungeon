@@ -29,24 +29,68 @@ export function initMessage(scene){
 // Writes portrait dimensions to uiStats.
 export function initPortraitDims(scene){
     const tempPortrait = scene.make.image({
-            x: 0,
-            y: 0,
-            key: 'my-hero',
-            scale: uiStats.portraitScale,
-            add: false  // <- crucial: do NOT add to scene
-        });
+        x: 0,
+        y: 0,
+        key: 'my-hero',
+        scale: uiStats.portraitScale,
+        add: false  // <- crucial: do NOT add to scene
+    });
 
-        const portraitWidth = tempPortrait.displayWidth;
-        const portraitHeight = tempPortrait.displayHeight;
+    const portraitWidth = tempPortrait.displayWidth;
+    const portraitHeight = tempPortrait.displayHeight;
 
-        // No need to destroy, it was never added...
-        const halfW = portraitWidth / 2;
-        const halfH = portraitHeight / 2;
+    // No need to destroy, it was never added...
+    const halfW = portraitWidth / 2;
+    const halfH = portraitHeight / 2;
 
-        uiStats.portraitWidth = portraitWidth;
-        uiStats.portraitHeight = portraitHeight;
-        uiStats.halfW = halfW;
-        uiStats.halfH = halfH;
+    uiStats.portraitWidth = portraitWidth;
+    uiStats.portraitHeight = portraitHeight;
+    uiStats.halfW = halfW;
+    uiStats.halfH = halfH;
+    console.log(portraitHeight/scene.scale.height);
+}
+
+// Writes portrait dimensions to uiStats.
+export function initPortraitDimsWithScaleManager(scene){
+    var tempPortrait = scene.make.image({
+        x: 0,
+        y: 0,
+        key: 'my-hero',
+        //scale: uiStats.portraitScale,
+        scale: 1,
+        add: false  // <- crucial: do NOT add to scene
+    });
+
+    var portraitWidth = tempPortrait.displayWidth;
+    var portraitHeight = tempPortrait.displayHeight;
+
+    const heightAllowed = scene.scale.height / 3;  // use *0.4 for old display size
+    const scale = heightAllowed / portraitHeight;
+    // Remake with correct scale and get dimensions:
+    tempPortrait = scene.make.image({
+        x: 0,
+        y: 0,
+        key: 'my-hero',
+        //scale: uiStats.portraitScale,
+        scale: scale,
+        add: false  // <- crucial: do NOT add to scene
+    });
+
+    portraitWidth = tempPortrait.displayWidth;
+    portraitHeight = tempPortrait.displayHeight;
+
+    // No need to destroy, it was never added...
+    const halfW = portraitWidth / 2;
+    const halfH = portraitHeight / 2;
+
+
+    uiStats.portraitScale = scale;
+    uiStats.portraitWidth = portraitWidth;
+    uiStats.portraitHeight = portraitHeight;
+    uiStats.halfW = halfW;
+    uiStats.halfH = halfH;
+
+    initSkillIconDims(scene, portraitWidth);
 }
 
 // Inits the turn text indicating whose turn it is.
@@ -65,14 +109,14 @@ export function setHighlight(container, enable) {
     graphics.clear();
     if (enable) { // no recursive call ==> triggered from a click
         if(gameState.selectedPlayer && gameState.selectedPlayer === container){  // same container twice in a row
-            graphics.lineStyle(2, 0xFFE836, 1);  // base border
-            graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, 5);
+            graphics.lineStyle(uiStats.portraitBorderWidth, 0xFFE836, 1);  // base border
+            graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, uiStats.borderRadius);
             gameState.selectedPlayer = null;  // reset
             return;  // break
         }
     }
-    graphics.lineStyle(enable ? 6 : 2, enable ? 0xffffff : 0xFFE836, 1);
-    graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, 5);  // redraw
+    graphics.lineStyle(enable ? uiStats.portraitHighlightBorderWidth : uiStats.portraitBorderWidth, enable ? 0xffffff : 0xFFE836, 1);
+    graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, uiStats.borderRadius);  // redraw
     if (enable){
         if(gameState.selectedPlayer) {
             setHighlight(gameState.selectedPlayer, false);  // remove old selected
@@ -92,7 +136,7 @@ export function setPlayerTarget(scene, target){  // clear is already done by cle
     const portraitHeight = target.getData('displayHeight');
     graphics.clear();
 
-    graphics.lineStyle(6, 0xff0000, 1);
+    graphics.lineStyle(uiStats.portraitHighlightBorderWidth, 0xff0000, 1);
     graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, 5);
     gameState.selectedPlayer = target;
 }
@@ -101,4 +145,17 @@ export function setPlayerTarget(scene, target){  // clear is already done by cle
 export function updateText(object, newText, color){
     object.setText(newText);
     object.setColor(color);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// INTERNAL HELPER FUNCTIONS:
+
+function initSkillIconDims(scene, portraitWidth){
+    const spaceAvailabe = portraitWidth - 4*uiStats.paddingHpBar - 3*uiStats.skillIconMargin;  // padding on each side (twice because of border as well), 4 skills max ==> 3 gaps
+    const iconWidth = spaceAvailabe / 4;
+    const ratio = iconWidth / uiStats.iconBaseDims;
+
+    // Update in uiStats:
+    uiStats.skillIconScale = ratio;
+    uiStats.skillIconDims = iconWidth;
 }

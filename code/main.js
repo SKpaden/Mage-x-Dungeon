@@ -3,7 +3,8 @@ import BattleScene from './scenes/BattleScene.js';
 var config = {
         type: Phaser.AUTO,
         scale: {
-            mode: Phaser.Scale.SCALE,
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
             width: '100%',
             height: '100%'
         },

@@ -42,7 +42,7 @@ export function initEnemyTeam(scene){
 
     const yOffset = scene.scale.height-200-30;
     for (let index = 0; index  < enemies.length; index++) {
-        const container = createEnemyPortrait(scene, xPos, yOffset, enemies[index], uiStats.portraitScale,  // location and size
+        const container = createEnemyPortrait(scene, xPos, scene.scale.height - uiStats.halfH - 20 - 35, enemies[index], uiStats.portraitScale,  // location and size
                                                 500, 2, enemyNames[index], 'enemy', index);  // stats
         xPos+= uiStats.portraitWidth + uiStats.margin;
         gameState.enemyContainers.push(container);
@@ -64,9 +64,8 @@ export function initPlayerTeam(scene){
     const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
     var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;  // REMEMBER: CENTER-BASED POSITIONING!
     for (let index = 0; index < portraits.length; index++) {
-        const container = createHeroPortrait(scene, xPos, 200, portraits[index], uiStats.portraitScale,  // location and size
+        const container = createHeroPortrait(scene, xPos, uiStats.halfH + 20, portraits[index], uiStats.portraitScale,  // location and size
                                              500, index+1, heroNames[index], 'player', index);  // stats
-                                            //Math.floor(Math.random() * 250 + 1), index+1, heroNames[index], 'player', index);  // stats
         xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
         gameState.playerContainers.push(container);
     }

@@ -3,7 +3,7 @@ import TestScene from './scenes/TestScene.js';
 var config = {
         type: Phaser.AUTO,
         scale: {
-            mode: Phaser.Scale.SCALE,
+            mode: Phaser.Scale.RESIZE,
             width: '100%',
             height: '100%'
         },

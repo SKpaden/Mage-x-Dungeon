@@ -4,6 +4,7 @@ import { previewTargets, clearAffectedTargets } from "./skillUI.js";
 import { uiStats } from "./uiStats.js";
 import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
+import { Skill } from "../data/skills.js";
 
 // Creates enemy portraits.
 export function createEnemyPortrait(scene, x, y, imageKey, scale, maxHp, speed, name, team, index){
@@ -61,12 +62,12 @@ export function updateHP(container, newHp) {
     hpGraphics.clear();
     // Redraw grey bg:
     hpGraphics.fillStyle(0xBDB9B9, 1.0);
-    hpGraphics.fillRoundedRect(-halfW, halfH + 5, displayWidth, 30, 5);
+    hpGraphics.fillRoundedRect(-halfW, halfH + uiStats.marginPortraitHpBar, displayWidth, uiStats.hpBarHeight, uiStats.borderRadius);
     // Redraw red fill:
     if (newHp > 0) {
         hpGraphics.fillStyle(0xDE1616, 1.0);
-        const barWidth = (displayWidth - 6) * (newHp/maxHp);
-        hpGraphics.fillRoundedRect(-halfW + 3, halfH + 5 + 3, barWidth, 24, 5);
+        const barWidth = (displayWidth - 2*uiStats.paddingHpBar) * (newHp/maxHp);
+        hpGraphics.fillRoundedRect(-halfW + uiStats.paddingHpBar, halfH + uiStats.marginPortraitHpBar + uiStats.paddingHpBar, barWidth, uiStats.hpBarHeight - 2*uiStats.paddingHpBar, uiStats.borderRadius);
     } else {
         newHp = 0;
         container.setAlpha(0.4);
@@ -91,7 +92,7 @@ function addToContainer(container, objects){
 // Creates a border graphics object and returns it.
 function createBorderGraphics(scene, x, y, width, height, borderRadius, color){
     const borderGraphics = scene.add.graphics();
-    borderGraphics.lineStyle(2, color, 1);
+    borderGraphics.lineStyle(uiStats.portraitBorderWidth, color, 1);
 
     borderGraphics.strokeRoundedRect(x, y, width, height, borderRadius);
     return borderGraphics;
@@ -106,14 +107,15 @@ function createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, na
     const halfW = portrait.displayWidth/2;
     const halfH = portrait.displayHeight/2;
 
-    var borderGraphics = createBorderGraphics(scene, -halfW, -halfH, portrait.displayWidth, portrait.displayHeight, 5, 0xFFE836);
+    var borderGraphics = createBorderGraphics(scene, -halfW, -halfH, portrait.displayWidth, portrait.displayHeight, uiStats.borderRadius, 0xFFE836);
     
     // HP BARS:
     var hpGraphics = createHpGraphics(scene, -halfW, halfH + uiStats.marginPortraitHpBar, portrait.displayWidth,
                                         uiStats.hpBarHeight, uiStats.borderRadius, 0xBDB9B9, 0xDE1616, 1);
 
-    // y = halfH + marginPortraitBar + redBar.height/2 + paddingGreyBar = halfH + 5 + 12 + 3 = halfH + 20
-    const hpText = createHpText(scene, 0, halfH + 20, `${maxHp}/${maxHp}`, {fontSize: '14px', color: '#000000', fontFamily: 'Arial'});
+    const hpTextYPos = halfH + uiStats.marginPortraitHpBar + (uiStats.hpBarHeight-2*uiStats.paddingHpBar)/2 + uiStats.paddingHpBar;
+    // y = halfH + uiStats.marginPortraitHpBar + redbarHeight/2 + uiStats.paddingHpBar = halfH + 5 + 12 + 3 = halfH + 20
+    const hpText = createHpText(scene, 0, hpTextYPos, `${maxHp}/${maxHp}`, {fontSize: '14px', color: '#000000', fontFamily: 'Arial'});
     
     const portraitContainer = scene.add.container(x, y);  // previous portrait location
 
@@ -130,13 +132,8 @@ function createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, na
     
     
     // Skills:
-    const skills = [
-        { id: 'basicAttack', name: 'Poison Claw', icon: 'Poison Claw.jpg', targets: 'single', effect: new Effect(40, 'holy', new Debuff("Poison", 3, 25, "holy", null, false, "elemental"), "Poison", '#0fee65')},
-        //{ id: 'fireball', name: 'Fireball', icon: 'Fireball.jpg', targets: 'single', dmg: 60, element: 'fire' },
-        { id: 'fireball', name: "Fireball", icon: "Fireball.jpg", targets: 'adjacent', effect: new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental"), "Fire")},
-        { id: 'holy', name: 'Holy Light', icon: 'Holy Light.jpg', targets: 'adjacent', effect: new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental"), "Light", '#f0ff20')},
-        { id: 'nova', name: 'Dark Nova', icon: 'Dark Nova.jpg', targets: 'all', effect: new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc"), "Dark", '#b700ff')}
-    ];
+    const skills = getSkills();
+
     // Store data in container:
     setContainerData(portraitContainer, {
         'name': name,
@@ -199,6 +196,27 @@ function displayDebuffs(scene, container, xOffset, yOffset){
     });
     container.add(debuffContainer);
     container.setData('debuffContainer', debuffContainer);
+}
+
+function getSkills(){
+    return [
+        // Poison Claw:
+        new Skill('Poison Claw', 'Poison Claw.jpg', 'single',
+                   new Effect(40, 'poison', new Debuff("Poison", 3, 25, "poison", null, false, "elemental", null), "Poison", '#0fee65'),
+                   0, "A single-target Poison attack. Applies a Posion debuff."),
+        // Fireball
+        new Skill('Fireball', 'Fireball.jpg', 'single',
+                   new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
+                   3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
+        // Holy Light:
+        new Skill('Holy Light', 'Holy Light.jpg', 'single',
+                   new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+                   2, "Blinds a single target for 3 turns."),
+        // Dark Nova:
+        new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
+                   new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+                   5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."),
+    ];
 }
 
 // Sets data specified in dataDictionary in container.

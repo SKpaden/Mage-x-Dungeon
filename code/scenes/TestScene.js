@@ -5,13 +5,13 @@ export default class TestScene extends Phaser.Scene {
     }
 
     create() {
-        const textBox = addTextBox(this, this.scale.width/2, this.scale.height/2, 400,200);
+        this.textBox = addTextBox(this, this.scale.width/2, this.scale.height/2, this.scale.width/4,this.scale.height/4);
         //console.log(textBox.node);
         // textBox.setText(textBox.node.innerText + "<p>Test</p>");
-        textBox.node.innerHTML += '<p>Test</p>';
-        logInDiv(textBox.node, "Line 1", "blue");
-        logInDiv(textBox.node, "Line 2", "blue");
-        logInDiv(textBox.node, "Line 3", "blue");
+        this.textBox.node.innerHTML += '<p>Test</p>';
+        logInDiv(this.textBox.node, "Line 1", "blue");
+        logInDiv(this.textBox.node, "Line 2", "blue");
+        logInDiv(this.textBox.node, "Line 3", "blue");
 
         function logInDiv(element, text, color){
             element.innerHTML += `<p style="color: red;">` + text + '<span style="color: orange;"> Yellow</span>' + '</p>';
@@ -24,7 +24,7 @@ export default class TestScene extends Phaser.Scene {
             container.style.width = '500px';
             container.style.height = '500px';
             container.style.color = 'white';
-            container.style = `width: ${width}px; height: ${height}px; max-height: 200px; fontSize: 2.5rem; color: white; background-color: blue; overflow-y: auto; padding: 5px;`;
+            container.style = `width: ${width}px; height: ${height}px; color: white; background-color: blue; overflow-y: auto; padding: 5px;`;
             return scene.add.dom(x,y,container, container.style, "Test Text!");
         
         }
@@ -89,7 +89,27 @@ export default class TestScene extends Phaser.Scene {
             scene.logText.y = -scene.logText.height + 140; // adjust to keep bottom visible
         }
 
+        // Do something on resize ==> put this in config: scale: {
+        //     mode: Phaser.Scale.RESIZE,
+        //     width: '100%',
+        //     height: '100%'
+        // },
+        this.scale.on('resize', () => {  // works!
+            const saveData = this.textBox.node.innerHTML;
+            this.textBox.destroy();
+            this.textBox = addTextBox(this, this.scale.width/2, this.scale.height/2, this.scale.width/4,this.scale.height/4);
+            this.textBox.node.innerHTML = saveData;
+            
+        });
 
+        // To check if resize works:
+        function printDims(scene){
+            console.log(scene.scale.width);
+            console.log(scene.scale.height);
+            console.log("---------------------");
+            console.log(scene.textBox.width);
+            console.log(scene.textBox.height);
+        }
     }
 
     update() {}

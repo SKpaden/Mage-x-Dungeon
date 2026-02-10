@@ -5,13 +5,17 @@ export const uiStats = {
     hpBarHeight: 30,
     borderRadius: 5,
     dmgPopupFontsize: '32px',
+    iconBaseDims: 960,  // base img size for icons
     skillIconScale: 0.05,
     skillIconDims: 32,
+    skillIconMargin: 5,
     portraitScale: 0.3,
     portraitWidth: null,
     portraitHeight: null,
     halfW: null,
     halfH: null,
+    portraitBorderWidth: 2,
+    portraitHighlightBorderWidth: 6,
     // Async:
     debuffDelay: 600,
     reactionDelay: 400,

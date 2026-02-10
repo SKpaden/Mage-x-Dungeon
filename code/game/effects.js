@@ -44,7 +44,7 @@ export class Effect{
             if (this.debuff.type !== 'elemental' || !this.preventElementalDebuff){  // always place non-elemental debuffs or if no reactions were triggered
                 const debuffs = target.getData('debuffs') || [];
                 if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.debuff.name)){  // max 5 debuffs AND prevent duplicates unless allowed
-                    debuffs.push(this.debuff.createCopy());
+                    debuffs.push(this.debuff.createCopy(source));
                     target.setData('debuffs', debuffs);
                 }
             }

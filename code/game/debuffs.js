@@ -2,7 +2,7 @@ import { updateHP } from "../ui/portraitFactory.js";
 import { uiStats } from "../ui/uiStats.js";
 
 export class Debuff{
-    constructor(name, duration, dmgPerTurn = 0, element = null, triggerEffect = null, skipTurn = false, type = "elemental"){
+    constructor(name, duration, dmgPerTurn = 0, element = null, triggerEffect = null, skipTurn = false, type = "elemental", appliedBy = null){
         this.name = name;
         this.duration = duration;
         this.dmgPerTurn = dmgPerTurn;
@@ -10,6 +10,9 @@ export class Debuff{
         this.triggerEffect = triggerEffect;  // probably remove this...don't know if this makes sense
         this.skipTurn = skipTurn;
         this.type = type;
+
+        // That's good for passives, I think:
+        this.appliedBy = appliedBy;
 
         // For later display:
         this.description = "No description!";
@@ -93,8 +96,8 @@ export class Debuff{
     }
 
     // Return a new instance of Debuff with the exact same stats.
-    createCopy(){
-        return new Debuff(this.name, this.duration, this.dmgPerTurn, this.element, this.triggerEffect, this.skipTurn, this.type);
+    createCopy(source){
+        return new Debuff(this.name, this.duration, this.dmgPerTurn, this.element, this.triggerEffect, this.skipTurn, this.type, source);
     }
 
     // Check if this debuff prevents a turn.
@@ -107,7 +110,6 @@ export class Debuff{
         if(this.dmgPerTurn > 0){
             const currentHp = target.getData('hp');
             const newHp = Math.max(0, currentHp - this.dmgPerTurn);
-            target.setData('hp', newHp);
             updateHP(target, newHp);
         }
         if (this.triggerEffect) {

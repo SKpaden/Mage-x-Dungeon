@@ -45,6 +45,8 @@ export function clearSelections(){
 export function endTurn(scene, unit){
     // processDebuffs(scene, unit);
     //processBuffs(scene, unit);
+
+    // unit.getData('char').reduceCooldowns();
     clearSelections();
     if (!gameState.winner) advanceToNextTurn(scene);
 }
