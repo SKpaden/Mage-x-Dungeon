@@ -4,6 +4,7 @@ import { uiStats } from "../ui/uiStats.js";
 
 export const gameState = {
     turn: 'player',
+    turnNumber: 0,
     selectedPlayer: null,  // player team character's turn
     selectedEnemy: null,  // player's selected target
     pendingSkill: null,  // skill to be used

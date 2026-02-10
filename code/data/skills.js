@@ -30,6 +30,15 @@ export class Skill{
 
 }
 
+const clawstrike = {
+    name: 'Claw Strike',
+    icon: 'Claw Strike.jpg',
+    targets: 'single',
+    effect: new Effect(50, null, null, 'Physical'),
+    cooldown: 0,
+    description: "Strikes an enemy with his claw dealing physical damage."
+}
+
 
 const fireball = {
     name: 'Fireball',
