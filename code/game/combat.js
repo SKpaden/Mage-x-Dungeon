@@ -43,8 +43,8 @@ function applySkillToEnemy(scene, index, skill){
 
 // Applies pendingSkill to enemy at index.
 async function applySkillToPlayer(scene, source, target, index, team){
-    logCombat(scene, `${source.getData('name')} used ${skill.name}!`, '#e0e0e0', '[Enemy]');
     const skill = gameState.pendingSkill;
+    logCombat(scene, `${source.getData('name')} used ${skill.name}!`, '#e0e0e0', '[Enemy]');
     const affectedTargets = getAffectedTargets(skill, index, team);
 
     const effectQueue = [];
