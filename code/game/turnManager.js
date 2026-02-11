@@ -1,13 +1,14 @@
 import { attackLowestPlayer, checkDeath, checkWinner } from "./combat.js";
-import { gameState } from "./gameState.js";
+import { gameState, updateQeue } from "./gameState.js";
 import { logCombat } from "../ui/combatLog.js";
 import { delay, updateText, setHighlight } from "../ui/helpers.js";
-import { getPortraitTween, updateDebuffDsiplay } from "../ui/portraitFactory.js";
+import { getPortraitTween, updateDebuffDsiplay, updateTurnMeter } from "../ui/portraitFactory.js";
 import { showSkills, clearAffectedTargets } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
 
 // Decides who acts next in turn order.
 export function advanceToNextTurn(scene){
+    fillAllTurnMeters(scene);
     let check = true;
     let currentUnit;
     while (check){
@@ -28,6 +29,28 @@ export function advanceToNextTurn(scene){
         scene.time.delayedCall(1000, () => enemyTurn(scene, currentUnit));
     }
 }
+// Fills all units' turn meter by their speed amount and redraws their turn meter.
+function fillAllTurnMeters(scene){
+    let max = 0;
+    // Add to turn meters:
+    gameState.turnQueue.forEach((container) => {
+        if (container.getData('hp') > 0){  // only alive ones
+            const character = container.getData('char');
+            let tm = container.getData('turnMeter');
+            const speed = character.getSpeed();  // character call to maybe facilitate buffs/debuffs on speed
+            tm += speed;
+            container.setData('turnMeter', tm);  // update turnMeter value
+            if (tm > max) max = tm;
+        }
+    });
+    // Redraw turn meter:
+    gameState.turnQueue.forEach((container) => {
+        console.log(`${container.getData('name')}: ${container.getData('turnMeter')}/${max} = ${container.getData('turnMeter')/max}`);
+        updateTurnMeter(scene, container, container.getData('turnMeter')/max);
+    });
+
+    updateQeue();
+}
 
 // Clears gameState for next turn.
 export function clearSelections(){
@@ -45,8 +68,8 @@ export function clearSelections(){
 export function endTurn(scene, unit){
     // processDebuffs(scene, unit);
     //processBuffs(scene, unit);
+    unit.setData('turnMeter', 0);  // reset turn meter
 
-    // unit.getData('char').reduceCooldowns();
     clearSelections();
     if (!gameState.winner) advanceToNextTurn(scene);
 }
@@ -56,6 +79,7 @@ export function endTurn(scene, unit){
 
 // Processes enemy turn.
 async function enemyTurn(scene, unit){
+    unit.getData('char').reduceCooldowns();
     const debuffSkip = await processDebuffs(scene, unit);
     if (checkDeath(scene, unit)) checkWinner();
     if (debuffSkip){  // at least one debuff skips turn
@@ -72,6 +96,7 @@ async function enemyTurn(scene, unit){
 
 // Processes player's turn.
 async function playerTurn(scene, unit){
+    unit.getData('char').reduceCooldowns();
     const debuffSkip = await processDebuffs(scene, unit);
     if (checkDeath(scene, unit)) checkWinner();
     if (debuffSkip){  // at least one debuff skips turn

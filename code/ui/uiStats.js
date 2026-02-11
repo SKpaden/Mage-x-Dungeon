@@ -3,6 +3,7 @@ export const uiStats = {
     marginPortraitHpBar: 5,  // how much space between hp bar and portrait
     paddingHpBar: 3,  // how much padding of HP bar rectangle (outer vs inner bar)
     hpBarHeight: 30,
+    tmHeight: 10,
     borderRadius: 5,
     dmgPopupFontsize: '32px',
     iconBaseDims: 960,  // base img size for icons

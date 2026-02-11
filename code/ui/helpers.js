@@ -55,7 +55,7 @@ export function initPortraitDimsWithScaleManager(scene){
     var tempPortrait = scene.make.image({
         x: 0,
         y: 0,
-        key: 'my-hero',
+        key: 'Draconoid - Dark Mage.jpg',
         //scale: uiStats.portraitScale,
         scale: 1,
         add: false  // <- crucial: do NOT add to scene
@@ -70,7 +70,7 @@ export function initPortraitDimsWithScaleManager(scene){
     tempPortrait = scene.make.image({
         x: 0,
         y: 0,
-        key: 'my-hero',
+        key: 'Draconoid - Dark Mage.jpg',
         //scale: uiStats.portraitScale,
         scale: scale,
         add: false  // <- crucial: do NOT add to scene

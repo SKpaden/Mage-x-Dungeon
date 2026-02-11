@@ -1,6 +1,6 @@
 import { gameState } from "./gameState.js";
 import { clearAffectedTargets, showDmgPopup } from "../ui/skillUI.js";
-import { updateDebuffDsiplay, updateHP } from "../ui/portraitFactory.js";
+import { updateDebuffDsiplay, updateHP, updateTurnMeter } from "../ui/portraitFactory.js";
 import { delay, setPlayerTarget } from "../ui/helpers.js";
 import { logCombat } from "../ui/combatLog.js";
 import { uiStats } from "../ui/uiStats.js";
@@ -44,6 +44,7 @@ function applySkillToEnemy(scene, index, skill){
 // Applies pendingSkill to enemy at index.
 async function applySkillToPlayer(scene, source, target, index, team){
     const skill = gameState.pendingSkill;
+    skill.putCooldown();
     logCombat(scene, `${source.getData('name')} used ${skill.name}!`, '#e0e0e0', '[Enemy]');
     const affectedTargets = getAffectedTargets(skill, index, team);
 
@@ -110,9 +111,7 @@ export function attackLowestPlayer(scene, source){
         }
     }
     if (target){
-        const skillIndex = Math.floor(Math.random()*(source.getData('skills').length));
-        gameState.pendingSkill = source.getData('skills')[1];  // 
-        //gameState.selectedPlayer = target;
+        gameState.pendingSkill = source.getData('char').chooseSkill();  // pick highest prio skill
         setPlayerTarget(scene, target);
 
         gameState.selectedEnemy = source;
@@ -182,6 +181,8 @@ export function checkDeath(scene, target){
         team === 'player' ? gameState.playerAlive-=1 : gameState.enemyAlive-=1;
         target.setData('debuffs', []);
         updateDebuffDsiplay(scene, target);
+        target.setData('turnMeter', 0);
+        updateTurnMeter(scene, target, 0);
     }
 }
 

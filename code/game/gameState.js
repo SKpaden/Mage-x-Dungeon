@@ -1,4 +1,5 @@
-import { createHeroPortrait, createEnemyPortrait } from "../ui/portraitFactory.js";
+import { getHeroTeam, createHero5 } from "../data/characters.js";
+import { createHeroPortrait, createHeroPortraitAlt, createEnemyPortrait, createEnemyPortraitAlt } from "../ui/portraitFactory.js";
 import { initSkillEventListener } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
 
@@ -18,17 +19,22 @@ export const gameState = {
 };
 
 // Builds the turnQueue in gameState to decide turn order.
-export function buildQueue(players, enemies){
+export function buildQueue(){
     gameState.turnQueue = [...gameState.playerContainers, ...gameState.enemyContainers]
         .sort((a, b) => b.getData('speed') - a.getData('speed'));
     gameState.currentTurnIndex = -1;
 }
 
+export function updateQeue(){
+    gameState.turnQueue = gameState.turnQueue.sort((a,b) => b.getData('turnMeter') - a.getData('turnMeter'));
+    gameState.currentTurnIndex = -1;
+}
+
 // Initialises battle.
 export function initBattle(scene){
-    initPlayerTeam(scene);
-    initEnemyTeam(scene);
-    buildQueue(gameState.playerContainers, gameState.enemyContainers);
+    initPlayerTeamAlt(scene);
+    initEnemyTeamAlt(scene);
+    buildQueue();
 }
 
 // Initialises enemy team.
@@ -69,5 +75,40 @@ export function initPlayerTeam(scene){
                                              500, index+1, heroNames[index], 'player', index);  // stats
         xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
         gameState.playerContainers.push(container);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ALT FUNCTIONS WITH CLASSES:
+
+export function initPlayerTeamAlt(scene){
+    const heros = getHeroTeam();
+
+    gameState.playerAlive = heros.length;
+
+    const spaceNeeded = heros.length * uiStats.portraitWidth + (heros.length-1)*uiStats.margin;  // #portraits*width + margins between them
+    const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
+    var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;  // REMEMBER: CENTER-BASED POSITIONING!
+    for (let index = 0; index < heros.length; index++) {
+        const container = createHeroPortraitAlt(scene, xPos, uiStats.halfH + 20, heros[index], uiStats.portraitScale, 'player', index);  // stats
+        xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
+        gameState.playerContainers.push(container);
+    }
+}
+
+export function initEnemyTeamAlt(scene){
+    const enemies = [createHero5(), createHero5(), createHero5(), createHero5(), createHero5()];
+
+    gameState.enemyAlive = enemies.length;
+    
+    const spaceNeeded = enemies.length * uiStats.portraitWidth + (enemies.length-1)*uiStats.margin;  // #portraits*width + margins between them
+    const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
+    var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;
+
+    const yOffset = scene.scale.height-200-30;
+    for (let index = 0; index  < enemies.length; index++) {
+        const container = createEnemyPortraitAlt(scene, xPos, scene.scale.height - uiStats.halfH - 20 - 35, enemies[index], uiStats.portraitScale,'enemy', index);  // stats
+        xPos+= uiStats.portraitWidth + uiStats.margin;
+        gameState.enemyContainers.push(container);
     }
 }

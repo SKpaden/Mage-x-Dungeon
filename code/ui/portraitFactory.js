@@ -23,9 +23,31 @@ export function createEnemyPortrait(scene, x, y, imageKey, scale, maxHp, speed, 
     return portraitContainer;
 }
 
+// Creates enemy portraits.
+export function createEnemyPortraitAlt(scene, x, y, character, scale, team, index){
+    const portraitContainer = createCharacterContainerAlt(scene, x, y, character, scale, team, index);
+
+    portraitContainer.on('pointerdown', (pointer) => {
+        if (pointer.button !== 0) return;  // only left click!
+        // Player chose a character AND it's the player's turn AND this target is not dead...
+        if (gameState.turn === 'player'  && portraitContainer.getData('hp') > 0 && gameState.pendingSkill){
+            const skill = gameState.pendingSkill;
+            gameState.pendingSkill = null;  // prevent spamming!
+            applySkill(scene, portraitContainer.getData('teamIndex'), skill);               
+        }
+    });
+
+    return portraitContainer;
+}
+
 // Creates a character portrait in the scene.
 export function createHeroPortrait(scene, x, y, imageKey, scale, maxHp, speed, name, team, index){
     const portraitContainer = createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, name, team, index);           
+    return portraitContainer;
+}
+
+export function createHeroPortraitAlt(scene, x, y, character, scale, team, index){
+    const portraitContainer = createCharacterContainerAlt(scene, x, y, character, scale, team, index);           
     return portraitContainer;
 }
 
@@ -98,6 +120,99 @@ function createBorderGraphics(scene, x, y, width, height, borderRadius, color){
     return borderGraphics;
 }
 
+function createCharacterContainerAlt(scene, x, y, character, scale, team, index){
+const imgKey = character.portrait;
+    if(!scene.textures.exists(imgKey)){
+        console.warn(`Failed to load ${imgKey}!`);
+    }
+    const portrait = scene.add.image(0, 0, imgKey).setScale(scale);
+    const halfW = portrait.displayWidth/2;
+    const halfH = portrait.displayHeight/2;
+
+    var borderGraphics = createBorderGraphics(scene, -halfW, -halfH, portrait.displayWidth, portrait.displayHeight, uiStats.borderRadius, 0xFFE836);
+    
+    // HP BARS:
+    var hpGraphics = createHpGraphics(scene, -halfW, halfH + uiStats.marginPortraitHpBar, portrait.displayWidth,
+                                        uiStats.hpBarHeight, uiStats.borderRadius, 0xBDB9B9, 0xDE1616, 1);
+
+    const hpTextYPos = halfH + uiStats.marginPortraitHpBar + (uiStats.hpBarHeight-2*uiStats.paddingHpBar)/2 + uiStats.paddingHpBar;
+    // y = halfH + uiStats.marginPortraitHpBar + redbarHeight/2 + uiStats.paddingHpBar = halfH + 5 + 12 + 3 = halfH + 20
+    const hpText = createHpText(scene, 0, hpTextYPos, `${character.maxHp}/${character.maxHp}`, {fontSize: '14px', color: '#000000', fontFamily: 'Arial'});
+    
+    const portraitContainer = scene.add.container(x, y);  // previous portrait location
+
+    // Add all children to the container (order matters!):
+    addToContainer(portraitContainer, [portrait, borderGraphics, hpGraphics, hpText]);  // order matters!
+
+    // Make the container interactive:
+    setContainerInteractive(scene, portraitContainer, portrait,
+                            {
+                                hitArea: new Phaser.Geom.Rectangle(-halfW, -halfH, portrait.displayWidth,portrait.displayHeight),
+                                hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+                                useHandCursor: true
+                            }, 0x820000);
+    
+
+    // Store data in container:
+    setContainerData(portraitContainer, {
+        'char': character,
+        'name': character.name,
+        'halfW': halfW,
+        'halfH': halfH,
+        'displayWidth': portrait.displayWidth,
+        'displayHeight': portrait.displayHeight,
+        'hpGraphics': hpGraphics,
+        'borderGraphics': borderGraphics,
+        'hpText': hpText,
+        'hp': character.maxHp,
+        'maxHp': character.hp,
+        'speed': character.speed,
+        'skills': character.skills,
+        // 'debuffs': [new Debuff('Wet', 3, 0, 'water'), new Debuff('Shock', 2, 10, 'lightning')],
+        'debuffs': [new Debuff('Shock', 3, 10, 'electro')],
+        'buffs': [],
+        'team': team,
+        'teamIndex': index,
+        'turnMeter': 0
+    });
+
+    displayDebuffs(scene, portraitContainer, halfW, halfH);  // add debuff display
+    createTurnMeter(scene, portraitContainer, halfW, halfH, uiStats.borderRadius);  // add turn meter
+
+    return portraitContainer;
+}
+
+// Creates and adds turn meter graphics to container.
+function createTurnMeter(scene, container, halfW, halfH, borderRadius){
+    const tmGraphics = scene.add.graphics();
+    tmGraphics.fillStyle(0xBDB9B9, 1.0);
+    tmGraphics.fillRoundedRect(-halfW, halfH + uiStats.hpBarHeight + 2*uiStats.marginPortraitHpBar/3, 2*halfW, uiStats.tmHeight, borderRadius);
+    const tm = container.getData('turnMeter');
+    if (tm){
+        tmGraphics.fillStyle(0x00FF00, 1.0);
+        tmGraphics.fillRoundedRect(-halfW + uiStats.paddingHpBar,
+                                    halfH + uiStats.hpBarHeight + 2*uiStats.marginPortraitHpBar/3 + uiStats.paddingHpBar,
+                                    (2*halfW - 2*uiStats.paddingHpBar)*1,
+                                    uiStats.tmHeight - 2*uiStats.paddingHpBar,
+                                    borderRadius);
+    }
+    container.add(tmGraphics);
+    container.setData('tmGraphics', tmGraphics);
+}
+
+export function updateTurnMeter(scene, container, value){
+    const tmGraphics = container.getData('tmGraphics');
+    tmGraphics.clear();
+
+    tmGraphics.fillStyle(0xBDB9B9, 1.0);
+    tmGraphics.fillRoundedRect(-uiStats.halfW, uiStats.halfH + uiStats.hpBarHeight + 2*uiStats.marginPortraitHpBar/3, uiStats.portraitWidth, uiStats.tmHeight, uiStats.borderRadius);
+    if (value){
+        tmGraphics.fillStyle(0x00FF00, 1.0);
+        tmGraphics.fillRoundedRect(-uiStats.halfW + uiStats.paddingHpBar, uiStats.halfH + uiStats.hpBarHeight + 2*uiStats.marginPortraitHpBar/3 + uiStats.paddingHpBar, (uiStats.portraitWidth - 2*uiStats.paddingHpBar)*value, uiStats.tmHeight - 2*uiStats.paddingHpBar, uiStats.borderRadius);
+    }
+    //container.setData('tmGraphics', tmGraphics);
+}
+
 // Creates base layout and strucuture for a character container.
 function createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, name, team, index){
     if(!scene.textures.exists(imageKey)){
@@ -152,7 +267,7 @@ function createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, na
         'debuffs': [new Debuff('Shock', 3, 10, 'electro')],
         'buffs': [],
         'team': team,
-        'teamIndex': index
+        'teamIndex': index,
     });
 
     displayDebuffs(scene, portraitContainer, halfW, halfH);  // add debuff display
