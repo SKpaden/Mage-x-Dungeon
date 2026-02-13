@@ -8,15 +8,15 @@ import { uiStats } from "../ui/uiStats.js";
 
 // Decides who acts next in turn order.
 export function advanceToNextTurn(scene){
-    fillAllTurnMeters(scene);
-    let check = true;
-    let currentUnit;
-    while (check){
-        gameState.currentTurnIndex = (gameState.currentTurnIndex + 1) % gameState.turnQueue.length;
-        currentUnit = gameState.turnQueue[gameState.currentTurnIndex];
-        if (currentUnit.getData('hp') > 0) check = false;
+    //fillAllTurnMeters(scene);
+    //let check = true;
+    let currentUnit = fillAllTurnMeters(scene);
+    // while (check){
+    //     gameState.currentTurnIndex = (gameState.currentTurnIndex + 1) % gameState.turnQueue.length;
+    //     currentUnit = gameState.turnQueue[gameState.currentTurnIndex];
+    //     if (currentUnit.getData('hp') > 0) check = false;
         
-    }
+    // }
 
     if(currentUnit.getData('team') === 'player'){
         gameState.turn = 'player';
@@ -31,25 +31,49 @@ export function advanceToNextTurn(scene){
 }
 // Fills all units' turn meter by their speed amount and redraws their turn meter.
 function fillAllTurnMeters(scene){
+    // if (gameState.turnQueue[0].getData('turnMeter') >= gameState.combinedSpeed) return gameState.turnQueue[0];
     let max = 0;
-    // Add to turn meters:
-    gameState.turnQueue.forEach((container) => {
-        if (container.getData('hp') > 0){  // only alive ones
-            const character = container.getData('char');
-            let tm = container.getData('turnMeter');
-            const speed = character.getSpeed();  // character call to maybe facilitate buffs/debuffs on speed
-            tm += speed;
-            container.setData('turnMeter', tm);  // update turnMeter value
-            if (tm > max) max = tm;
-        }
-    });
+    let keepGoing = true;
+    //let i = 0;
+    while (keepGoing){
+        gameState.turnQueue.forEach((container) => {
+            if (container.getData('hp') > 0){
+                let tm = container.getData('turnMeter');
+                const speed = container.getData('char').getSpeed();
+                tm += speed;
+                container.setData('turnMeter', tm);
+                if (tm > max) max = tm;
+                if (tm >= gameState.combinedSpeed) keepGoing = false;
+            }
+        });
+    }
+
     // Redraw turn meter:
     gameState.turnQueue.forEach((container) => {
-        console.log(`${container.getData('name')}: ${container.getData('turnMeter')}/${max} = ${container.getData('turnMeter')/max}`);
-        updateTurnMeter(scene, container, container.getData('turnMeter')/max);
+        console.log(`${container.getData('name')}: ${container.getData('turnMeter')}/${gameState.combinedSpeed} = ${container.getData('turnMeter')/gameState.combinedSpeed}`);
+        updateTurnMeter(scene, container, Math.min(1, container.getData('turnMeter')/gameState.combinedSpeed));
     });
 
-    updateQeue();
+    updateQeue();  // sort by turn meter
+
+    // Check if multiple units with same turn meter ==> give turn to unit with fewest turns so far:
+    let turnsTaken = gameState.turnQueue[0].getData('turnsTaken');
+    let result = gameState.turnQueue[0];
+    keepGoing = true;
+    let i = 1;
+    while (keepGoing){
+        const candidate = gameState.turnQueue[i];
+        if(candidate.getData('turnMeter') !== max) keepGoing = false; // at least 2 with max turn meter
+        else {
+            const candTurns = candidate.getData('turnsTaken');
+            if(candTurns < turnsTaken){
+                turnsTaken = candTurns;
+                result = gameState.turnQueue[i];
+            }
+            i++;
+        }
+    }
+    return result;
 }
 
 // Clears gameState for next turn.
@@ -69,6 +93,8 @@ export function endTurn(scene, unit){
     // processDebuffs(scene, unit);
     //processBuffs(scene, unit);
     unit.setData('turnMeter', 0);  // reset turn meter
+    updateTurnMeter(scene, unit, 0);
+    gameState.turnQueue.push(gameState.turnQueue.shift());  // move first element to the back (slowest to the end)
 
     clearSelections();
     if (!gameState.winner) advanceToNextTurn(scene);

@@ -13,6 +13,7 @@ export const gameState = {
     enemyContainers: [],  // enemy team
     turnQueue: [],  // turn order
     currentTurnIndex: -1,  // 
+    combinedSpeed: 0,
     playerAlive: null,  // how many alive on player team
     enemyAlive: null,  // how many enemies alive
     winner: null
@@ -90,7 +91,9 @@ export function initPlayerTeamAlt(scene){
     const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
     var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;  // REMEMBER: CENTER-BASED POSITIONING!
     for (let index = 0; index < heros.length; index++) {
-        const container = createHeroPortraitAlt(scene, xPos, uiStats.halfH + 20, heros[index], uiStats.portraitScale, 'player', index);  // stats
+        const hero = heros[index];
+        gameState.combinedSpeed += hero.getSpeed();
+        const container = createHeroPortraitAlt(scene, xPos, uiStats.halfH + 20, hero, uiStats.portraitScale, 'player', index);  // stats
         xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
         gameState.playerContainers.push(container);
     }
@@ -107,7 +110,9 @@ export function initEnemyTeamAlt(scene){
 
     const yOffset = scene.scale.height-200-30;
     for (let index = 0; index  < enemies.length; index++) {
-        const container = createEnemyPortraitAlt(scene, xPos, scene.scale.height - uiStats.halfH - 20 - 35, enemies[index], uiStats.portraitScale,'enemy', index);  // stats
+        const enemy = enemies[index];
+        gameState.combinedSpeed += enemy.getSpeed();
+        const container = createEnemyPortraitAlt(scene, xPos, scene.scale.height - uiStats.halfH - 20 - 35, enemy, uiStats.portraitScale,'enemy', index);  // stats
         xPos+= uiStats.portraitWidth + uiStats.margin;
         gameState.enemyContainers.push(container);
     }

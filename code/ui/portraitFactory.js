@@ -173,7 +173,8 @@ const imgKey = character.portrait;
         'buffs': [],
         'team': team,
         'teamIndex': index,
-        'turnMeter': 0
+        'turnMeter': 0,
+        'turnsTaken': 0
     });
 
     displayDebuffs(scene, portraitContainer, halfW, halfH);  // add debuff display
