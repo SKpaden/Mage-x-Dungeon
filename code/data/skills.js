@@ -2,7 +2,7 @@ import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
 
 export class Skill{
-    constructor(name, icon, targets, effect, cooldown, dsecription){
+    constructor(name, icon, targets, effect, cooldown, description){
         this.name = name;
         this.icon = icon;
         this.targets = targets;
@@ -10,7 +10,7 @@ export class Skill{
         this.cooldown = cooldown;
         this.currentCD = 0;
 
-        this.dsecription = dsecription;
+        this.description = description;
     }
     // Creates and return the Skill's icon.
     addIcon(scene, x, y, scale){

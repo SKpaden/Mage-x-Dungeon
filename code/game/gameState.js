@@ -1,5 +1,5 @@
 import { getHeroTeam, createHero5 } from "../data/characters.js";
-import { createHeroPortrait, createHeroPortraitAlt, createEnemyPortrait, createEnemyPortraitAlt } from "../ui/portraitFactory.js";
+import { createHeroPortraitAlt, createEnemyPortraitAlt } from "../ui/portraitFactory.js";
 import { initSkillEventListener } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
 
@@ -12,7 +12,6 @@ export const gameState = {
     playerContainers: [],  // player team
     enemyContainers: [],  // enemy team
     turnQueue: [],  // turn order
-    currentTurnIndex: -1,  // 
     combinedSpeed: 0,
     playerAlive: null,  // how many alive on player team
     enemyAlive: null,  // how many enemies alive
@@ -21,14 +20,12 @@ export const gameState = {
 
 // Builds the turnQueue in gameState to decide turn order.
 export function buildQueue(){
-    gameState.turnQueue = [...gameState.playerContainers, ...gameState.enemyContainers]
-        .sort((a, b) => b.getData('speed') - a.getData('speed'));
-    gameState.currentTurnIndex = -1;
+    gameState.turnQueue = [...gameState.playerContainers, ...gameState.enemyContainers];
 }
 
+// Resorts the queue regarding the turn meter.
 export function updateQeue(){
     gameState.turnQueue = gameState.turnQueue.sort((a,b) => b.getData('turnMeter') - a.getData('turnMeter'));
-    gameState.currentTurnIndex = -1;
 }
 
 // Initialises battle.

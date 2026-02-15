@@ -6,24 +6,7 @@ import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
 import { Skill } from "../data/skills.js";
 
-// Creates enemy portraits.
-export function createEnemyPortrait(scene, x, y, imageKey, scale, maxHp, speed, name, team, index){
-    const portraitContainer = createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, name, team, index);
-
-    portraitContainer.on('pointerdown', (pointer) => {
-        if (pointer.button !== 0) return;  // only left click!
-        // Player chose a character AND it's the player's turn AND this target is not dead...
-        if (gameState.turn === 'player'  && portraitContainer.getData('hp') > 0 && gameState.pendingSkill){
-            const skill = gameState.pendingSkill;
-            gameState.pendingSkill = null;  // prevent spamming!
-            applySkill(scene, portraitContainer.getData('teamIndex'), skill);               
-        }
-    });
-
-    return portraitContainer;
-}
-
-// Creates enemy portraits.
+// Creates enemy portraits with Character class.
 export function createEnemyPortraitAlt(scene, x, y, character, scale, team, index){
     const portraitContainer = createCharacterContainerAlt(scene, x, y, character, scale, team, index);
 
@@ -40,12 +23,7 @@ export function createEnemyPortraitAlt(scene, x, y, character, scale, team, inde
     return portraitContainer;
 }
 
-// Creates a character portrait in the scene.
-export function createHeroPortrait(scene, x, y, imageKey, scale, maxHp, speed, name, team, index){
-    const portraitContainer = createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, name, team, index);           
-    return portraitContainer;
-}
-
+// Creates hero portrait with Character class.
 export function createHeroPortraitAlt(scene, x, y, character, scale, team, index){
     const portraitContainer = createCharacterContainerAlt(scene, x, y, character, scale, team, index);           
     return portraitContainer;
@@ -99,6 +77,19 @@ export function updateHP(container, newHp) {
     const hpText = container.getData('hpText');
     hpText.setText(`${newHp}/${maxHp}`);
     container.setData('hp', newHp);
+}
+
+// Redraws the turn meter matching the passed value.
+export function updateTurnMeter(scene, container, value){
+    const tmGraphics = container.getData('tmGraphics');
+    tmGraphics.clear();
+
+    tmGraphics.fillStyle(0xBDB9B9, 1.0);
+    tmGraphics.fillRoundedRect(-uiStats.halfW, uiStats.halfH + uiStats.hpBarHeight + 2*uiStats.marginPortraitHpBar/3, uiStats.portraitWidth, uiStats.tmHeight, uiStats.borderRadius);
+    if (value){
+        tmGraphics.fillStyle(0x00FF00, 1.0);
+        tmGraphics.fillRoundedRect(-uiStats.halfW + uiStats.paddingHpBar, uiStats.halfH + uiStats.hpBarHeight + 2*uiStats.marginPortraitHpBar/3 + uiStats.paddingHpBar, (uiStats.portraitWidth - 2*uiStats.paddingHpBar)*value, uiStats.tmHeight - 2*uiStats.paddingHpBar, uiStats.borderRadius);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,81 +192,6 @@ function createTurnMeter(scene, container, halfW, halfH, borderRadius){
     container.setData('tmGraphics', tmGraphics);
 }
 
-export function updateTurnMeter(scene, container, value){
-    const tmGraphics = container.getData('tmGraphics');
-    tmGraphics.clear();
-
-    tmGraphics.fillStyle(0xBDB9B9, 1.0);
-    tmGraphics.fillRoundedRect(-uiStats.halfW, uiStats.halfH + uiStats.hpBarHeight + 2*uiStats.marginPortraitHpBar/3, uiStats.portraitWidth, uiStats.tmHeight, uiStats.borderRadius);
-    if (value){
-        tmGraphics.fillStyle(0x00FF00, 1.0);
-        tmGraphics.fillRoundedRect(-uiStats.halfW + uiStats.paddingHpBar, uiStats.halfH + uiStats.hpBarHeight + 2*uiStats.marginPortraitHpBar/3 + uiStats.paddingHpBar, (uiStats.portraitWidth - 2*uiStats.paddingHpBar)*value, uiStats.tmHeight - 2*uiStats.paddingHpBar, uiStats.borderRadius);
-    }
-    //container.setData('tmGraphics', tmGraphics);
-}
-
-// Creates base layout and strucuture for a character container.
-function createCharacterContainer(scene, x, y, imageKey, scale, maxHp, speed, name, team, index){
-    if(!scene.textures.exists(imageKey)){
-        console.warn(`Failed to load ${imageKey}!`);
-    }
-    const portrait = scene.add.image(0, 0, imageKey).setScale(scale);
-    const halfW = portrait.displayWidth/2;
-    const halfH = portrait.displayHeight/2;
-
-    var borderGraphics = createBorderGraphics(scene, -halfW, -halfH, portrait.displayWidth, portrait.displayHeight, uiStats.borderRadius, 0xFFE836);
-    
-    // HP BARS:
-    var hpGraphics = createHpGraphics(scene, -halfW, halfH + uiStats.marginPortraitHpBar, portrait.displayWidth,
-                                        uiStats.hpBarHeight, uiStats.borderRadius, 0xBDB9B9, 0xDE1616, 1);
-
-    const hpTextYPos = halfH + uiStats.marginPortraitHpBar + (uiStats.hpBarHeight-2*uiStats.paddingHpBar)/2 + uiStats.paddingHpBar;
-    // y = halfH + uiStats.marginPortraitHpBar + redbarHeight/2 + uiStats.paddingHpBar = halfH + 5 + 12 + 3 = halfH + 20
-    const hpText = createHpText(scene, 0, hpTextYPos, `${maxHp}/${maxHp}`, {fontSize: '14px', color: '#000000', fontFamily: 'Arial'});
-    
-    const portraitContainer = scene.add.container(x, y);  // previous portrait location
-
-    // Add all children to the container (order matters!):
-    addToContainer(portraitContainer, [portrait, borderGraphics, hpGraphics, hpText]);  // order matters!
-
-    // Make the container interactive:
-    setContainerInteractive(scene, portraitContainer, portrait,
-                            {
-                                hitArea: new Phaser.Geom.Rectangle(-halfW, -halfH, portrait.displayWidth,portrait.displayHeight),
-                                hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-                                useHandCursor: true
-                            }, 0x820000);
-    
-    
-    // Skills:
-    const skills = getSkills();
-
-    // Store data in container:
-    setContainerData(portraitContainer, {
-        'name': name,
-        'halfW': halfW,
-        'halfH': halfH,
-        'displayWidth': portrait.displayWidth,
-        'displayHeight': portrait.displayHeight,
-        'hpGraphics': hpGraphics,
-        'borderGraphics': borderGraphics,
-        'hpText': hpText,
-        'hp': maxHp,
-        'maxHp': maxHp,
-        'speed': speed,
-        'skills': skills,
-        // 'debuffs': [new Debuff('Wet', 3, 0, 'water'), new Debuff('Shock', 2, 10, 'lightning')],
-        'debuffs': [new Debuff('Shock', 3, 10, 'electro')],
-        'buffs': [],
-        'team': team,
-        'teamIndex': index,
-    });
-
-    displayDebuffs(scene, portraitContainer, halfW, halfH);  // add debuff display
-
-    return portraitContainer;
-}
-
 // Creates aan hp graphics object and returns it.
 function createHpGraphics(scene, x, y, width, height, borderRadius, colorOuter, colorInner, hp){
     // HP BARS:
@@ -312,27 +228,6 @@ function displayDebuffs(scene, container, xOffset, yOffset){
     });
     container.add(debuffContainer);
     container.setData('debuffContainer', debuffContainer);
-}
-
-function getSkills(){
-    return [
-        // Poison Claw:
-        new Skill('Poison Claw', 'Poison Claw.jpg', 'single',
-                   new Effect(40, 'poison', new Debuff("Poison", 3, 25, "poison", null, false, "elemental", null), "Poison", '#0fee65'),
-                   0, "A single-target Poison attack. Applies a Posion debuff."),
-        // Fireball
-        new Skill('Fireball', 'Fireball.jpg', 'single',
-                   new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
-                   3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-        // Holy Light:
-        new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                   new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
-                   2, "Blinds a single target for 3 turns."),
-        // Dark Nova:
-        new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                   new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
-                   5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."),
-    ];
 }
 
 // Sets data specified in dataDictionary in container.

@@ -61,20 +61,20 @@ export class Effect{
 
 // Creates an Explosion to push to Reaction queue.
 function createExplosion(dmg, target){
-    const effect = getReactionEffect(dmg, null, 'Explosion', '#ed6b00');  // element = null => no insane cascading
+    const effect = createReactionEffect(dmg, null, 'Explosion', '#ed6b00');  // element = null => no insane cascading
     const reaction = new Explosion(effect);
     const affectedTargets = reaction.getAffectedTargets(target.getData('team'), target.getData('teamIndex'));
     return {targets: affectedTargets, effect: reaction.effect};
 }
 // Creates a VoidSurge to push to Reaction queue.
 function createVoidSurge(dmg, target){
-    const effect = getReactionEffect(dmg, null, 'Void Surge', '#b700ff');
+    const effect = createReactionEffect(dmg, null, 'Void Surge', '#b700ff');
     const reaction = new VoidSurge(effect);
     const affectedTargets = reaction.getAffectedTargets(target.getData('team'), target.getData('teamIndex'));
     return {targets: affectedTargets, effect: reaction.effect};
 }
 
 // Creates a custom effect for a Reaction, i.e., no element.
-function getReactionEffect(dmg, debuff, text, textColor){
+function createReactionEffect(dmg, debuff, text, textColor){
     return new Effect(dmg, null, debuff, text, textColor);
 }

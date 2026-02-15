@@ -183,7 +183,9 @@ export function checkDeath(scene, target){
         updateDebuffDsiplay(scene, target);
         target.setData('turnMeter', 0);
         updateTurnMeter(scene, target, 0);
+        return true;
     }
+    return false;
 }
 
 // Checks if there is a winner.
