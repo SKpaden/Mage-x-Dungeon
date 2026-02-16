@@ -20,4 +20,7 @@ export const uiStats = {
     // Async:
     debuffDelay: 600,
     reactionDelay: 400,
+    // Colors:
+    playerLogColor: '#00aa00',
+    enemyLogColor: '#ED0000',
 };

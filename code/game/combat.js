@@ -2,76 +2,67 @@ import { gameState } from "./gameState.js";
 import { clearAffectedTargets, showDmgPopup } from "../ui/skillUI.js";
 import { updateDebuffDsiplay, updateHP, updateTurnMeter } from "../ui/portraitFactory.js";
 import { delay, setPlayerTarget } from "../ui/helpers.js";
-import { logCombat } from "../ui/combatLog.js";
+import { logCombat, processLogQueue } from "../ui/combatLog.js";
 import { uiStats } from "../ui/uiStats.js";
 import { endTurn } from "./turnManager.js";
 
 // Applies skill to current target.
 export function applySkill(scene, index, skill){
     if (gameState.turn === 'player'){
-        applySkillToEnemy(scene, index, skill);
+        const source = gameState.selectedPlayer;
+        applySkillToEnemy(scene, source, index, skill);
     } else {
         applySkillToPlayer(scene, index, skill);
     }
 }
 
 // Applies pendingSkill to enemy at index.
-function applySkillToEnemy(scene, index, skill){
-    logCombat(scene, `You used ${skill.name}!`, '#e0e0e0', '[You]');
-    skill.putCooldown();
-    const affectedTargets = getAffectedTargets(skill, index, gameState.enemyContainers);
+function applySkillToEnemy(scene, source, index, skill){
+    logCombat(scene, `You used <strong>${skill.name}</strong>!`, '#e0e0e0', '[You]');
     clearAffectedTargets();
 
-    const effectQueue = [];
-    let dealtDmg = false;
-    let updated = false;
-    affectedTargets.forEach(i => {
-        const target = gameState.enemyContainers[i];
-        // const effect = new Effect(skill.name, skill.dmg, skill.targets, skill.element,
-        //                           skill.debuff ? new Debuff(skill.debuff.name, skill.debuff.duration, skill.debuff.dmgPerTurn) : null);
-        const effect = skill.effect;
-
-        dealtDmg = effect.applyReactions(scene, gameState.selectedPlayer, target, effectQueue);
-        if(dealtDmg) updated = true;
-        effect.applyDebuff(gameState.selectedPlayer, target);
-        updateDebuffDsiplay(scene, target);
-        //dmgTarget(scene, effect.dmg, gameState.selectedPlayer, target);  // deal raw skill dmg first
-    })
-    if (updated) scene.cameras.main.shake(200, 0.01);  // screen after every reaction AND after initial dmg (fist call of this function)
-    processReactionQueue(scene, effectQueue, gameState.selectedPlayer, gameState.enemyContainers, 0);
+    // Scene, source, i, team, skill:
+    processSkill(scene, source, index, gameState.enemyContainers, skill);
 }
 
 // Applies pendingSkill to enemy at index.
-async function applySkillToPlayer(scene, source, target, index, team){
+function applySkillToPlayer(scene, source, target, index, team){
     const skill = gameState.pendingSkill;
-    skill.putCooldown();
-    logCombat(scene, `${source.getData('name')} used ${skill.name}!`, '#e0e0e0', '[Enemy]');
-    const affectedTargets = getAffectedTargets(skill, index, team);
+    logCombat(scene, `<strong>${source.getData('name')}</strong> used <strong>${skill.name}<strong>!`, '#e0e0e0', '[Enemy]');
 
+    // Scene, source, i, team, skill:
+    processSkill(scene, source, index, team, skill);
+}
+
+// Process skill use. Same for enemy and player.
+function processSkill(scene, source, index, team, skill){
+    skill.putCooldown();
+    const affectedTargets = getAffectedTargets(skill, index, team);
     const effectQueue = [];
+    
+    gameState.logQueue[skill.name] = { 'targets': [], 'dmg': []};  // add skill to log queue
+    let debuffsApplied = 0;
     let dealtDmg = false;
     let updated = false;
     affectedTargets.forEach(i => {
         const currentTarget = team[i];
-        // const effect = new Effect(skill.name, skill.dmg, skill.targets, skill.element,
-        //                           skill.debuff ? new Debuff(skill.debuff.name, skill.debuff.duration, skill.debuff.dmgPerTurn) : null);
         const effect = skill.effect;
 
-        dealtDmg = effect.applyReactions(scene, source, currentTarget, effectQueue);  // maybe return info about whether this was high or low dmg => only shake screen on high dmg
-        if(dealtDmg) updated = true;
-        effect.applyDebuff(source, currentTarget);
+        dealtDmg = effect.applyReactions(scene, source, currentTarget, effectQueue, skill.name);  // maybe return info about whether this was high or low dmg => only shake screen on high dmg
+        if(dealtDmg) updated = true;  // if this happens once, keep it true
+        debuffsApplied += effect.applyDebuff(source, currentTarget);  // add if debuffs applied
         updateDebuffDsiplay(scene, currentTarget);
-        //dmgTarget(scene, effect.dmg, gameState.selectedPlayer, target);  // deal raw skill dmg first
     })
     if (updated) scene.cameras.main.shake(200, 0.01);  // screen after every reaction AND after initial dmg (fist call of this function)
+    gameState.logQueue[`${skill.name} Effects`] = { debuffsApplied: debuffsApplied, reactionsTriggered: effectQueue.length };
     processReactionQueue(scene, effectQueue, source, team, 0);
-    //clearPlayerTarget(scene, target);
 }
 
 // Processes all queued elemental Reactions.
 async function processReactionQueue(scene, queue, source, team, index = 0){
     // All reactions triggered:
     if (index >= queue.length){
+        processLogQueue(scene, gameState.logQueue, source);
         if (checkWinner()) {
             endBattle(scene);
         }
@@ -80,19 +71,22 @@ async function processReactionQueue(scene, queue, source, team, index = 0){
     else {  // still reactions left...
         await delay(scene, uiStats.reactionDelay);  // artificial delay
 
-        const reaction = queue[index];
-        if (triggerReaction(scene, reaction.targets, reaction.effect, queue, source, team)) scene.cameras.main.shake(200, 0.01);  // screen after every reaction AND after initial dmg (fist call of this function)
+        const reactionEntry = queue[index];
+        const targets = reactionEntry.targets;
+        const effect = reactionEntry.reaction.effect;
+        if (triggerReaction(scene, reactionEntry.reaction , targets, effect, queue, source, team)) scene.cameras.main.shake(200, 0.01);  // screen after every reaction AND after initial dmg (fist call of this function)
 
         processReactionQueue(scene, queue, source, team, index + 1);
     }
 }
 
 // Triggers a Reaction all all targets.
-function triggerReaction(scene, targets, effect, queue, source, team){
+function triggerReaction(scene, reaction, targets, effect, queue, source, team){
+    gameState.logQueue[reaction.name] = { 'targets': [], 'dmg': []};  // add reaction to log queue
     let dealtDmg = false;
     let updated = false;
         targets.forEach(i => {
-            dealtDmg = effect.applyReactions(scene, source, team[i], queue);
+            dealtDmg = effect.applyReactions(scene, source, team[i], queue, reaction.name);
             if (dealtDmg) updated = true;
         });
     return updated;
@@ -116,7 +110,6 @@ export function attackLowestPlayer(scene, source){
 
         gameState.selectedEnemy = source;
         scene.time.delayedCall(800, () => applySkillToPlayer(scene, source, target, target.getData('teamIndex'), gameState.playerContainers));
-        //return dmgTarget(scene, 10, source, target);
     } else {
         console.error('No target with >0 hp left!');
         return;
@@ -149,7 +142,7 @@ export function dmgTarget(scene, dmg, source, target, text=null, textColor = '#E
 
     if (dmg === 0) return false;  // still show dmg "popup" but return false that no dmg was dealt => no screen shake
     const playerTurn = gameState.turn === 'player';
-    logCombat(scene, `${sourceName} dealt ${dmg} damage to ${targetName}!`, playerTurn ? '#00aa00' : '#ED0000', playerTurn ? '[You]' : '[Enemy]');
+    //logCombat(scene, `${sourceName} dealt ${dmg} damage to ${targetName}!`, playerTurn ? uiStats.playerLogColor : uiStats.enemyLogColor, playerTurn ? '[You]' : '[Enemy]');
 
     checkDeath(scene, target);
     return true;

@@ -95,6 +95,7 @@ function addSkillTooltip(scene, skill, x, y, width = 300, height = 150){  // wid
         <strong style="color: #88ff88;">${skill.name}</strong><br>
         <span style="color: #aaa;">Cooldown: ${skill.cooldown || 'None'}</span><br>
         <span style="color: #ff8800;">Targets: ${skill.targets}</span><br>
+        <span style="color: #ff0000;">Element: ${skill.effect.element || 'None'}</span><br>
         <br>
         ${skill.description || 'No description yet.'}
     `;
@@ -115,6 +116,7 @@ function handleEscDown(scene){
     }
     gameState.pendingSkill = null;  // reset skill
     clearAffectedTargets();  // clear previews
+    scene.message.setText(`Choose a skill!`);
 
     // Re-show skills for current player:
     showSkills(scene, gameState.selectedPlayer);

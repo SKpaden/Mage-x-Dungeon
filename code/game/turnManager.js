@@ -33,6 +33,7 @@ export function clearSelections(){
     gameState.pendingSkill = null;
     gameState.selectedEnemy = null;
     gameState.selectedPlayer = null;
+    gameState.logQueue = {};  // reset logQueue
 }
 
 // End turn of unit. Cleans up state and triggers next turn.
@@ -54,7 +55,7 @@ async function enemyTurn(scene, unit){
     const debuffSkip = await processDebuffs(scene, unit);
     if (checkDeath(scene, unit)) checkWinner();
     if (debuffSkip){  // at least one debuff skips turn
-        logCombat(scene, `${unit.getData('name')}  skipped turn because of ${debuffSkip}!`, '#ED0000', '[Enemy]');
+        logCombat(scene, `<strong>${unit.getData('name')}</strong>  skipped turn because of <strong>"${debuffSkip}"</strong>!`, '#ED0000', '[Enemy]');
         endTurn(scene, unit);
     } else {
         // processBuffs(scene, unit);
@@ -71,7 +72,7 @@ async function playerTurn(scene, unit){
     const debuffSkip = await processDebuffs(scene, unit);
     if (checkDeath(scene, unit)) checkWinner();
     if (debuffSkip){  // at least one debuff skips turn
-        logCombat(scene, `${unit.getData('name')}  skipped turn because of ${debuffSkip}!`, '#00aa00', '[Enemy]');
+        logCombat(scene, `<strong>${unit.getData('name')}</strong>  skipped turn because of <strong>"${debuffSkip}"</strong>!`, '#00aa00', '[You]');
         await delay(scene, 1000);
         endTurn(scene, unit);
     } else {

@@ -86,16 +86,16 @@ function createHero1(){
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
+                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -115,16 +115,16 @@ function createHero2(){
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
+                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -144,16 +144,16 @@ function createHero3(){
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
+                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -173,16 +173,16 @@ function createHero4(){
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
+                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -202,16 +202,16 @@ export function createHero5(){
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
+                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -235,12 +235,12 @@ export function createHero5(){
 //                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
 //         // Holy Light:
 //         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
 //                     2, "Blinds a single target for 3 turns."
 //         ),
 //         // Dark Nova:
 //         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
 //                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
 //         )
 //     ],
@@ -262,12 +262,12 @@ export function createHero5(){
 //                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
 //         // Holy Light:
 //         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
 //                     2, "Blinds a single target for 3 turns."
 //         ),
 //         // Dark Nova:
 //         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
 //                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
 //         )
 //     ],
@@ -289,12 +289,12 @@ export function createHero5(){
 //                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
 //         // Holy Light:
 //         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
 //                     2, "Blinds a single target for 3 turns."
 //         ),
 //         // Dark Nova:
 //         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
 //                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
 //         )
 //     ],
@@ -316,12 +316,12 @@ export function createHero5(){
 //                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
 //         // Holy Light:
 //         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
 //                     2, "Blinds a single target for 3 turns."
 //         ),
 //         // Dark Nova:
 //         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
 //                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
 //         )
 //     ],
@@ -343,12 +343,12 @@ export function createHero5(){
 //                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
 //         // Holy Light:
 //         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'light', new Debuff("Blinded", 3, 0, "light", null, false, "elemental", null), "Light", '#f0ff20'),
+//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
 //                     2, "Blinds a single target for 3 turns."
 //         ),
 //         // Dark Nova:
 //         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'dark', new Debuff("Scared", 1, 0, "dark", null, true, "cc", null), "Dark", '#b700ff'),
+//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
 //                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
 //         )
 //     ],

@@ -12,6 +12,7 @@ export const gameState = {
     playerContainers: [],  // player team
     enemyContainers: [],  // enemy team
     turnQueue: [],  // turn order
+    logQueue: {},
     combinedSpeed: 0,
     playerAlive: null,  // how many alive on player team
     enemyAlive: null,  // how many enemies alive
