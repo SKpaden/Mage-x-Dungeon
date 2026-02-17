@@ -5,6 +5,13 @@ import { getAffectedTargets } from "../game/combat.js";
 let escBtn = null;  // register keyboard key
 
 // Removes tints from preview targets.
+export function clearAffectedAllies(){
+    gameState.playerContainers.forEach(container => {
+        container.list[0].clearTint();
+    });
+}
+
+// Removes tints from preview targets.
 export function clearAffectedTargets(){
     gameState.enemyContainers.forEach(container => {
         container.list[0].clearTint();
@@ -19,11 +26,11 @@ export function initSkillEventListener(scene){
 }
 
 // Shows visual cue (tint) on all targets that would be affected by gameState.pendingSkill.
-export function previewTargets(scene, skill, index){
-    const affectedTargets = getAffectedTargets(skill, index, gameState.enemyContainers);
-    gameState.enemyContainers.forEach((enemy, i) => {
+export function previewTargets(scene, skill, index, targetedTeam, color){
+    const affectedTargets = getAffectedTargets(skill.targets, index, targetedTeam);
+    targetedTeam.forEach((enemy, i) => {
         const isAffected = affectedTargets.includes(i) && enemy.getData('hp') > 0;
-        enemy.list[0].setTint(isAffected ? 0xff4444 : 0x88ccff);  // red for affected, blue for valid
+        enemy.list[0].setTint(isAffected ? color : 0x88ccff);  // red for affected, blue for valid
     });
 }
 
@@ -95,7 +102,6 @@ function addSkillTooltip(scene, skill, x, y, width = 300, height = 150){  // wid
         <strong style="color: #88ff88;">${skill.name}</strong><br>
         <span style="color: #aaa;">Cooldown: ${skill.cooldown || 'None'}</span><br>
         <span style="color: #ff8800;">Targets: ${skill.targets}</span><br>
-        <span style="color: #ff0000;">Element: ${skill.effect.element || 'None'}</span><br>
         <br>
         ${skill.description || 'No description yet.'}
     `;
@@ -114,8 +120,9 @@ function handleEscDown(scene){
         scene.currentSkillContainer.destroy();
         scene.currentSkillContainer = null;
     }
-    gameState.pendingSkill = null;  // reset skill
-    clearAffectedTargets();  // clear previews
+    const skillType = gameState.pendingSkill.type;
+    gameState.pendingSkill = null;  // reset skill (IMPORTANT TO DO BEFORE CLEARING TARGETS! Otherwise, instant reapply...)
+    skillType === 'Attack' ? clearAffectedTargets() : clearAffectedAllies();  // clear previews
     scene.message.setText(`Choose a skill!`);
 
     // Re-show skills for current player:

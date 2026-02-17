@@ -1,6 +1,6 @@
 import { gameState } from "../game/gameState.js";
 import { applySkill } from "../game/combat.js";
-import { previewTargets, clearAffectedTargets } from "./skillUI.js";
+import { clearAffectedAllies, clearAffectedTargets, previewTargets } from "./skillUI.js";
 import { uiStats } from "./uiStats.js";
 import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
@@ -9,23 +9,12 @@ import { Skill } from "../data/skills.js";
 // Creates enemy portraits with Character class.
 export function createEnemyPortraitAlt(scene, x, y, character, scale, team, index){
     const portraitContainer = createCharacterContainerAlt(scene, x, y, character, scale, team, index);
-
-    portraitContainer.on('pointerdown', (pointer) => {
-        if (pointer.button !== 0) return;  // only left click!
-        // Player chose a character AND it's the player's turn AND this target is not dead...
-        if (gameState.turn === 'player'  && portraitContainer.getData('hp') > 0 && gameState.pendingSkill){
-            const skill = gameState.pendingSkill;
-            gameState.pendingSkill = null;  // prevent spamming!
-            applySkill(scene, portraitContainer.getData('teamIndex'), skill);               
-        }
-    });
-
     return portraitContainer;
 }
 
 // Creates hero portrait with Character class.
 export function createHeroPortraitAlt(scene, x, y, character, scale, team, index){
-    const portraitContainer = createCharacterContainerAlt(scene, x, y, character, scale, team, index);           
+    const portraitContainer = createCharacterContainerAlt(scene, x, y, character, scale, team, index);     
     return portraitContainer;
 }
 
@@ -141,7 +130,8 @@ const imgKey = character.portrait;
                                 hitArea: new Phaser.Geom.Rectangle(-halfW, -halfH, portrait.displayWidth,portrait.displayHeight),
                                 hitAreaCallback: Phaser.Geom.Rectangle.Contains,
                                 useHandCursor: true
-                            }, 0x820000);
+                            //}, 0x820000);
+                            }, team);
     
 
     // Store data in container:
@@ -230,6 +220,39 @@ function displayDebuffs(scene, container, xOffset, yOffset){
     container.setData('debuffContainer', debuffContainer);
 }
 
+// Sets an ally container interactive
+function setAllyInteractive(scene, container, portrait, options, tint){
+    container.setInteractive(options)
+    .on('pointerdown', (pointer) => {
+        if (pointer.button !== 0) return;  // only left click!
+        // Player chose a character AND it's the player's turn AND this target is not dead...
+        if (gameState.turn === 'player'  && gameState.pendingSkill){
+            if (gameState.pendingSkill.type === 'Attack') return;  // don't show on attack skills
+            if (container.getData('hp') > 0 || gameState.pendingSkill.type === 'Revive'){  // always allow to target alive allies or with a revive spell
+                const skill = gameState.pendingSkill;
+                gameState.pendingSkill = null;  // prevent spamming!
+                clearAffectedAllies();  // remove targeting visuals
+                applySkill(scene, container.getData('teamIndex'), skill);               
+            }
+        }
+    })
+    .on('pointerover', () => {
+        if(gameState.pendingSkill && gameState.turn === 'player'){
+            if (gameState.pendingSkill.type !== 'Attack')
+            previewTargets(scene, gameState.pendingSkill, container.getData('teamIndex'), gameState.playerContainers, uiStats.allyTargetTint);
+        } else {
+            portrait.setTint(tint);
+        }
+    })
+    .on('pointerout', () => {
+        if(gameState.pendingSkill && gameState.turn === 'player'){  // skill selected ==> potentially multiple targets ==> clear all tints
+            clearAffectedAllies();
+        } else {
+            portrait.clearTint();
+        }
+    });
+}
+
 // Sets data specified in dataDictionary in container.
 function setContainerData(container, dataDictionary){
     for (const [key, value] of Object.entries(dataDictionary)) {
@@ -238,19 +261,38 @@ function setContainerData(container, dataDictionary){
 }
 
 // Sets hover interactivity to container portraits.
-function setContainerInteractive(scene, container, portrait, options, tint){
-    container.setInteractive(options).on('pointerover', () => {
-        if(gameState.pendingSkill && gameState.turn === 'player' && container.getData('team')){
-            previewTargets(scene, gameState.pendingSkill, container.getData('teamIndex'));
+function setContainerInteractive(scene, container, portrait, options, team){
+    if (team === 'enemy') setEnemyInteractive(scene, container, portrait, options, uiStats.enemyHoverTint);
+    else setAllyInteractive(scene, container, portrait, options, uiStats.allyHoverTint);
+}
+
+// Sets an enemy container interactive.
+function setEnemyInteractive(scene, container, portrait, options, tint){
+    container.setInteractive(options)
+    .on('pointerdown', (pointer) => {
+        if (pointer.button !== 0) return;  // only left click!
+        // Player chose a character AND it's the player's turn AND this target is not dead...
+        if (gameState.turn === 'player'  && container.getData('hp') > 0 && gameState.pendingSkill){
+            if (gameState.pendingSkill.type !== 'Attack') return;  // don't show on support skills
+            const skill = gameState.pendingSkill;
+            gameState.pendingSkill = null;  // prevent spamming!
+            clearAffectedTargets();  // remove targeting visuals
+            applySkill(scene, container.getData('teamIndex'), skill);               
+        }
+    })
+    .on('pointerover', () => {
+        if(gameState.pendingSkill && gameState.turn === 'player'){
+            if (gameState.pendingSkill.type !== 'Attack') return;  // don't preview on ally skills
+            previewTargets(scene, gameState.pendingSkill, container.getData('teamIndex'), gameState.enemyContainers, uiStats.enemyTargetTint);
         } else {
             portrait.setTint(tint);
         }
     })
-                                        .on('pointerout', () => {
-                                        if(gameState.pendingSkill && gameState.turn === 'player'){
-                                            clearAffectedTargets();
-                                        } else {
-                                            portrait.clearTint();
-                                        }
-                                    });
+    .on('pointerout', () => {
+        if(gameState.pendingSkill && gameState.turn === 'player'){  // skill selected ==> potentially multiple targets ==> clear all tints
+            clearAffectedTargets();
+        } else {
+            portrait.clearTint();
+        }
+    });
 }

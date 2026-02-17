@@ -23,4 +23,13 @@ export const uiStats = {
     // Colors:
     playerLogColor: '#00aa00',
     enemyLogColor: '#ED0000',
+    // Hover target preview:
+    enemyHoverTint: 0x820000,
+    enemyTargetTint: '0xff4444',
+    allyHoverTint: 0x008200,
+    allyTargetTint: '0x44ff44',
+    // Popups:
+    negativePopupOptions: {fontSize: '28px', color: '#ED0000'},
+    positivePopupOptions: {fontSize: '28px', color: '#00aa00'},
+    popupDuration: 800,
 };

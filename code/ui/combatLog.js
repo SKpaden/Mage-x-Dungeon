@@ -28,7 +28,7 @@ export function initCombatLog(scene, x, y, width = 500, height = 180) {
     div.style.scrollbarColor = 'rgba(150,150,150,0.5) transparent';
 
     logDom = scene.add.dom(x, y, div);
-    logDom.setOrigin(0.5, 1);  // bottom center
+    logDom.setOrigin(0, 0.5);  // middle left
 
     return logDom;
 }

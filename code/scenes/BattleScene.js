@@ -14,6 +14,8 @@ export default class BattleScene extends Phaser.Scene {
         this.load.image('Dragon Queen - Poison.jpg', 'assets/portraits/Dragon Queen - Poison.jpg');
         this.load.image('Draconoid - Necromancer.jpg', 'assets/portraits/Draconoid - Necromancer.jpg');
 
+        this.load.image('Rakthir.jpg', 'assets/portraits/Rakthir.jpg');
+
         // SKills:
         this.load.image('Claw Strike.jpg', 'assets/skill icons/Claw Strike.jpg');
         this.load.image('Dark Nova.jpg', 'assets/skill icons/Dark Nova.jpg');
@@ -21,13 +23,17 @@ export default class BattleScene extends Phaser.Scene {
         this.load.image('Holy Light.jpg', 'assets/skill icons/Holy Light.jpg');
         this.load.image('Poison Claw.jpg', 'assets/skill icons/Poison Claw.jpg');
 
+        this.load.image('Revenge.jpg', 'assets/skill icons/Revenge.jpg');
+        this.load.image('Intimidate.jpg', 'assets/skill icons/Intimidate.jpg');
+        this.load.image('War Cry.jpg', 'assets/skill icons/War Cry.jpg');
+
         // Backgrounds:
         this.load.image('battlefield', 'assets/backgrounds/battlefield.jpg');
     }
 
     create() {
         this.bg = initBg(this);
-        this.log = initCombatLog(this, this.scale.width / 2, this.scale.height - 40);
+        this.log = initCombatLog(this, 20, this.scale.height / 2);
         logCombat(this, "The battle begins!", '#e0e0e0', '[START]');
         this.message = initMessage(this);
         this.turnText = initTurnText(this);

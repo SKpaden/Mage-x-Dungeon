@@ -37,7 +37,7 @@ export class Effect{
         target.setData('debuffs', newDebuffs);
         const textOnly = this.dmg === 0;  // effect has no base dmg => only display text
 
-        gameState.logQueue[key]['targets'].push(target);
+        if (!gameState.logQueue[key]['targets'].includes(target)) gameState.logQueue[key]['targets'].push(target);
         gameState.logQueue[key]['dmg'].push(this.dmg);
 
         return dmgTarget(scene, this.dmg, source, target, textOnly ? this.debuff.name : this.text, this.textColor, textOnly);

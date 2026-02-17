@@ -1,6 +1,7 @@
 import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
 import { Skill } from "./skills.js";
+import { DealDamage, FullCleanse, IncreaseCD, ResetCD } from "./skillParts.js";
 
 export class Character{
     constructor(id, name, portrait, maxHp, speed, skills, skillPriorities, resistences, passive, tags, description){  // add id maybe
@@ -36,6 +37,15 @@ export class Character{
         return this.speed;
     }
 
+    // Puts all skills on CD.
+    lockout(){
+        // Potential resist logic here ==> return false:
+        this.skills.forEach(skill => {
+            skill.putCooldown();
+        })
+        return true;
+    }
+
     // Draws the turn meter under the character's portrait with the new value.
     updateTurnMeter(scene, container, value){
         // TODO:
@@ -46,56 +56,55 @@ export class Character{
     reduceCooldowns(){
         this.skills.forEach((skill) => skill.decreaseCD());
     }
+
+    resetCDs(){
+        // Potential effects that deny reset here ==> return false.
+        this.skills.forEach((skill) => skill.currentCD = 0);
+        return true;
+    }
 }
 
 export function getHeroTeam(){
-    return [createHero1(), createHero2(), createHero3(), createHero4(), createHero5()];
+    return [createHero1(), createHero2(), createHero3(), createHero4(), createHero6()];
 }
 
-// export const hero1 = {
-//     id: 1,
-//     name: "Draconoid Mage",
-//     portrait: 'Draconoid - Dark Mage.jpg',
-//     maxHp: 250,
-//     speed: 20,
-//     skills: [
-//         // Claw Strike:
-//         new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-//                     new Effect(60, null, null, "Physical"),
-//                     0, "Strikes an enemy with his claw dealing physical damage."),
-
-//         // Fireball
-//         new Skill('Fireball', 'Fireball.jpg', 'single',
-//                     new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
-//                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions.")
-//     ],
-//     skillPriorities: [1,0],
-//     resitences: null,
-//     passive: null,
-//     tags: ['Fire', 'Physical'],
-//     description: "Descr placeholder for name1."
-// }
 function createHero1(){
     return new Character(1, "Draconoid Mage", 'Draconoid - Dark Mage.jpg', 250, 20,
         // Skills:
         [
             // Claw Strike:
             new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        new Effect(60, null, null, "Physical", '#8f8e8e'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
+                            skillName: 'Claw Strike'
+                        })],
                         0, "Strikes an enemy with his claw dealing physical damage."),
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                            skillName: 'Fireball'
+                        })],
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                            skillName: 'Holy Light'
+                        })],
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        [new DealDamage({
+                            area: 'all',
+                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                            skillName: 'Dark Nova',
+                        })],
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -110,21 +119,37 @@ function createHero2(){
         [
             // Claw Strike:
             new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        new Effect(60, null, null, "Physical", '#8f8e8e'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
+                            skillName: 'Claw Strike'
+                        })],
                         0, "Strikes an enemy with his claw dealing physical damage."),
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                            skillName: 'Fireball'
+                        })],
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                            skillName: 'Holy Light'
+                        })],
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        [new DealDamage({
+                            area: 'all',
+                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                            skillName: 'Dark Nova',
+                        })],
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -139,21 +164,37 @@ function createHero3(){
         [
             // Claw Strike:
             new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        new Effect(60, null, null, "Physical", '#8f8e8e'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
+                            skillName: 'Claw Strike'
+                        })],
                         0, "Strikes an enemy with his claw dealing physical damage."),
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                            skillName: 'Fireball'
+                        })],
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                            skillName: 'Holy Light'
+                        })],
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        [new DealDamage({
+                            area: 'all',
+                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                            skillName: 'Dark Nova',
+                        })],
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -168,21 +209,37 @@ function createHero4(){
         [
             // Claw Strike:
             new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        new Effect(60, null, null, "Physical", '#8f8e8e'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
+                            skillName: 'Claw Strike'
+                        })],
                         0, "Strikes an enemy with his claw dealing physical damage."),
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                            skillName: 'Fireball'
+                        })],
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                            skillName: 'Holy Light'
+                        })],
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        [new DealDamage({
+                            area: 'all',
+                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                            skillName: 'Dark Nova',
+                        })],
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -197,21 +254,37 @@ export function createHero5(){
         [
             // Claw Strike:
             new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        new Effect(60, null, null, "Physical", '#8f8e8e'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
+                            skillName: 'Claw Strike'
+                        })],
                         0, "Strikes an enemy with his claw dealing physical damage."),
 
             // Fireball
             new Skill('Fireball', 'Fireball.jpg', 'single',
-                        new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                            skillName: 'Fireball'
+                        })],
                         3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
             // Holy Light:
             new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                        [new DealDamage({
+                            area: 'single',
+                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
+                            skillName: 'Holy Light'
+                        })],
                         2, "Blinds a single target for 3 turns."
             ),
             // Dark Nova:
             new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                        [new DealDamage({
+                            area: 'all',
+                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                            skillName: 'Dark Nova',
+                        })],
                         5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
             )
         ],
@@ -220,140 +293,36 @@ export function createHero5(){
     );
 }
 
-
-// export const hero1 = new Character(1, "Draconoid Mage", 'Draconoid - Dark Mage.jpg', 250, 20,
-//     // Skills:
-//     [
-//         // Claw Strike:
-//         new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-//                     new Effect(60, null, null, "Physical", '#8f8e8e'),
-//                     0, "Strikes an enemy with his claw dealing physical damage."),
-
-//         // Fireball
-//         new Skill('Fireball', 'Fireball.jpg', 'single',
-//                     new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
-//                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-//         // Holy Light:
-//         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-//                     2, "Blinds a single target for 3 turns."
-//         ),
-//         // Dark Nova:
-//         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-//                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-//         )
-//     ],
-//     [3, 2, 1, 0],
-//     null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-// )
-
-// export const hero2 = new Character(2, "Blue Dragon Queen", 'Dragon Queen - Blue.jpg', 450, 12,
-//     // Skills:
-//     [
-//         // Claw Strike:
-//         new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-//                     new Effect(60, null, null, "Physical", '#8f8e8e'),
-//                     0, "Strikes an enemy with his claw dealing physical damage."),
-
-//         // Fireball
-//         new Skill('Fireball', 'Fireball.jpg', 'single',
-//                     new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
-//                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-//         // Holy Light:
-//         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-//                     2, "Blinds a single target for 3 turns."
-//         ),
-//         // Dark Nova:
-//         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-//                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-//         )
-//     ],
-//     [3, 2, 1, 0],
-//     null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-// )
-
-// export const hero3 = new Character(3, "Draconoid Warrior", 'Draconoid - Warrior.jpg', 550, 10,
-//     // Skills:
-//     [
-//         // Claw Strike:
-//         new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-//                     new Effect(60, null, null, "Physical", '#8f8e8e'),
-//                     0, "Strikes an enemy with his claw dealing physical damage."),
-
-//         // Fireball
-//         new Skill('Fireball', 'Fireball.jpg', 'single',
-//                     new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
-//                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-//         // Holy Light:
-//         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-//                     2, "Blinds a single target for 3 turns."
-//         ),
-//         // Dark Nova:
-//         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-//                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-//         )
-//     ],
-//     [3, 2, 1, 0],
-//     null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-// )
-
-// export const hero4 = new Character(4, "Poison Dragon Queen", 'Dragon Queen - Poison.jpg', 350, 13,
-//     // Skills:
-//     [
-//         // Claw Strike:
-//         new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-//                     new Effect(60, null, null, "Physical", '#8f8e8e'),
-//                     0, "Strikes an enemy with his claw dealing physical damage."),
-
-//         // Fireball
-//         new Skill('Fireball', 'Fireball.jpg', 'single',
-//                     new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
-//                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-//         // Holy Light:
-//         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-//                     2, "Blinds a single target for 3 turns."
-//         ),
-//         // Dark Nova:
-//         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-//                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-//         )
-//     ],
-//     [3, 2, 1, 0],
-//     null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-// )
-
-// export const hero5 = new Character(5, "Necromancer", 'Draconoid - Necromancer.jpg', 250, 18,
-//     // Skills:
-//     [
-//         // Claw Strike:
-//         new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-//                     new Effect(60, null, null, "Physical", '#8f8e8e'),
-//                     0, "Strikes an enemy with his claw dealing physical damage."),
-
-//         // Fireball
-//         new Skill('Fireball', 'Fireball.jpg', 'single',
-//                     new Effect(60, 'fire', new Debuff("Burn", 2, 20, "fire", null, false, "elemental", null), "Fire"),
-//                     3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-//         // Holy Light:
-//         new Skill('Holy Light', 'Holy Light.jpg', 'single',
-//                     new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-//                     2, "Blinds a single target for 3 turns."
-//         ),
-//         // Dark Nova:
-//         new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-//                     new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-//                     5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-//         )
-//     ],
-//     [3, 2, 1, 0],
-//     null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-// )
-
-// export const heroesStatic = [hero1, hero2, hero3, hero4, hero5];
+function createHero6(){
+    return new Character(5, "Rakthir", 'Rakthir.jpg', 650, 22,
+        // Skills:
+        [
+            // Claw Strike:
+            new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
+                        [new DealDamage({area: 'single', effect: new Effect(60, null, null, "Physical", '#8f8e8e'), skillName: 'Claw Strike'})],
+                        0, "Strikes an enemy with his claw dealing physical damage."),
+            // Revenge:
+            new Skill('Revenge', 'Revenge.jpg', 'all',
+                        [new DealDamage({ area: 'all', effect: new Effect(120, null, null, "Physical", '#8f8e8e'), skillName: 'Revenge'})],
+                        3, "A powerful physical AoE attack."),
+            // Intimidate:
+            new Skill('Intimidate', 'Intimidate.jpg', 'all',
+                        [
+                            new IncreaseCD({ area: 'all'})
+                        ],
+                        4, "Puts all enemy skills on cooldown."
+            ),
+            // War Cry:
+            new Skill('War Cry', 'War Cry.jpg', 'all',
+                        [
+                            //new FullCleanse({ area: 'single'}),
+                            new ResetCD({ area: 'all'}),
+                            new FullCleanse({ area: 'all'}),
+                        ],
+                        5, "Resets all ally skill cooldowns and removes all debuffs from all allies.", 'Support'
+            )
+        ],
+        [3, 2, 1, 0],
+        null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
+    );
+}

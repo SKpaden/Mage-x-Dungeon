@@ -1,21 +1,33 @@
 import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
+import { delay } from "../ui/helpers.js";
+import { uiStats } from "../ui/uiStats.js";
 
 export class Skill{
-    constructor(name, icon, targets, effect, cooldown, description){
+    constructor(name, icon, targets, actions, cooldown, description, type = 'Attack'){
         this.name = name;
         this.icon = icon;
         this.targets = targets;
-        this.effect = effect;
+        this.actions = actions;  // new part
         this.cooldown = cooldown;
         this.currentCD = 0;
 
         this.description = description;
+        this.type = type;  // differentiate between support = target allies, attack = target enemies, revive = target dead allies
     }
+
     // Creates and return the Skill's icon.
     addIcon(scene, x, y, scale){
         if (this.currentCD) return scene.add.image(x, y, this.icon).setScale(scale).setTint(0x202020);
         return scene.add.image(x, y, this.icon).setScale(scale);
+    }
+
+    // Apply skill method, unique to every skill ==> override.
+    async apply(scene, source, target, index, allies, enemies){
+        for (let i = 0; i < this.actions.length; i++){
+            await this.actions[i].execute(scene, source, target, index, allies, enemies);
+            if (i < this.actions.length-1) await delay(scene, uiStats.debuffDelay);  // no delay after last action
+        }
     }
 
     // Decreases CD by one turn.
@@ -25,9 +37,8 @@ export class Skill{
 
     // Sets skill on CD.
     putCooldown(){
-        if (this.cooldown) this.currentCD = this.cooldown; 
+        if (this.cooldown) this.currentCD = this.cooldown;
     }
-
 }
 
 // const clawstrike = {
