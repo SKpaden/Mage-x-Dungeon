@@ -26,7 +26,7 @@ export const uiStats = {
     // Hover target preview:
     enemyHoverTint: 0x820000,
     enemyTargetTint: '0xff4444',
-    allyHoverTint: 0x008200,
+    allyHoverTint: 0x00ff00,
     allyTargetTint: '0x44ff44',
     // Popups:
     negativePopupOptions: {fontSize: '28px', color: '#ED0000'},

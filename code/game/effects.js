@@ -64,6 +64,12 @@ export class Effect{
         this.preventElementalDebuff = true;
         return false;
     }
+
+    // Creates and returns exact copy of this Effect.
+    copy(){
+        // Debuff can just be copied because Debuffs get copied on apply => no mutation.
+        return new Effect(this.dmg, this.element, this.debuff, this.text, this.textColor);
+    }
 }
 
 // Creates an Explosion to push to Reaction queue.

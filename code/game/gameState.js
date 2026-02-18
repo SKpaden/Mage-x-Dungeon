@@ -1,4 +1,4 @@
-import { getHeroTeam, createHero5 } from "../data/characters.js";
+import { getHeroTeam, getEnemyTeam } from "../data/characters.js";
 import { createHeroPortraitAlt, createEnemyPortraitAlt } from "../ui/portraitFactory.js";
 import { initSkillEventListener } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
@@ -98,7 +98,7 @@ export function initPlayerTeamAlt(scene){
 }
 
 export function initEnemyTeamAlt(scene){
-    const enemies = [createHero5(), createHero5(), createHero5(), createHero5(), createHero5()];
+    const enemies = getEnemyTeam();
 
     gameState.enemyAlive = enemies.length;
     

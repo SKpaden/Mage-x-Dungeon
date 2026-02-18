@@ -1,4 +1,4 @@
-import { attackLowestPlayer, checkDeath, checkWinner } from "./combat.js";
+import { attackLowestPlayer, checkDeath, checkWinner, endBattle } from "./combat.js";
 import { gameState } from "./gameState.js";
 import { fillAllTurnMeters, resetTurnMeter } from "./turnMeterManager.js";
 import { logCombat } from "../ui/combatLog.js";
@@ -53,7 +53,9 @@ export function endTurn(scene, unit){
 async function enemyTurn(scene, unit){
     unit.getData('char').reduceCooldowns();
     const debuffSkip = await processDebuffs(scene, unit);
-    if (checkDeath(scene, unit)) checkWinner();
+    if (checkDeath(scene, unit)) {  // maybe do something specific to only death before
+        if (checkWinner()) return endBattle(scene);
+    }
     if (debuffSkip){  // at least one debuff skips turn
         logCombat(scene, `<strong>${unit.getData('name')}</strong>  skipped turn because of <strong>"${debuffSkip}"</strong>!`, '#ED0000', '[Enemy]');
         endTurn(scene, unit);
@@ -70,7 +72,9 @@ async function enemyTurn(scene, unit){
 async function playerTurn(scene, unit){
     unit.getData('char').reduceCooldowns();
     const debuffSkip = await processDebuffs(scene, unit);
-    if (checkDeath(scene, unit)) checkWinner();
+    if (checkDeath(scene, unit)) {  // maybe do something specific to only death before
+        if (checkWinner()) return endBattle(scene);
+    }
     if (debuffSkip){  // at least one debuff skips turn
         logCombat(scene, `<strong>${unit.getData('name')}</strong>  skipped turn because of <strong>"${debuffSkip}"</strong>!`, '#00aa00', '[You]');
         await delay(scene, 1000);

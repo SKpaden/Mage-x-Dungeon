@@ -1,10 +1,6 @@
-import { checkWinner, processReactions } from "../game/combat.js";
-import { gameState } from "../game/gameState.js";
-import { processLogQueue } from "../ui/combatLog.js";
+import { processReactions } from "../game/combat.js";
 import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
 import { updateDebuffDsiplay } from "../ui/portraitFactory.js";
-import { delay } from "../ui/helpers.js";
-import { uiStats } from "../ui/uiStats.js";
 
 // Class to extend from. SkillParts are reusable actions inside a skill (e.g., decrease CD).
 class SkillPart{
@@ -34,7 +30,8 @@ export class IncreaseCD extends SkillPart{
             case 'all':
                 enemies.forEach(container => {
                     const char = container.getData('char');
-                    if (char.lockout()) showNegativePopup(scene, container.x, container.y, "Increase\nCooldown");  // maybe pass source as arg to factor in passives
+                    const charHp = container.getData('hp');
+                    if (charHp > 0 && char.lockout()) showNegativePopup(scene, container.x, container.y, "Increase\nCooldown");  // maybe pass source as arg to factor in passives
                 });
                 break;
             case 'single':
@@ -54,7 +51,8 @@ export class ResetCD extends SkillPart{
             case 'all':
                 allies.forEach(container => {
                     const char = container.getData('char');
-                    if (char.resetCDs()) showPositivePopup(scene, container.x, container.y, "Decrease\nCooldown");  // maybe pass source as arg to factor in passives
+                    const charHp = container.getData('hp');
+                    if (charHp > 0 && char.resetCDs()) showPositivePopup(scene, container.x, container.y, "Decrease\nCooldown");  // maybe pass source as arg to factor in passives
                 });
                 break;
             case 'single':
@@ -74,8 +72,11 @@ export class FullCleanse extends SkillPart{
             case 'all':
                 allies.forEach((ally) => {
                     ally.setData('debuffs', []);
-                    updateDebuffDsiplay(scene, ally);
-                    showPositivePopup(scene, ally.x, ally.y, "Cleanse");
+                    const charHp = ally.getData('hp');
+                    if (charHp > 0){
+                        updateDebuffDsiplay(scene, ally);
+                        showPositivePopup(scene, ally.x, ally.y, "Cleanse");
+                    }
                 })
                 break;
             case 'single':
@@ -87,3 +88,27 @@ export class FullCleanse extends SkillPart{
         }
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CREATE SkillParts FROM TEMPLATES:
+
+// Creates an action (SkillPart) from a template.
+export function createActionFromTemplate(data){
+    const params = data.params;
+    const className = data.className;
+    if (className === 'DealDamage'){  // unique behavior for damage skills
+        return skillPartFactories[className]({area: params.area, effect: params.effect.copy(), skillName: params.skillName});
+    }
+    else {
+        return skillPartFactories[className](params);
+    }
+}
+
+// To dynamically create SkillPart subclasses based on skill template:
+const skillPartFactories = {
+    DealDamage: (params) => new DealDamage(params),
+    IncreaseCD: (params) => new IncreaseCD(params),
+    ResetCD: (params) => new ResetCD(params),
+    IncreaseDebuffDuration: (params) => new IncreaseDebuffDuration(params),
+    FullCleanse: (params) => new FullCleanse(params),
+};

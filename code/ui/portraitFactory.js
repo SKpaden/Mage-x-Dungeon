@@ -237,7 +237,7 @@ function setAllyInteractive(scene, container, portrait, options, tint){
         }
     })
     .on('pointerover', () => {
-        if(gameState.pendingSkill && gameState.turn === 'player'){
+        if(gameState.pendingSkill && gameState.turn === 'player' && container.getData('hp') > 0){
             if (gameState.pendingSkill.type !== 'Attack')
             previewTargets(scene, gameState.pendingSkill, container.getData('teamIndex'), gameState.playerContainers, uiStats.allyTargetTint);
         } else {

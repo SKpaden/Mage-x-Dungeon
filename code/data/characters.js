@@ -1,7 +1,7 @@
 import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
-import { Skill } from "./skills.js";
-import { DealDamage, FullCleanse, IncreaseCD, ResetCD } from "./skillParts.js";
+import { createSkillFromTemplate, setSkillTemplates, Skill } from "./skills.js";
+import { DealDamage, FullCleanse, IncreaseCD, ResetCD} from "./skillParts.js";
 
 export class Character{
     constructor(id, name, portrait, maxHp, speed, skills, skillPriorities, resistences, passive, tags, description){  // add id maybe
@@ -64,8 +64,16 @@ export class Character{
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CREATE HEROS FROM TEMPLATES:
+
 export function getHeroTeam(){
-    return [createHero1(), createHero2(), createHero3(), createHero4(), createHero6()];
+    setSkillTemplates();
+    return [createHeroFromTemplate(1), createHeroFromTemplate(2), createHeroFromTemplate(3), createHeroFromTemplate(4), createHeroFromTemplate(6)];
+}
+
+export function getEnemyTeam(){
+    return [createHeroFromTemplate(5), createHeroFromTemplate(5), createHeroFromTemplate(5), createHeroFromTemplate(5), createHeroFromTemplate(5)];
 }
 
 function createHero1(){
@@ -326,3 +334,109 @@ function createHero6(){
         null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
     );
 }
+
+function createHeroFromTemplate(id){
+    if (!heroTemplates[id]){
+        throw new IllegalArgumentException("Unknown hero: " + id);
+    }
+    const data = heroTemplates[id];
+    const skillIds = data.skillIds;
+    const skills = [];
+    skillIds.forEach(skillId => skills.push(createSkillFromTemplate(skillId)));
+
+    return new Character(
+        data.id,
+        data.name,
+        data.portrait,
+        data.maxHp,
+        data.speed,
+        skills,
+        data.skillPriorities,
+        data.resistances,
+        data.passive,
+        data.tags,
+        data.description
+    );
+}
+
+// Stores templates to create all heros via id.
+const heroTemplates = {
+    1: {
+        id: 1,
+        name: "Draconoid - Dark Mage",
+        portrait: 'Draconoid - Dark Mage.jpg',
+        maxHp: 250,
+        speed: 20,
+        skillIds: [1, 2, 3, 4],  // References to skillTemplates
+        skillPriorities: [3, 2, 1, 0],
+        resistances: { fire: 0.5, water: 1.2 },  // Later: multipliers
+        passive: null,  // String or object for logic
+        tags: ['Dark', 'Mage'],
+        description: "A shadowy mage who manipulates void energy."
+    },
+    2: {
+        id: 2,
+        name: "Blue Dragon Queen",
+        portrait: 'Dragon Queen - Blue.jpg',
+        maxHp: 450,
+        speed: 12,
+        skillIds: [1, 2, 3, 4],  // References to skillTemplates
+        skillPriorities: [3, 2, 1, 0],
+        resistances: { fire: 1.5, water: 1.0 },  // Later: multipliers
+        passive: null,  // String or object for logic
+        tags: ['Draconoid', 'Mage'],
+        description: "A humanoid dragon mage."
+    },
+    3: {
+        id: 3,
+        name: "Draconoid Warrior",
+        portrait: 'Draconoid - Warrior.jpg',
+        maxHp: 550,
+        speed: 10,
+        skillIds: [1, 2, 3, 4],  // References to skillTemplates
+        skillPriorities: [3, 2, 1, 0],
+        resistances: { fire: 0.5, water: 1.2, physical: 1.8 },  // Later: multipliers
+        passive: null,  // String or object for logic
+        tags: ['Fire', 'Physical'],
+        description: "A draconoid warrior with plenty of battle experience."
+    },
+    4: {
+        id: 4,
+        name: "Poison Dragon Queen",
+        portrait: 'Dragon Queen - Poison.jpg',
+        maxHp: 350,
+        speed: 13,
+        skillIds: [1, 2, 3, 4],  // References to skillTemplates
+        skillPriorities: [3, 2, 1, 0],
+        resistances: { poison: 2.0, water: 1.2, physical: -0.6 },  // Later: multipliers
+        passive: null,  // String or object for logic
+        tags: ['Poison', 'Debuffer'],
+        description: "A draconoid mage gifted in the arts of poison magic."
+    },
+    5: {
+        id: 5,
+        name: "Necromancer",
+        portrait: 'Draconoid - Necromancer.jpg',
+        maxHp: 250,
+        speed: 18,
+        skillIds: [1, 2, 3, 4],  // References to skillTemplates
+        skillPriorities: [3, 2, 1, 0],
+        resistances: { poison: 2.0, dark: 2.2, physical: -0.6 },  // Later: multipliers
+        passive: null,  // String or object for logic
+        tags: ['Dark', 'CC', 'AoE'],
+        description: "A draconoid necromancer able to wield dark magic to devastate oponents."
+    },
+    6: {
+        id: 5,
+        name: "Rakthir",
+        portrait: 'Rakthir.jpg',
+        maxHp: 650,
+        speed: 22,
+        skillIds: [1, 6, 7, 8],
+        skillPriorities: [3, 2, 1, 0],
+        resistances: { physical: 0.8, fire: 1.0 },
+        passive: null,
+        tags: ['Fire', 'Physical', 'Warrior'],
+        description: "A fierce draconoid warrior with an eternal hatred towards mages. His only goal: Eradicate all magic in this world."
+    },
+};

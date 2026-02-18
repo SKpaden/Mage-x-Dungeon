@@ -3,6 +3,7 @@ import { clearAffectedTargets, showDmgPopup } from "../ui/skillUI.js";
 import { updateDebuffDsiplay, updateHP, updateTurnMeter } from "../ui/portraitFactory.js";
 import { delay, setPlayerTarget } from "../ui/helpers.js";
 import { logCombat, processLogQueue } from "../ui/combatLog.js";
+import { playPhysicalAttackTween } from "../ui/combatTweens.js";
 import { uiStats } from "../ui/uiStats.js";
 import { endTurn } from "./turnManager.js";
 
@@ -36,7 +37,7 @@ function applySkillToPlayer(scene, source, target, index, team){
 // Process skill use. Same for enemy and player.
 async function processSkill(scene, source, index, allies, enemies, skill){
     let target;
-    if (skill.type === 'attack') target = enemies[index];
+    if (skill.type === 'Attack') target = enemies[index];
     else target = allies[index];
     // scene, source of skill use, target, index, allies, enemies
     await skill.apply(scene, source, target, index, allies, enemies);  // new part
@@ -57,6 +58,9 @@ export async function processReactions(scene, source, target, index, allies, ene
     let debuffsApplied = 0;
     let dealtDmg = false;
     let updated = false;
+
+    playPhysicalAttackTween(scene, source, target.x, target.y);  // only play when dmg, but fine for now
+
     affectedTargets.forEach(i => {
         const currentTarget = enemies[i];
 
@@ -202,7 +206,7 @@ export function checkWinner(){
 }
 
 // Ends battle after it's over.
-function endBattle(scene){
+export function endBattle(scene){
     if (gameState.winner === 'enemy'){
         logCombat(scene, `You lost!`, '#ED0000', '[END]');
     } else {

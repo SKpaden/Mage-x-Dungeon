@@ -634,6 +634,8 @@ portraitContainer.add(portrait);
 portraitContainer.add(borderGraphics);
 
 // Tweens:
+Tweens get automatically destoryed after completing. To prevent that, add persist = true to config.
+
 var portraitTween = this.tweens.add({
     targets: portraitContainer,
     scale: '+=0.1',
@@ -658,3 +660,6 @@ portraitContainer.setInteractive({hitArea: new Phaser.Geom.Rectangle(-halfW, -ha
     message.setText('Portrait clicked!');
     portraitTween.play();
 });
+
+// Scene Display List:
+- this.children.bringToTop(gameObject): Render gameObject above anything else
