@@ -45,8 +45,12 @@ export class Skill{
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE SKILLS FROM TEMPLATES:
 
+// Templates of all Skills to dynamically create them:
+let skillTemplates = null;
+
 // Creates and returns a Skill from a template.
 export function createSkillFromTemplate(id){
+    const skillTemplates = getSkillTemplates();
     if (!skillTemplates[id]){
         throw new IllegalArgumentException("Unknown skill: " + id);
     }
@@ -66,10 +70,8 @@ export function createSkillFromTemplate(id){
     );
 }
 
-// Templates of all Skills to dynamically create them:
-let skillTemplates;
-
-export function setSkillTemplates(){
+export function getSkillTemplates(){
+    if (skillTemplates) return skillTemplates;
     skillTemplates = {
         // Claw Strike:
         1: {
@@ -175,5 +177,31 @@ export function setSkillTemplates(){
             description: "Resets all ally skill cooldowns and removes all debuffs from all allies.",
             type: 'Support'
         },
+        // Dash:
+        9: {
+            name: 'Dash',
+            icon: 'Dash.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'BoostTurnMeter', params: { area: 'all', amount: 0.3 } },
+            ],
+            cooldown: 3,
+            description: "Boosts turn meter of all allies by 30%.",
+            type: 'Support'
+        },
+        // Poison Cloud:
+        10: {
+            name: 'Poison Cloud',
+            icon: 'Poison Cloud.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'ApplyDebuff', params: { area: 'all', debuff: new Debuff('Poison', 3, 50, 'Poison', null, false, 'elemental', null) } },
+            ],
+            cooldown: 3,
+            description: "Places a Poison debuff on all enemies.",
+            //type: 'Debuff'
+        },
     };
+
+    return skillTemplates;
 }

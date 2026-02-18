@@ -1,6 +1,15 @@
 import { gameState, updateQeue } from "./gameState.js";
 import { updateTurnMeter } from "../ui/portraitFactory.js";
 
+// Boosts a unit's turn meter by a certain amount.
+export function boostTurnMeter(scene, unit, amount){
+    let tm = unit.getData('turnMeter');
+    tm += Math.floor(gameState.combinedSpeed * amount);
+    unit.setData('turnMeter', tm);
+
+    updateTurnMeter(scene, unit, tm/gameState.combinedSpeed);
+}
+
 // Fills all units' turn meter by their speed amount and redraws their turn meter.
 export function fillAllTurnMeters(scene){
     let max = 0;

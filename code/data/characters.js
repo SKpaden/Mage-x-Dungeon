@@ -1,6 +1,6 @@
 import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
-import { createSkillFromTemplate, setSkillTemplates, Skill } from "./skills.js";
+import { createSkillFromTemplate, Skill } from "./skills.js";
 import { DealDamage, FullCleanse, IncreaseCD, ResetCD} from "./skillParts.js";
 
 export class Character{
@@ -68,8 +68,7 @@ export class Character{
 // CREATE HEROS FROM TEMPLATES:
 
 export function getHeroTeam(){
-    setSkillTemplates();
-    return [createHeroFromTemplate(1), createHeroFromTemplate(2), createHeroFromTemplate(3), createHeroFromTemplate(4), createHeroFromTemplate(6)];
+    return [createHeroFromTemplate(1), createHeroFromTemplate(2), createHeroFromTemplate(3), createHeroFromTemplate(7), createHeroFromTemplate(6)];
 }
 
 export function getEnemyTeam(){
@@ -427,7 +426,7 @@ const heroTemplates = {
         description: "A draconoid necromancer able to wield dark magic to devastate oponents."
     },
     6: {
-        id: 5,
+        id: 6,
         name: "Rakthir",
         portrait: 'Rakthir.jpg',
         maxHp: 650,
@@ -437,6 +436,19 @@ const heroTemplates = {
         resistances: { physical: 0.8, fire: 1.0 },
         passive: null,
         tags: ['Fire', 'Physical', 'Warrior'],
+        description: "A fierce draconoid warrior with an eternal hatred towards mages. His only goal: Eradicate all magic in this world."
+    },
+    7: {
+        id: 7,
+        name: "Kresh",
+        portrait: 'Kresh.jpg',
+        maxHp: 650,
+        speed: 28,
+        skillIds: [1, 6, 9, 10],
+        skillPriorities: [3, 2, 1, 0],
+        resistances: { physical: 0.8, fire: 1.0 },
+        passive: null,
+        tags: ['Support', 'Physical', 'Warrior'],
         description: "A fierce draconoid warrior with an eternal hatred towards mages. His only goal: Eradicate all magic in this world."
     },
 };

@@ -15,6 +15,7 @@ export default class BattleScene extends Phaser.Scene {
         this.load.image('Draconoid - Necromancer.jpg', 'assets/portraits/Draconoid - Necromancer.jpg');
 
         this.load.image('Rakthir.jpg', 'assets/portraits/Rakthir.jpg');
+        this.load.image('Kresh.jpg', 'assets/portraits/Kresh.jpg');
 
         // SKills:
         this.load.image('Claw Strike.jpg', 'assets/skill icons/Claw Strike.jpg');
@@ -26,6 +27,8 @@ export default class BattleScene extends Phaser.Scene {
         this.load.image('Revenge.jpg', 'assets/skill icons/Revenge.jpg');
         this.load.image('Intimidate.jpg', 'assets/skill icons/Intimidate.jpg');
         this.load.image('War Cry.jpg', 'assets/skill icons/War Cry.jpg');
+        this.load.image('Dash.jpg', 'assets/skill icons/Dash.jpg');
+        this.load.image('Poison Cloud.jpg', 'assets/skill icons/Poison Cloud.jpg');
 
         // Backgrounds:
         this.load.image('battlefield', 'assets/backgrounds/battlefield.jpg');

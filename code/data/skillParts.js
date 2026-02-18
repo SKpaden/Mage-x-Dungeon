@@ -1,4 +1,5 @@
-import { processReactions } from "../game/combat.js";
+import { getAffectedTargets, processReactions } from "../game/combat.js";
+import { boostTurnMeter } from "../game/turnMeterManager.js";
 import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
 import { updateDebuffDsiplay } from "../ui/portraitFactory.js";
 
@@ -6,6 +7,56 @@ import { updateDebuffDsiplay } from "../ui/portraitFactory.js";
 class SkillPart{
     constructor(params = {}){
         this.params = params;
+    }
+}
+
+// Applying debuffs.
+/**
+ * Params: { area: 'all'/'adjacent'/'single', debuff: new Debuff(...), targets: 'enemies'/'allies'}
+ */
+export class ApplyDebuff extends SkillPart{
+    async execute(scene, source, target, index, allies, enemies){
+        const { area = 'single', debuff, targets = 'enemies'} = this.params;
+        const targetedTeam = targets === 'enemies' ? enemies : allies;
+        // works for 2 Actions: first enemies, then allies, but I need to be careful when targeting one team and applying debuffs to both teams
+        // ==> getAffectecTargets() not quite correct for both teams.
+        // But: It makes no sense to target enemies with 'adjacent' and also have adjacent on ally team, so it's fine I think.
+        let affectedTargets = getAffectedTargets(area, index, targetedTeam);
+        
+        affectedTargets.forEach(i => {
+            const unit = targetedTeam[i];
+            debuff.applyDebuff(scene, source, unit);  // add to debuff application count here
+            updateDebuffDsiplay(scene, unit);
+        })
+    }
+}
+
+// Boost turn meter.
+/**
+ * Params: { area: 'all'/'adjacent'/'single', amount: %}
+ */
+export class BoostTurnMeter extends SkillPart{
+    async execute(scene, source, target, index, allies, enemies){
+        const { area = 'single', amount} = this.params;
+        let affectedTargets;
+        switch (area){
+            case 'all':
+                affectedTargets = getAffectedTargets('all', index, allies);
+                break;
+            case 'adjacent':
+                affectedTargets = getAffectedTargets('adjacent', index, allies);
+                break;
+            case 'single':
+                affectedTargets = [target];
+                break;
+            default:
+                console.error("UNDEFINED AREA IN ApplyDebuff SkillPart!" + area);
+        }
+        affectedTargets.forEach(i => {
+            const unit = allies[i];
+            boostTurnMeter(scene, unit, amount);
+            showPositivePopup(scene, unit.x, unit.y, 'Boost\nTurn Meter');
+        });
     }
 }
 
@@ -106,6 +157,8 @@ export function createActionFromTemplate(data){
 
 // To dynamically create SkillPart subclasses based on skill template:
 const skillPartFactories = {
+    ApplyDebuff: (params) => new ApplyDebuff(params),
+    BoostTurnMeter: (params) => new BoostTurnMeter(params),
     DealDamage: (params) => new DealDamage(params),
     IncreaseCD: (params) => new IncreaseCD(params),
     ResetCD: (params) => new ResetCD(params),

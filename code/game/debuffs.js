@@ -1,3 +1,4 @@
+import { playDebuffPopup } from "../ui/combatTweens.js";
 import { updateHP } from "../ui/portraitFactory.js";
 import { uiStats } from "../ui/uiStats.js";
 
@@ -55,25 +56,28 @@ export class Debuff{
         return null;
     }
 
-    // Shows debuff popup. (ISSUE: Need async stuff (Promise) to not display all at once!)
-    static showDebuffPopup(scene, x, y, debuffs, index){
-        if (index >= debuffs.length) return;
-        const dmgPT = debuffs[index].dmgPerTurn;
-        const textColor = debuffs[index].textColor;
-        const text = debuffs[index].name;
-        let displayText = dmgPT ? `-${dmgPT}\n`+text : text;
+    /////////////////////////////////////////////////////////////////// NON-STATIC ///////////////////////////////////////////////////////////////////
 
-        const debuffText = scene.add.text(x, y, displayText, {fontSize: uiStats.dmgPopupFontsize, color: textColor}).setOrigin(0.5);
-        scene.tweens.add({
-            targets: debuffText,
-            y: '-=100',
-            alpha: 0.4,
-            duration: 600,
-            onComplete: () => {
-                debuffText.destroy();
-                this.showDebuffPopup(scene, x, y, debuffs, index+1);
+    // Applies debuff to target if allowed. Supposed to replace old apply.
+    applyDebuff(scene, source, target){
+        if (target.getData('hp') > 0){  // debuff set AND target lives
+            //if (this.type !== 'elemental' || !this.preventElementalDebuff){  // always place non-elemental debuffs or if no reactions were triggered
+            const debuffs = target.getData('debuffs') || [];
+            if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
+                debuffs.push(this.createCopy(source));
+                target.setData('debuffs', debuffs);
+                playDebuffPopup(scene, target.x, target.y, this.name, uiStats.negativePopupOptions);
+                return 1;  // maybe more than one in the future
             }
-        });
+            //}
+        }
+        //this.preventElementalDebuff = false;  // reset for next reaction
+        return 0;  // only really useful with resists and passives (immune to stun)
+    }
+
+    // Return a new instance of Debuff with the exact same stats.
+    createCopy(source){
+        return new Debuff(this.name, this.duration, this.dmgPerTurn, this.element, this.triggerEffect, this.skipTurn, this.type, source);
     }
 
     // Shows debuff popup. (ISSUE: Need async stuff (Promise) to not display all at once!)
@@ -93,11 +97,6 @@ export class Debuff{
                 debuffText.destroy();
             }
         });
-    }
-
-    // Return a new instance of Debuff with the exact same stats.
-    createCopy(source){
-        return new Debuff(this.name, this.duration, this.dmgPerTurn, this.element, this.triggerEffect, this.skipTurn, this.type, source);
     }
 
     // Check if this debuff prevents a turn.
