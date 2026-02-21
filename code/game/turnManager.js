@@ -1,8 +1,8 @@
-import { attackLowestPlayer, checkDeath, checkWinner, endBattle } from "./combat.js";
+import { applySkillToPlayer, checkDeath, checkWinner, endBattle, processSkill } from "./combat.js";
 import { gameState } from "./gameState.js";
 import { fillAllTurnMeters, resetTurnMeter } from "./turnMeterManager.js";
 import { logCombat } from "../ui/combatLog.js";
-import { delay, updateText, setHighlight } from "../ui/helpers.js";
+import { delay, updateText, setHighlight, setPlayerTarget } from "../ui/helpers.js";
 import { getPortraitTween, updateDebuffDsiplay} from "../ui/portraitFactory.js";
 import { showSkills, clearAffectedTargets } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
@@ -38,7 +38,6 @@ export function clearSelections(){
 
 // End turn of unit. Cleans up state and triggers next turn.
 export function endTurn(scene, unit){
-    // processDebuffs(scene, unit);
     //processBuffs(scene, unit);
     resetTurnMeter(scene, unit);
 
@@ -51,7 +50,8 @@ export function endTurn(scene, unit){
 
 // Processes enemy turn.
 async function enemyTurn(scene, unit){
-    unit.getData('char').reduceCooldowns();
+    const char =  unit.getData('char');
+    char.reduceCooldowns();
     const debuffSkip = await processDebuffs(scene, unit);
     if (checkDeath(scene, unit)) {  // maybe do something specific to only death before
         if (checkWinner()) return endBattle(scene);
@@ -60,9 +60,14 @@ async function enemyTurn(scene, unit){
         logCombat(scene, `<strong>${unit.getData('name')}</strong>  skipped turn because of <strong>"${debuffSkip}"</strong>!`, '#ED0000', '[Enemy]');
         endTurn(scene, unit);
     } else {
+        const skill = char.chooseSkill(scene, unit);
+        const target = skill.chooseTarget(scene, unit, gameState.enemyContainers, gameState.playerContainers);
+        gameState.pendingSkill = skill;  // update in gameState
+        if (skill.type === 'Attack') setPlayerTarget(scene, target);  // highlight player with red border
+
+        gameState.selectedEnemy = unit;
+        scene.time.delayedCall(800, () => applySkillToPlayer(scene, unit, target, target.getData('teamIndex'), gameState.playerContainers));
         // processBuffs(scene, unit);
-        // processCooldowns(scene, unit);
-        attackLowestPlayer(scene, unit);
         
         //endTurn(scene, unit);
     }
@@ -81,7 +86,6 @@ async function playerTurn(scene, unit){
         endTurn(scene, unit);
     } else {
         // processBuffs(scene, unit);
-        // processCooldowns(scene, unit);
         const tween = getPortraitTween(scene, unit);
         tween.play();
         setHighlight(unit,true);
@@ -89,6 +93,7 @@ async function playerTurn(scene, unit){
     }
 }
 
+// Processes all debuffs at the start of a turn.
 async function processDebuffs(scene, target){
     let skipTurn = null;
     let debuffs = target.getData('debuffs') || [];
@@ -100,7 +105,6 @@ async function processDebuffs(scene, target){
     debuffs = debuffs.filter(deb => {
         if (deb.skip()) skipTurn = deb.name;  // skip turn?
         deb.tick(scene, target);
-        //deb.showDebuffPopupAsync(scene, target.x, target.y);
         return deb.duration > 0;
     });
 

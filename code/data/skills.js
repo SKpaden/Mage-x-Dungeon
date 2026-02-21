@@ -31,6 +31,32 @@ export class Skill{
         }
     }
 
+    // Chooses target based on skill type.
+    chooseTarget(scene, source, allies, enemies){
+        let minHp = 999;
+        let chosenTarget;
+        if (this.type === 'Support'){
+            allies.forEach(container => {
+                const hp = container.getData('hp');
+                if (hp && hp < minHp){  // > 0, but smallest ==> === 0 only for revive skills (later)
+                    minHp = hp;
+                    chosenTarget = container;
+                }
+            })
+        } else if (this.type === 'Revive'){
+            return;
+        } else {
+            enemies.forEach(container => {
+                const hp = container.getData('hp');
+                if (hp && hp < minHp){  // > 0, but smallest ==> === 0 only for revive skills (later)
+                    minHp = hp;
+                    chosenTarget = container;
+                }
+            })
+        }
+        return chosenTarget;
+    }
+
     // Decreases CD by one turn.
     decreaseCD(){
         if (this.cooldown && this.currentCD) this.currentCD--;

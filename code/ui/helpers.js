@@ -136,8 +136,8 @@ export function setPlayerTarget(scene, target){  // clear is already done by cle
     const portraitHeight = target.getData('displayHeight');
     graphics.clear();
 
-    graphics.lineStyle(uiStats.portraitHighlightBorderWidth, 0xff0000, 1);
-    graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, 5);
+    graphics.lineStyle(uiStats.portraitHighlightBorderWidth, uiStats.enemyPlayerTargetColor, 1);
+    graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, uiStats.borderRadius);
     gameState.selectedPlayer = target;
 }
 

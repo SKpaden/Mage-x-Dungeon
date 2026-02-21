@@ -72,7 +72,7 @@ export function getHeroTeam(){
 }
 
 export function getEnemyTeam(){
-    return [createHeroFromTemplate(5), createHeroFromTemplate(5), createHeroFromTemplate(5), createHeroFromTemplate(5), createHeroFromTemplate(5)];
+    return [createHeroFromTemplate(5), createHeroFromTemplate(6), createHeroFromTemplate(6), createHeroFromTemplate(6), createHeroFromTemplate(5)];
 }
 
 function createHero1(){

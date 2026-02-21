@@ -26,7 +26,7 @@ function applySkillToEnemy(scene, source, index, skill){
 }
 
 // Applies pendingSkill to enemy at index.
-function applySkillToPlayer(scene, source, target, index, team){
+export function applySkillToPlayer(scene, source, target, index, team){
     const skill = gameState.pendingSkill;
     logCombat(scene, `<strong>${source.getData('name')}</strong> used <strong>${skill.name}<strong>!`, '#e0e0e0', '[Enemy]');
 
@@ -35,7 +35,7 @@ function applySkillToPlayer(scene, source, target, index, team){
 }
 
 // Process skill use. Same for enemy and player.
-async function processSkill(scene, source, index, allies, enemies, skill){
+export async function processSkill(scene, source, index, allies, enemies, skill){
     let target;
     if (skill.type === 'Attack') target = enemies[index];
     else target = allies[index];
@@ -102,30 +102,6 @@ function triggerReaction(scene, reaction, targets, effect, queue, source, team){
             if (dealtDmg) updated = true;
         });
     return updated;
-}
-
-// Computer attacks the current lowest player character.
-export function attackLowestPlayer(scene, source){
-    let minHp = 999;
-    let target = null;
-    for (let i = 0; i < gameState.playerContainers.length; i++){
-        const player = gameState.playerContainers[i];
-        const playerHp = player.getData('hp');
-        if (playerHp > 0 && playerHp < minHp){
-            minHp = playerHp;
-            target = player;
-        }
-    }
-    if (target){
-        gameState.pendingSkill = source.getData('char').chooseSkill();  // pick highest prio skill
-        setPlayerTarget(scene, target);
-
-        gameState.selectedEnemy = source;
-        scene.time.delayedCall(800, () => applySkillToPlayer(scene, source, target, target.getData('teamIndex'), gameState.playerContainers));
-    } else {
-        console.error('No target with >0 hp left!');
-        return;
-    }
 }
 
 // Source deals dmg damage to target. Returns boolean whether dmg was dealt or not (false on dead targets);

@@ -23,6 +23,8 @@ export const uiStats = {
     // Colors:
     playerLogColor: '#00aa00',
     enemyLogColor: '#ED0000',
+    enemyPlayerTargetColor: 0xff0000,
+    enemyAllyTargetColor: 0x00ff00,
     // Hover target preview:
     enemyHoverTint: 0x820000,
     enemyTargetTint: '0xff4444',
