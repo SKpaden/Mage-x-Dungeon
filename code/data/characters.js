@@ -2,9 +2,10 @@ import { Debuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
 import { createSkillFromTemplate, Skill } from "./skills.js";
 import { DealDamage, FullCleanse, IncreaseCD, ResetCD} from "./skillParts.js";
+import { StatManager } from "./statManager.js";
 
 export class Character{
-    constructor(id, name, portrait, maxHp, speed, skills, skillPriorities, resistences, passive, tags, description){  // add id maybe
+    constructor(id, name, portrait, maxHp, speed, skills, skillPriorities, resistences, passive, tags, description, stats){  // add id maybe
         this.id = id;
         this.name = name;
         this.portrait = portrait;
@@ -20,6 +21,7 @@ export class Character{
         this.passive = passive;
         this.tags = tags;
         this.description = description;
+        this.statManager = new StatManager(stats);
     }
 
     // Choose skill to use based on priorities.
@@ -32,9 +34,9 @@ export class Character{
         console.error("SOMETHING WENT WRONG WHEN CHOOSING SKILL!");
     }
 
-    // Returns the speed.
+    // Returns the current speed.
     getSpeed(){
-        return this.speed;
+        return this.statManager.getCurrentStat('speed');
     }
 
     // Puts all skills on CD.
@@ -75,265 +77,6 @@ export function getEnemyTeam(){
     return [createHeroFromTemplate(5), createHeroFromTemplate(6), createHeroFromTemplate(6), createHeroFromTemplate(6), createHeroFromTemplate(5)];
 }
 
-function createHero1(){
-    return new Character(1, "Draconoid Mage", 'Draconoid - Dark Mage.jpg', 250, 20,
-        // Skills:
-        [
-            // Claw Strike:
-            new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
-                            skillName: 'Claw Strike'
-                        })],
-                        0, "Strikes an enemy with his claw dealing physical damage."),
-
-            // Fireball
-            new Skill('Fireball', 'Fireball.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
-                            skillName: 'Fireball'
-                        })],
-                        3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-            // Holy Light:
-            new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-                            skillName: 'Holy Light'
-                        })],
-                        2, "Blinds a single target for 3 turns."
-            ),
-            // Dark Nova:
-            new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        [new DealDamage({
-                            area: 'all',
-                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-                            skillName: 'Dark Nova',
-                        })],
-                        5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-            )
-        ],
-        [3, 2, 1, 0],
-        null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-    );
-}
-
-function createHero2(){
-    return new Character(2, "Blue Dragon Queen", 'Dragon Queen - Blue.jpg', 450, 12,
-        // Skills:
-        [
-            // Claw Strike:
-            new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
-                            skillName: 'Claw Strike'
-                        })],
-                        0, "Strikes an enemy with his claw dealing physical damage."),
-
-            // Fireball
-            new Skill('Fireball', 'Fireball.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
-                            skillName: 'Fireball'
-                        })],
-                        3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-            // Holy Light:
-            new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-                            skillName: 'Holy Light'
-                        })],
-                        2, "Blinds a single target for 3 turns."
-            ),
-            // Dark Nova:
-            new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        [new DealDamage({
-                            area: 'all',
-                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-                            skillName: 'Dark Nova',
-                        })],
-                        5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-            )
-        ],
-        [3, 2, 1, 0],
-        null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-    );
-}
-
-function createHero3(){
-    return new Character(3, "Draconoid Warrior", 'Draconoid - Warrior.jpg', 550, 10,
-        // Skills:
-        [
-            // Claw Strike:
-            new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
-                            skillName: 'Claw Strike'
-                        })],
-                        0, "Strikes an enemy with his claw dealing physical damage."),
-
-            // Fireball
-            new Skill('Fireball', 'Fireball.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
-                            skillName: 'Fireball'
-                        })],
-                        3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-            // Holy Light:
-            new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-                            skillName: 'Holy Light'
-                        })],
-                        2, "Blinds a single target for 3 turns."
-            ),
-            // Dark Nova:
-            new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        [new DealDamage({
-                            area: 'all',
-                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-                            skillName: 'Dark Nova',
-                        })],
-                        5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-            )
-        ],
-        [3, 2, 1, 0],
-        null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-    );
-}
-
-function createHero4(){
-    return new Character(4, "Poison Dragon Queen", 'Dragon Queen - Poison.jpg', 350, 13,
-        // Skills:
-        [
-            // Claw Strike:
-            new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
-                            skillName: 'Claw Strike'
-                        })],
-                        0, "Strikes an enemy with his claw dealing physical damage."),
-
-            // Fireball
-            new Skill('Fireball', 'Fireball.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
-                            skillName: 'Fireball'
-                        })],
-                        3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-            // Holy Light:
-            new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-                            skillName: 'Holy Light'
-                        })],
-                        2, "Blinds a single target for 3 turns."
-            ),
-            // Dark Nova:
-            new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        [new DealDamage({
-                            area: 'all',
-                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-                            skillName: 'Dark Nova',
-                        })],
-                        5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-            )
-        ],
-        [3, 2, 1, 0],
-        null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-    );
-}
-
-export function createHero5(){
-    return new Character(5, "Necromancer", 'Draconoid - Necromancer.jpg', 250, 18,
-        // Skills:
-        [
-            // Claw Strike:
-            new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
-                            skillName: 'Claw Strike'
-                        })],
-                        0, "Strikes an enemy with his claw dealing physical damage."),
-
-            // Fireball
-            new Skill('Fireball', 'Fireball.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
-                            skillName: 'Fireball'
-                        })],
-                        3, "A powerful single-target fire ability. Can trigger all Fire-based elemental reactions."),
-            // Holy Light:
-            new Skill('Holy Light', 'Holy Light.jpg', 'single',
-                        [new DealDamage({
-                            area: 'single',
-                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-                            skillName: 'Holy Light'
-                        })],
-                        2, "Blinds a single target for 3 turns."
-            ),
-            // Dark Nova:
-            new Skill('Dark Nova', 'Dark Nova.jpg', 'all',
-                        [new DealDamage({
-                            area: 'all',
-                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
-                            skillName: 'Dark Nova',
-                        })],
-                        5, "A powerful AoE ability that invokes fear in anyone affected. Due to it's sheer power, it cannot be used often."
-            )
-        ],
-        [3, 2, 1, 0],
-        null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-    );
-}
-
-function createHero6(){
-    return new Character(5, "Rakthir", 'Rakthir.jpg', 650, 22,
-        // Skills:
-        [
-            // Claw Strike:
-            new Skill('Claw Strike', 'Claw Strike.jpg', 'single',
-                        [new DealDamage({area: 'single', effect: new Effect(60, null, null, "Physical", '#8f8e8e'), skillName: 'Claw Strike'})],
-                        0, "Strikes an enemy with his claw dealing physical damage."),
-            // Revenge:
-            new Skill('Revenge', 'Revenge.jpg', 'all',
-                        [new DealDamage({ area: 'all', effect: new Effect(120, null, null, "Physical", '#8f8e8e'), skillName: 'Revenge'})],
-                        3, "A powerful physical AoE attack."),
-            // Intimidate:
-            new Skill('Intimidate', 'Intimidate.jpg', 'all',
-                        [
-                            new IncreaseCD({ area: 'all'})
-                        ],
-                        4, "Puts all enemy skills on cooldown."
-            ),
-            // War Cry:
-            new Skill('War Cry', 'War Cry.jpg', 'all',
-                        [
-                            //new FullCleanse({ area: 'single'}),
-                            new ResetCD({ area: 'all'}),
-                            new FullCleanse({ area: 'all'}),
-                        ],
-                        5, "Resets all ally skill cooldowns and removes all debuffs from all allies.", 'Support'
-            )
-        ],
-        [3, 2, 1, 0],
-        null, null, ['Fire', 'Physical'], "Descr placeholder for name1."
-    );
-}
-
 function createHeroFromTemplate(id){
     if (!heroTemplates[id]){
         throw new IllegalArgumentException("Unknown hero: " + id);
@@ -354,7 +97,8 @@ function createHeroFromTemplate(id){
         data.resistances,
         data.passive,
         data.tags,
-        data.description
+        data.description,
+        data.stats
     );
 }
 
@@ -371,7 +115,31 @@ const heroTemplates = {
         resistances: { fire: 0.5, water: 1.2 },  // Later: multipliers
         passive: null,  // String or object for logic
         tags: ['Dark', 'Mage'],
-        description: "A shadowy mage who manipulates void energy."
+        description: "A shadowy mage who manipulates void energy.",
+        stats: {
+            'speed': {
+                current: 20,
+                base: 20
+            },
+            'hp': {
+                current: 250,
+                base: 250
+            },
+            'dmgMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 0.5,
+                    base: 0.5
+                },
+                'Water': {
+                    current: 1.2,
+                    base: 1.2
+                }
+            }
+        }
     },
     2: {
         id: 2,
@@ -384,7 +152,31 @@ const heroTemplates = {
         resistances: { fire: 1.5, water: 1.0 },  // Later: multipliers
         passive: null,  // String or object for logic
         tags: ['Draconoid', 'Mage'],
-        description: "A humanoid dragon mage."
+        description: "A humanoid dragon mage.",
+        stats: {
+            'speed': {
+                current: 12,
+                base: 12
+            },
+            'hp': {
+                current: 250,
+                base: 250
+            },
+            'dmgMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 0.5,
+                    base: 0.5
+                },
+                'Water': {
+                    current: 1.2,
+                    base: 1.2
+                }
+            }
+        }
     },
     3: {
         id: 3,
@@ -397,7 +189,31 @@ const heroTemplates = {
         resistances: { fire: 0.5, water: 1.2, physical: 1.8 },  // Later: multipliers
         passive: null,  // String or object for logic
         tags: ['Fire', 'Physical'],
-        description: "A draconoid warrior with plenty of battle experience."
+        description: "A draconoid warrior with plenty of battle experience.",
+        stats: {
+            'speed': {
+                current: 10,
+                base: 10
+            },
+            'hp': {
+                current: 250,
+                base: 250
+            },
+            'dmgMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 0.5,
+                    base: 0.5
+                },
+                'Water': {
+                    current: 1.2,
+                    base: 1.2
+                }
+            }
+        }
     },
     4: {
         id: 4,
@@ -410,7 +226,31 @@ const heroTemplates = {
         resistances: { poison: 2.0, water: 1.2, physical: -0.6 },  // Later: multipliers
         passive: null,  // String or object for logic
         tags: ['Poison', 'Debuffer'],
-        description: "A draconoid mage gifted in the arts of poison magic."
+        description: "A draconoid mage gifted in the arts of poison magic.",
+        stats: {
+            'speed': {
+                current: 24,
+                base: 24
+            },
+            'hp': {
+                current: 250,
+                base: 250
+            },
+            'dmgMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 0.5,
+                    base: 0.5
+                },
+                'Water': {
+                    current: 1.2,
+                    base: 1.2
+                }
+            }
+        }
     },
     5: {
         id: 5,
@@ -423,7 +263,31 @@ const heroTemplates = {
         resistances: { poison: 2.0, dark: 2.2, physical: -0.6 },  // Later: multipliers
         passive: null,  // String or object for logic
         tags: ['Dark', 'CC', 'AoE'],
-        description: "A draconoid necromancer able to wield dark magic to devastate oponents."
+        description: "A draconoid necromancer able to wield dark magic to devastate oponents.",
+        stats: {
+            'speed': {
+                current: 18,
+                base: 18
+            },
+            'hp': {
+                current: 250,
+                base: 250
+            },
+            'dmgMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 0.5,
+                    base: 0.5
+                },
+                'Water': {
+                    current: 1.2,
+                    base: 1.2
+                }
+            }
+        }
     },
     6: {
         id: 6,
@@ -436,7 +300,31 @@ const heroTemplates = {
         resistances: { physical: 0.8, fire: 1.0 },
         passive: null,
         tags: ['Fire', 'Physical', 'Warrior'],
-        description: "A fierce draconoid warrior with an eternal hatred towards mages. His only goal: Eradicate all magic in this world."
+        description: "A fierce draconoid warrior with an eternal hatred towards mages. His only goal: Eradicate all magic in this world.",
+        stats: {
+            'speed': {
+                current: 22,
+                base: 22
+            },
+            'hp': {
+                current: 250,
+                base: 250
+            },
+            'dmgMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 0.5,
+                    base: 0.5
+                },
+                'Water': {
+                    current: 1.2,
+                    base: 1.2
+                }
+            }
+        }
     },
     7: {
         id: 7,
@@ -449,6 +337,30 @@ const heroTemplates = {
         resistances: { physical: 0.8, fire: 1.0 },
         passive: null,
         tags: ['Support', 'Physical', 'Warrior'],
-        description: "An experienced combat veteran now commanding his troops and turning the tides of a battle with cunning abilities."
+        description: "An experienced combat veteran now commanding his troops and turning the tides of a battle with cunning abilities.",
+        stats: {
+            'speed': {
+                current: 28,
+                base: 28
+            },
+            'hp': {
+                current: 250,
+                base: 250
+            },
+            'dmgMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 0.5,
+                    base: 0.5
+                },
+                'Water': {
+                    current: 1.2,
+                    base: 1.2
+                }
+            }
+        }
     },
 };

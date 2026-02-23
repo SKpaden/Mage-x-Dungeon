@@ -137,12 +137,7 @@ export function getSkillTemplates(){
             icon: 'Holy Light.jpg',
             targets: 'single',
             actions: [
-                { className: 'DealDamage', params: {
-                                            area: 'single',
-                                            effect: new Effect(0, 'Light', new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null), "Light", '#f0ff20'),
-                                            skillName: 'Holy Light'
-                                        }
-                }
+                { className: 'ApplyDebuff', params: { area: 'single', debuff: new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null) } }
             ],
             cooldown: 2,
             description: "Blinds a single target for 3 turns."

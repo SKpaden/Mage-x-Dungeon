@@ -40,7 +40,7 @@ export function fillAllTurnMeters(scene){
     let result = gameState.turnQueue[0];
     keepGoing = true;
     let i = 1;
-    while (keepGoing){
+    while (keepGoing && i < gameState.turnQueue.length){
         const candidate = gameState.turnQueue[i];
         if(candidate.getData('turnMeter') !== max) keepGoing = false; // no unit with same TM (sorted list) ==> return current candidate
         else {

@@ -188,5 +188,12 @@ export function endBattle(scene){
     } else {
         logCombat(scene, `You win!`, '#00aa00', '[END]');
     }
+    // scene.cameras.main.setAlpha(0.5);  // make background darker
+    // scene.cameras.add(scene.scale.width/2, scene.scale.height/2, 400, 200);
+    // const endContainer = scene.add.container(scene.scale.width/2, scene.scale.height/2)
+    // const endButton = scene.add.rectangle(0, 0, 400, 200, 0x111111).setInteractive({ useHandCursor: true });
+    // const endText = scene.add.text(endContainer.x, endContainer.y, "Restart", {fontSize: '30px', color: '#ffffff'}).setOrigin(0.5);
+    // endContainer.add(endButton, endText);
+
     // more stuff to do later...
 }

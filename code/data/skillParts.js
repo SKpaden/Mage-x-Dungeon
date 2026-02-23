@@ -49,7 +49,7 @@ export class ActivatePoison extends SkillPart{
 
 // Ally attack: Allies attack target with default skill.
 /**
- * Params: { amount: 'all' }
+ * Params: { amount: 'all'/1,2,3,4,5 }
  */
 export class AllyAttack extends SkillPart{  // works overall, but logQueue is not processed correctly => logQueue rework needed
     async execute(scene, source, target, index, allies, enemies){
@@ -65,8 +65,7 @@ export class AllyAttack extends SkillPart{  // works overall, but logQueue is no
             if (allyHp > 0){
                 const allySkill = char.skills[0];
                 await allySkill.apply(scene, ally, target, index, allies, enemies);
-                // Manual delay necessary because 1-action skills (mostly default skill) have no delay...
-                if (allySkill.actions.length === 1) await delay(scene, uiStats.debuffDelay / 2);
+                await delay(scene, uiStats.debuffDelay / 2);
                 hasAttacked++;
                 if (hasAttacked === maxAmount) break;
             }
@@ -102,20 +101,7 @@ export class ApplyDebuff extends SkillPart{
 export class BoostTurnMeter extends SkillPart{
     async execute(scene, source, target, index, allies, enemies){
         const { area = 'single', amount} = this.params;
-        let affectedTargets;
-        switch (area){
-            case 'all':
-                affectedTargets = getAffectedTargets('all', index, allies);
-                break;
-            case 'adjacent':
-                affectedTargets = getAffectedTargets('adjacent', index, allies);
-                break;
-            case 'single':
-                affectedTargets = [target];
-                break;
-            default:
-                console.error("UNDEFINED AREA IN ApplyDebuff SkillPart!" + area);
-        }
+        let affectedTargets = getAffectedTargets(area, index, allies);
         affectedTargets.forEach(i => {
             const unit = allies[i];
             boostTurnMeter(scene, unit, amount);

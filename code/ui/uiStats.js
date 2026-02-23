@@ -33,5 +33,8 @@ export const uiStats = {
     // Popups:
     negativePopupOptions: {fontSize: '26px', color: '#ED0000'},
     positivePopupOptions: {fontSize: '26px', color: '#00aa00'},
+    // better readability:
+    // negativePopupOptions: {fontSize: '26px', color: '#ED0000', backgroundColor: 'rgba(0,0,0,0.8)'},
+    // positivePopupOptions: {fontSize: '26px', color: '#00aa00', backgroundColor: 'rgba(0,0,0,0.8)'},
     popupDuration: 800,
 };

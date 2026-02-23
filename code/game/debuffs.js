@@ -8,9 +8,9 @@ export class Debuff{
         this.duration = duration;
         this.dmgPerTurn = dmgPerTurn;
         this.element = element;  // for reactions
-        this.triggerEffect = triggerEffect;  // probably remove this...don't know if this makes sense
+        this.triggerEffect = triggerEffect;  // probably remove this...don't know if this makes sense and I'm not using it anyway
         this.skipTurn = skipTurn;
-        this.type = type;
+        this.type = type;  // elemental/cc/normal
 
         // That's good for passives, I think:
         this.appliedBy = appliedBy;
@@ -18,12 +18,30 @@ export class Debuff{
         // For later display:
         this.description = "No description!";
         this.icon = null;  // TODO
-        this.text = "Debuff Text";
+        this.description = "Debuff Description";
         this.textColor = '#ED0000';
     }   
 
     // Debuffs that can be applied mutliple times to one enemy:
     static stackingDebuffs = ['Poison'];
+
+    static reactionLookup = {
+        'Fire': {
+            'Electro': 'Explosion',
+            'Water': 'Steam',
+            // ...
+        },
+        'Electro': {
+            'Fire': 'Explosion',
+            'Water': 'Overload',
+            // ...
+        },
+        'Dark': {
+            'Light': 'VoidSurge',
+            // ...
+        },
+        // ...
+    }
 
     // Checks if a debuff is allowed to be added to a debuff list.
     static allowDebuff(debuffs, name){
@@ -45,15 +63,7 @@ export class Debuff{
 
     // Returns reaction of debuff with element or null.
     static getReaction(debuff, element){
-        if (element === 'fire') return Debuff.fireReactions(debuff);  // maybe as lookup arrays [debuff.name] ==> also for multipliers/dmg
-        if (element === 'eletro') return Debuff.electroReactions(debuff);
-        if (element === 'water') return Debuff.waterReactions(debuff);
-        if (element === 'dark') return Debuff.darkReactions(debuff);
-        if (element === 'holy') return Debuff.holyReactions(debuff);
-        if (element === 'ice') return Debuff.iceReactions(debuff);
-        if (element === 'poison') return Debuff.poisonReactions(debuff);
-        if (element === 'blood') return Debuff.bloodReactions(debuff);
-        return null;
+        return Debuff.reactionLookup[element][debuff.element];  // maybe as lookup arrays [debuff.name] ==> also for multipliers/dmg
     }
 
     /////////////////////////////////////////////////////////////////// NON-STATIC ///////////////////////////////////////////////////////////////////
@@ -61,7 +71,6 @@ export class Debuff{
     // Applies debuff to target if allowed. Supposed to replace old apply.
     applyDebuff(scene, source, target){
         if (target.getData('hp') > 0){  // debuff set AND target lives
-            //if (this.type !== 'elemental' || !this.preventElementalDebuff){  // always place non-elemental debuffs or if no reactions were triggered
             const debuffs = target.getData('debuffs') || [];
             if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
                 debuffs.push(this.createCopy(source));
@@ -69,18 +78,16 @@ export class Debuff{
                 playDebuffPopup(scene, target.x, target.y, this.name, uiStats.negativePopupOptions);
                 return 1;  // maybe more than one in the future
             }
-            //}
         }
-        //this.preventElementalDebuff = false;  // reset for next reaction
         return 0;  // only really useful with resists and passives (immune to stun)
     }
 
-    // Return a new instance of Debuff with the exact same stats.
+    // Return a new instance of Debuff with the exact same stats, only source gets set.
     createCopy(source){
         return new Debuff(this.name, this.duration, this.dmgPerTurn, this.element, this.triggerEffect, this.skipTurn, this.type, source);
     }
 
-    // Shows debuff popup. (ISSUE: Need async stuff (Promise) to not display all at once!)
+    // Shows debuff popup.
     showDebuffPopupAsync(scene, x, y){
         const dmgPT = this.dmgPerTurn;
         const textColor = this.textColor;
