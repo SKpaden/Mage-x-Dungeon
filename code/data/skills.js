@@ -1,5 +1,5 @@
 import { createActionFromTemplate } from "./skillParts.js";
-import { Debuff } from "../game/debuffs.js";
+import { Debuff, StatAffectingDebuff } from "../game/debuffs.js";
 import { Effect } from "../game/effects.js";
 import { delay } from "../ui/helpers.js";
 import { uiStats } from "../ui/uiStats.js";
@@ -255,6 +255,7 @@ export function getSkillTemplates(){
             targets: 'all',
             actions: [
                 { className: 'ApplyDebuff', params: { area: 'all', debuff: new Debuff('Poison', 3, 50, 'Poison', null, false, 'elemental', null) } },
+                // { className: 'ApplyDebuff', params: { area: 'all', debuff: new StatAffectingDebuff('Slowed', 2, 'speed', { percentage: 0.3}) } },  // 30% decrease speed
             ],
             cooldown: 3,
             description: "Places a Poison debuff on all enemies.",

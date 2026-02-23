@@ -30,7 +30,7 @@ export function fillAllTurnMeters(scene){
 
     // Redraw turn meter:
     gameState.turnQueue.forEach((container) => {
-        updateTurnMeter(scene, container, Math.min(1, container.getData('turnMeter')/gameState.combinedSpeed));
+        updateTurnMeter(scene, container, Math.min(1, container.getData('turnMeter') / gameState.combinedSpeed));  // not more than 1 (=100%)
     });
 
     updateQeue();  // sort by turn meter

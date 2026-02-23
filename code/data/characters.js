@@ -1,7 +1,4 @@
-import { Debuff } from "../game/debuffs.js";
-import { Effect } from "../game/effects.js";
 import { createSkillFromTemplate, Skill } from "./skills.js";
-import { DealDamage, FullCleanse, IncreaseCD, ResetCD} from "./skillParts.js";
 import { StatManager } from "./statManager.js";
 
 export class Character{
@@ -21,7 +18,7 @@ export class Character{
         this.passive = passive;
         this.tags = tags;
         this.description = description;
-        this.statManager = new StatManager(stats);
+        this.statManager = new StatManager(StatManager.copyStats(stats));  // I didn't copy and had mutation...
     }
 
     // Choose skill to use based on priorities.
@@ -67,7 +64,7 @@ export class Character{
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CREATE HEROS FROM TEMPLATES:
+// CREATE HEROES FROM TEMPLATES:
 
 export function getHeroTeam(){
     return [createHeroFromTemplate(1), createHeroFromTemplate(2), createHeroFromTemplate(4), createHeroFromTemplate(7), createHeroFromTemplate(6)];
@@ -77,6 +74,12 @@ export function getEnemyTeam(){
     return [createHeroFromTemplate(5), createHeroFromTemplate(6), createHeroFromTemplate(6), createHeroFromTemplate(6), createHeroFromTemplate(5)];
 }
 
+// Testing Docs:
+/**
+ * Creates a new Character object based on template with id.
+ * @param  {int} id     ID of the hero
+ * @return {Character}  The Character created from the template
+ */
 function createHeroFromTemplate(id){
     if (!heroTemplates[id]){
         throw new IllegalArgumentException("Unknown hero: " + id);
@@ -125,7 +128,11 @@ const heroTemplates = {
                 current: 250,
                 base: 250
             },
-            'dmgMult': {
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
                 current: 1.0,
                 base: 1.0
             },
@@ -162,7 +169,11 @@ const heroTemplates = {
                 current: 250,
                 base: 250
             },
-            'dmgMult': {
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
                 current: 1.0,
                 base: 1.0
             },
@@ -199,7 +210,11 @@ const heroTemplates = {
                 current: 250,
                 base: 250
             },
-            'dmgMult': {
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
                 current: 1.0,
                 base: 1.0
             },
@@ -236,7 +251,11 @@ const heroTemplates = {
                 current: 250,
                 base: 250
             },
-            'dmgMult': {
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
                 current: 1.0,
                 base: 1.0
             },
@@ -273,7 +292,11 @@ const heroTemplates = {
                 current: 250,
                 base: 250
             },
-            'dmgMult': {
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
                 current: 1.0,
                 base: 1.0
             },
@@ -310,7 +333,11 @@ const heroTemplates = {
                 current: 250,
                 base: 250
             },
-            'dmgMult': {
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
                 current: 1.0,
                 base: 1.0
             },
@@ -347,7 +374,11 @@ const heroTemplates = {
                 current: 250,
                 base: 250
             },
-            'dmgMult': {
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
                 current: 1.0,
                 base: 1.0
             },

@@ -127,18 +127,69 @@ export class Debuff{
     }
 }
 
-export class Burn extends Debuff {
-    constructor(duration, dmgPerTurn) {
-        super('Burn', duration, dmgPerTurn, 'fire', null);  // element = fire
+// Class for debuffs that affect stats of a character.
+export class StatAffectingDebuff extends Debuff{
+    constructor(name, duration, affects, value, source = null){  // { absolute: 50, percentage: 0.2 }
+        super(name, duration, 0, null, null, false, "normal", source);
+        this.affects = affects;
+        this.value = value;
     }
 
-    tick(target) {
-        super.tick(target);
-        // Custom trigger: if target has shock, create Explosion
-        const debuffs = target.getData('debuffs') || [];
-        if (debuffs.some(d => d.name === 'Shock')) {
-            const explosion = new Explosion(100);
-            explosion.applyTo(target);
+    // Try to apply debuff.
+    applyDebuff(scene, source, target){
+        if (target.getData('hp') > 0){  // debuff set AND target lives
+            const debuffs = target.getData('debuffs') || [];
+            if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
+                debuffs.push(this.createCopy(source));
+                target.setData('debuffs', debuffs);
+                playDebuffPopup(scene, target.x, target.y, this.name, uiStats.negativePopupOptions);
+                this.onApply(scene, target);
+                return 1;  // maybe more than one in the future
+            }
         }
+        return 0;  // only really useful with resists and passives (immune to stun)
+    }
+
+    // Create copy of this class, only set source.
+    createCopy(source){
+        return new StatAffectingDebuff(this.name, this.duration, this.affects, this.value, source);
+    }
+
+    // Whenever Debuff gets applied => decreases current stats.
+    onApply(scene, target){
+        const char = target.getData('char');
+        const statManager = char.statManager;
+        let current = statManager.getCurrentStat(this.affects);
+
+        if (this.value.percentage){  // percentage-based reduction
+            const base = statManager.getBaseStat(this.affects);
+            current = Math.max(1, current - Math.floor(this.value.percentage*base));
+        } else {  // absolute
+            current = Math.max(1, current - this.value.absolute);
+        }
+        statManager.setCurrentStat(this.affects, current);
+    }
+
+    // Whenever Debuff gets applied => reverts decrease of current stats.
+    onRemove(scene, target){
+        const char = target.getData('char');
+        const statManager = char.statManager;
+        let current = statManager.getCurrentStat(this.affects);
+
+        if (this.value.percentage){
+            const base = statManager.getBaseStat(this.affects);
+            current = Math.max(1, current + Math.floor(this.value.percentage*base));
+        } else {
+            current = Math.max(1, current + this.value.absolute);
+        }
+        statManager.setCurrentStat(this.affects, current);
+    }
+
+    // Activates debuff's effect/dmg on target.
+    tick(scene, target){
+        this.duration-=1;
+        const keepDebuff = this.duration > 0;
+        if (!keepDebuff) this.onRemove(scene, target);
+        return keepDebuff;
     }
 }

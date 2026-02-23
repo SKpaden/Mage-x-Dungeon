@@ -2,6 +2,38 @@ export class StatManager{
     constructor(stats){
         this.statData = stats;
     }
+
+    // Copies stats to not mutate later.
+    static copyStats(stats){
+        return {
+        'speed': {
+                current: stats.speed.current,
+                base: stats.speed.base
+            },
+            'hp': {
+                current: stats.hp.current,
+                base: stats.hp.base
+            },
+            'dmgDealtMult': {
+                current: stats.dmgDealtMult.current,
+                base: stats.dmgDealtMult.base
+            },
+            'dmgTakenMult': {
+                current: stats.dmgTakenMult.current,
+                base: stats.dmgTakenMult.base
+            },
+            'resistances': {
+                'Fire': {
+                    current: stats.resistances.Fire.current,
+                    base: stats.resistances.Fire.base
+                },
+                'Water': {
+                    current: stats.resistances.Water.current,
+                    base: stats.resistances.Water.base
+                }
+            }
+        }
+    }
     // Example:
     // stats: {
     //         'speed': {
@@ -12,7 +44,11 @@ export class StatManager{
     //             current: 250,
     //             base: 250
     //         },
-    //         'dmgMult': {
+    //         'dmgDealtMult': {
+    //             current: 1.0,
+    //             base: 1.0
+    //         },
+    //         'dmgTakenMult': {
     //             current: 1.0,
     //             base: 1.0
     //         },
@@ -60,7 +96,7 @@ export class StatManager{
     }
 
     setCurrentResistance(elementName, newValue){
-        this.statData['resistances'][elementName].current = newValue;
+        this.statData.resistances[elementName].current = newValue;
     }
 
     setCurrentStat(statName, newValue){
