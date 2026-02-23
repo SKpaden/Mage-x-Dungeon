@@ -215,8 +215,46 @@ export function getSkillTemplates(){
             description: "Boosts turn meter of all allies by 30%.",
             type: 'Support'
         },
-        // Poison Cloud:
+        // Ally Attack:
         10: {
+            name: 'Ally Attack',
+            icon: 'Ally Attack.jpg',
+            targets: 'single',
+            actions: [
+                { className: 'AllyAttack', params: { amount: 'all' } },
+            ],
+            cooldown: 5,
+            description: "Attacks an enemy with all allies.",
+        },
+        // Poison Claw:
+        11: {
+            name: 'Poison Claw',
+            icon: 'Poison Claw.jpg',
+            targets: 'single',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'single',
+                                            effect: new Effect(20, 'Poison', new Debuff('Poison', 2, 50, 'Poison', null, false, 'elemental', null), "Poison"),
+                                            skillName: 'Poison Claw'
+                                        }
+                }
+            ],
+            cooldown: 3,
+            description: "Places a Poison debuff on adjacent targets for 5 turns.",
+        },
+        // Poison Bomb:
+        12: {
+            name: 'Poison Bomb',
+            icon: 'Poison Bomb.jpg',
+            targets: 'adjacent',
+            actions: [
+                { className: 'ApplyDebuff', params: { area: 'adjacent', debuff: new Debuff('Poison', 5, 50, 'Poison', null, false, 'elemental', null) } },
+            ],
+            cooldown: 3,
+            description: "Places a Poison debuff on adjacent targets for 5 turns.",
+        },
+        // Poison Cloud:
+        13: {
             name: 'Poison Cloud',
             icon: 'Poison Cloud.jpg',
             targets: 'all',
@@ -226,6 +264,28 @@ export function getSkillTemplates(){
             cooldown: 3,
             description: "Places a Poison debuff on all enemies.",
             //type: 'Debuff'
+        },
+        // Poison Activation:
+        14: {
+            name: 'Poison Activation',
+            icon: 'Poison Activation.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'ActivatePoison', params: { area: 'all' } },
+            ],
+            cooldown: 3,
+            description: "Activates all Poison debuffs on all enemies.",
+        },
+        // Endless Suffering:
+        15: {
+            name: 'Endless Suffering',
+            icon: 'Endless Suffering.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'IncreaseDebuffDuration', params: { area: 'all' , amount: 2} },
+            ],
+            cooldown: 3,
+            description: "Increases the duration of all enemy debuffs by 2 turns.",
         },
     };
 

@@ -68,7 +68,7 @@ export class Character{
 // CREATE HEROS FROM TEMPLATES:
 
 export function getHeroTeam(){
-    return [createHeroFromTemplate(1), createHeroFromTemplate(2), createHeroFromTemplate(3), createHeroFromTemplate(7), createHeroFromTemplate(6)];
+    return [createHeroFromTemplate(1), createHeroFromTemplate(2), createHeroFromTemplate(4), createHeroFromTemplate(7), createHeroFromTemplate(6)];
 }
 
 export function getEnemyTeam(){
@@ -404,8 +404,8 @@ const heroTemplates = {
         name: "Poison Dragon Queen",
         portrait: 'Dragon Queen - Poison.jpg',
         maxHp: 350,
-        speed: 13,
-        skillIds: [1, 2, 3, 4],  // References to skillTemplates
+        speed: 24,
+        skillIds: [11, 12, 13, 14],  // References to skillTemplates
         skillPriorities: [3, 2, 1, 0],
         resistances: { poison: 2.0, water: 1.2, physical: -0.6 },  // Later: multipliers
         passive: null,  // String or object for logic
@@ -444,11 +444,11 @@ const heroTemplates = {
         portrait: 'Kresh.jpg',
         maxHp: 650,
         speed: 28,
-        skillIds: [1, 6, 9, 10],
+        skillIds: [1, 10, 9, 15],
         skillPriorities: [3, 2, 1, 0],
         resistances: { physical: 0.8, fire: 1.0 },
         passive: null,
         tags: ['Support', 'Physical', 'Warrior'],
-        description: "A fierce draconoid warrior with an eternal hatred towards mages. His only goal: Eradicate all magic in this world."
+        description: "An experienced combat veteran now commanding his troops and turning the tides of a battle with cunning abilities."
     },
 };

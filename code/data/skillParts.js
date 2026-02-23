@@ -1,12 +1,76 @@
-import { getAffectedTargets, processReactions } from "../game/combat.js";
+import { getAttackOrder } from "./helpers.js";
+import { dmgTarget, getAffectedTargets, processReactions } from "../game/combat.js";
 import { boostTurnMeter } from "../game/turnMeterManager.js";
+import { delay } from "../ui/helpers.js";
 import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
 import { updateDebuffDsiplay } from "../ui/portraitFactory.js";
+import { uiStats } from "../ui/uiStats.js";
 
 // Class to extend from. SkillParts are reusable actions inside a skill (e.g., decrease CD).
 class SkillPart{
     constructor(params = {}){
         this.params = params;
+    }
+}
+
+// Activates all poison stacks on targets, more poisons = more damage.
+/**
+ * Params: { area: 'all'/'adjacent'/'single' }
+ */
+export class ActivatePoison extends SkillPart{
+    async execute(scene, source, target, index, allies, enemies){
+        const { area = 'all'} = this.params;
+        const affectedTargets = getAffectedTargets(area, index, enemies);
+        for (let i = 0; i < affectedTargets.length; i++){
+            const unitIndex = affectedTargets[i];
+            const container = enemies[unitIndex];
+            const debuffs = container.getData('debuffs');
+            // Count poisons:
+            let poisonCount = 0;
+            let dmgCount = 0;
+            debuffs.forEach(debuff => {
+                if (debuff.name === 'Poison'){
+                    poisonCount += debuff.duration;
+                    dmgCount += debuff.dmgPerTurn;
+                }
+            });
+            // Remove poisons:
+            const newDebuffs = debuffs.filter((debuff) => {
+                if (debuff.name === 'Poison') return false;
+                return true;
+            });
+            container.setData('debuffs', newDebuffs);
+            // Visuals + dmg:
+            updateDebuffDsiplay(scene, container);
+            dmgTarget(scene, poisonCount*dmgCount, source, container, 'Poison x'+poisonCount, '#007700');
+        }
+    }
+}
+
+// Ally attack: Allies attack target with default skill.
+/**
+ * Params: { amount: 'all' }
+ */
+export class AllyAttack extends SkillPart{  // works overall, but logQueue is not processed correctly => logQueue rework needed
+    async execute(scene, source, target, index, allies, enemies){
+        const { amount = 'all'} = this.params;
+        let maxAmount = amount === 'all' ? allies.length : amount;
+        let hasAttacked = 0;
+        const shuffledIndexes = getAttackOrder(source.getData('teamIndex'), allies.length);
+        for (let i = 0; i < shuffledIndexes.length; i++) {
+            const attackerIndex = shuffledIndexes[i];
+            const ally = allies[attackerIndex];
+            const char = ally.getData('char')  // get char class to access skills
+            const allyHp = ally.getData('hp');
+            if (allyHp > 0){
+                const allySkill = char.skills[0];
+                await allySkill.apply(scene, ally, target, index, allies, enemies);
+                // Manual delay necessary because 1-action skills (mostly default skill) have no delay...
+                if (allySkill.actions.length === 1) await delay(scene, uiStats.debuffDelay / 2);
+                hasAttacked++;
+                if (hasAttacked === maxAmount) break;
+            }
+        }
     }
 }
 
@@ -91,6 +155,31 @@ export class IncreaseCD extends SkillPart{
         }
     }
 }
+// Increases CDs on enemy team.
+/**
+ * Params: { area: 'all'/'adjacent'/'single', includedDebuffs: ['Burn', 'Poison']}
+ */
+export class IncreaseDebuffDuration extends SkillPart{
+    execute(scene, source, target, index, allies, enemies){
+        const { area = 'all', includeDebuffs = 'all', amount = 1} = this.params;
+        const affectedTargets = getAffectedTargets(area, index, enemies);
+        for (let i = 0; i < affectedTargets.length; i++){
+            const unitIndex = affectedTargets[i];
+            let incCount = 0;
+            const container = enemies[unitIndex];
+            const debuffs = container.getData('debuffs');
+            debuffs.forEach(debuff => {
+                // Exclude cc debuffs:
+                if (debuff.type !== 'cc'){
+                    debuff.duration += amount;
+                    incCount++;
+                }
+            })
+            if (incCount) showNegativePopup(scene, container.x, container.y, "Increase Debuff\nDuration x" + incCount);
+            updateDebuffDsiplay(scene, container);
+        }
+    }
+}
 // Resets the CDs on one or more team members.
 /**
  * Params: { area: 'all'/'single'}
@@ -157,6 +246,8 @@ export function createActionFromTemplate(data){
 
 // To dynamically create SkillPart subclasses based on skill template:
 const skillPartFactories = {
+    ActivatePoison: (params) => new ActivatePoison(params),
+    AllyAttack: (params) => new AllyAttack(params),
     ApplyDebuff: (params) => new ApplyDebuff(params),
     BoostTurnMeter: (params) => new BoostTurnMeter(params),
     DealDamage: (params) => new DealDamage(params),

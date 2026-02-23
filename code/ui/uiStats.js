@@ -31,7 +31,7 @@ export const uiStats = {
     allyHoverTint: 0x00ff00,
     allyTargetTint: '0x44ff44',
     // Popups:
-    negativePopupOptions: {fontSize: '28px', color: '#ED0000'},
-    positivePopupOptions: {fontSize: '28px', color: '#00aa00'},
+    negativePopupOptions: {fontSize: '26px', color: '#ED0000'},
+    positivePopupOptions: {fontSize: '26px', color: '#00aa00'},
     popupDuration: 800,
 };

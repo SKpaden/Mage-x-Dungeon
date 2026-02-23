@@ -29,6 +29,10 @@ export default class BattleScene extends Phaser.Scene {
         this.load.image('War Cry.jpg', 'assets/skill icons/War Cry.jpg');
         this.load.image('Dash.jpg', 'assets/skill icons/Dash.jpg');
         this.load.image('Poison Cloud.jpg', 'assets/skill icons/Poison Cloud.jpg');
+        this.load.image('Ally Attack.jpg', 'assets/skill icons/Ally Attack.jpg');
+        this.load.image('Poison Bomb.jpg', 'assets/skill icons/Poison Bomb.jpg');
+        this.load.image('Poison Activation.jpg', 'assets/skill icons/Poison Activation.jpg');
+        this.load.image('Endless Suffering.jpg', 'assets/skill icons/Endless Suffering.jpg');
 
         // Backgrounds:
         this.load.image('battlefield', 'assets/backgrounds/battlefield.jpg');
