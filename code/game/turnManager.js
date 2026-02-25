@@ -3,7 +3,7 @@ import { gameState } from "./gameState.js";
 import { fillAllTurnMeters, resetTurnMeter } from "./turnMeterManager.js";
 import { logCombat } from "../ui/combatLog.js";
 import { delay, updateText, setHighlight, setPlayerTarget } from "../ui/helpers.js";
-import { getPortraitTween, updateDebuffDsiplay} from "../ui/portraitFactory.js";
+import { getPortraitTween, updateDebuffDisplay} from "../ui/portraitFactory.js";
 import { showSkills, clearAffectedTargets } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
 
@@ -112,6 +112,6 @@ async function processDebuffs(scene, target){
     if (remainingHp <= 0) skipTurn = 'Death';
     remainingHp > 0 ? target.setData('debuffs', debuffs) : target.setData('debuffs', []);
     
-    updateDebuffDsiplay(scene, target);
+    updateDebuffDisplay(scene, target);
     return skipTurn;
 }

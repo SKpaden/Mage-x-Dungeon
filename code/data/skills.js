@@ -96,6 +96,7 @@ export function createSkillFromTemplate(id){
     );
 }
 
+// This method to deal with initialization order of files (Debuff no loaded before Skill class or vice versa ==> put it in a function like this and call at runtime).
 export function getSkillTemplates(){
     if (skillTemplates) return skillTemplates;
     skillTemplates = {

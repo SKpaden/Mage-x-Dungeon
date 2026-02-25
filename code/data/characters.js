@@ -1,8 +1,9 @@
+import { getPassiveObjects } from "./passives.js";
 import { createSkillFromTemplate, Skill } from "./skills.js";
 import { StatManager } from "./statManager.js";
 
 export class Character{
-    constructor(id, name, portrait, maxHp, speed, skills, skillPriorities, resistences, passive, tags, description, stats){  // add id maybe
+    constructor(id, name, portrait, maxHp, speed, skills, skillPriorities, resistences, passives, tags, description, stats){  // add id maybe
         this.id = id;
         this.name = name;
         this.portrait = portrait;
@@ -15,10 +16,20 @@ export class Character{
         
         // WAY LATER:
         this.resistences = resistences;
-        this.passive = passive;
+        // Passives:
+        this.passives = [];
+        this.passiveEvents = new Map();
+        passives.forEach(passive => this.addPassive(passive));
+
         this.tags = tags;
         this.description = description;
         this.statManager = new StatManager(StatManager.copyStats(stats));  // I didn't copy and had mutation...
+    }
+
+    // Add a passive to array of passives and register its event.
+    addPassive(passive){
+        this.passives.push(passive);
+        passive.registerEvents(this.passiveEvents);
     }
 
     // Choose skill to use based on priorities.
@@ -61,6 +72,16 @@ export class Character{
         this.skills.forEach((skill) => skill.currentCD = 0);
         return true;
     }
+
+    // Trigger event (call all handlers for that event):
+    triggerEvent(eventName, ...args) {
+        let handler = this.passiveEvents.get(eventName) || null;
+        let result = true;  // default allow (for 'onDebuffApplied')
+        if (handler){
+            result = handler(...args);
+        }
+        return result;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,6 +110,12 @@ function createHeroFromTemplate(id){
     const skills = [];
     skillIds.forEach(skillId => skills.push(createSkillFromTemplate(skillId)));
 
+    let passives = [];
+    // Build passives:
+    if (data.passives) {
+        passives = getPassiveObjects(data.passives);
+    }
+
     return new Character(
         data.id,
         data.name,
@@ -98,7 +125,7 @@ function createHeroFromTemplate(id){
         skills,
         data.skillPriorities,
         data.resistances,
-        data.passive,
+        passives,
         data.tags,
         data.description,
         data.stats
@@ -116,7 +143,7 @@ const heroTemplates = {
         skillIds: [1, 2, 3, 4],  // References to skillTemplates
         skillPriorities: [3, 2, 1, 0],
         resistances: { fire: 0.5, water: 1.2 },  // Later: multipliers
-        passive: null,  // String or object for logic
+        passives: null,  // String or object for logic
         tags: ['Dark', 'Mage'],
         description: "A shadowy mage who manipulates void energy.",
         stats: {
@@ -157,7 +184,7 @@ const heroTemplates = {
         skillIds: [1, 2, 3, 4],  // References to skillTemplates
         skillPriorities: [3, 2, 1, 0],
         resistances: { fire: 1.5, water: 1.0 },  // Later: multipliers
-        passive: null,  // String or object for logic
+        passives: null,  // String or object for logic
         tags: ['Draconoid', 'Mage'],
         description: "A humanoid dragon mage.",
         stats: {
@@ -198,7 +225,7 @@ const heroTemplates = {
         skillIds: [1, 2, 3, 4],  // References to skillTemplates
         skillPriorities: [3, 2, 1, 0],
         resistances: { fire: 0.5, water: 1.2, physical: 1.8 },  // Later: multipliers
-        passive: null,  // String or object for logic
+        passives: null,  // String or object for logic
         tags: ['Fire', 'Physical'],
         description: "A draconoid warrior with plenty of battle experience.",
         stats: {
@@ -239,7 +266,7 @@ const heroTemplates = {
         skillIds: [11, 12, 13, 14],  // References to skillTemplates
         skillPriorities: [3, 2, 1, 0],
         resistances: { poison: 2.0, water: 1.2, physical: -0.6 },  // Later: multipliers
-        passive: null,  // String or object for logic
+        passives: null,  // String or object for logic
         tags: ['Poison', 'Debuffer'],
         description: "A draconoid mage gifted in the arts of poison magic.",
         stats: {
@@ -280,7 +307,7 @@ const heroTemplates = {
         skillIds: [1, 2, 3, 4],  // References to skillTemplates
         skillPriorities: [3, 2, 1, 0],
         resistances: { poison: 2.0, dark: 2.2, physical: -0.6 },  // Later: multipliers
-        passive: null,  // String or object for logic
+        passives: null,  // String or object for logic
         tags: ['Dark', 'CC', 'AoE'],
         description: "A draconoid necromancer able to wield dark magic to devastate oponents.",
         stats: {
@@ -321,7 +348,9 @@ const heroTemplates = {
         skillIds: [1, 6, 7, 8],
         skillPriorities: [3, 2, 1, 0],
         resistances: { physical: 0.8, fire: 1.0 },
-        passive: null,
+        passives: [
+            { type: 'DebuffImmunity', params: { debuffNames: ['Scared'] } },
+        ],
         tags: ['Fire', 'Physical', 'Warrior'],
         description: "A fierce draconoid warrior with an eternal hatred towards mages. His only goal: Eradicate all magic in this world.",
         stats: {
@@ -362,7 +391,7 @@ const heroTemplates = {
         skillIds: [1, 10, 9, 15],
         skillPriorities: [3, 2, 1, 0],
         resistances: { physical: 0.8, fire: 1.0 },
-        passive: null,
+        passives: null,
         tags: ['Support', 'Physical', 'Warrior'],
         description: "An experienced combat veteran now commanding his troops and turning the tides of a battle with cunning abilities.",
         stats: {

@@ -1,6 +1,6 @@
 import { gameState } from "./gameState.js";
 import { clearAffectedTargets, showDmgPopup } from "../ui/skillUI.js";
-import { updateDebuffDsiplay, updateHP, updateTurnMeter } from "../ui/portraitFactory.js";
+import { updateDebuffDisplay, updateHP, updateTurnMeter } from "../ui/portraitFactory.js";
 import { delay, setPlayerTarget } from "../ui/helpers.js";
 import { logCombat, processLogQueue } from "../ui/combatLog.js";
 import { playPhysicalAttackTween } from "../ui/combatTweens.js";
@@ -67,7 +67,7 @@ export async function processReactions(scene, source, target, index, allies, ene
         dealtDmg = effect.applyReactions(scene, source, currentTarget, effectQueue, skillName);  // maybe return info about whether this was high or low dmg => only shake screen on high dmg
         if(dealtDmg) updated = true;  // if this happens once, keep it true
         debuffsApplied += effect.applyDebuff(source, currentTarget);  // add if debuffs applied
-        updateDebuffDsiplay(scene, currentTarget);
+        updateDebuffDisplay(scene, currentTarget);
     })
     if (updated) scene.cameras.main.shake(200, 0.01);  // screen after every reaction AND after initial dmg (fist call of this function)
     gameState.logQueue[`${skillName} Effects`] = { debuffsApplied: debuffsApplied, reactionsTriggered: effectQueue.length };
@@ -161,7 +161,7 @@ export function checkDeath(scene, target){
     if (remainingHp <= 0){
         team === 'player' ? gameState.playerAlive-=1 : gameState.enemyAlive-=1;
         target.setData('debuffs', []);
-        updateDebuffDsiplay(scene, target);
+        updateDebuffDisplay(scene, target);
         target.setData('turnMeter', 0);
         updateTurnMeter(scene, target, 0);
         return true;

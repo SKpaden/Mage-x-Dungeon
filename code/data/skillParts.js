@@ -3,7 +3,7 @@ import { dmgTarget, getAffectedTargets, processReactions } from "../game/combat.
 import { boostTurnMeter } from "../game/turnMeterManager.js";
 import { delay } from "../ui/helpers.js";
 import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
-import { updateDebuffDsiplay } from "../ui/portraitFactory.js";
+import { updateDebuffDisplay } from "../ui/portraitFactory.js";
 import { uiStats } from "../ui/uiStats.js";
 
 // Class to extend from. SkillParts are reusable actions inside a skill (e.g., decrease CD).
@@ -41,7 +41,7 @@ export class ActivatePoison extends SkillPart{
             });
             container.setData('debuffs', newDebuffs);
             // Visuals + dmg:
-            updateDebuffDsiplay(scene, container);
+            updateDebuffDisplay(scene, container);
             dmgTarget(scene, poisonCount*dmgCount, source, container, 'Poison x'+poisonCount, '#007700');
         }
     }
@@ -89,7 +89,7 @@ export class ApplyDebuff extends SkillPart{
         affectedTargets.forEach(i => {
             const unit = targetedTeam[i];
             debuff.applyDebuff(scene, source, unit);  // add to debuff application count here
-            updateDebuffDsiplay(scene, unit);
+            updateDebuffDisplay(scene, unit);
         })
     }
 }
@@ -162,7 +162,7 @@ export class IncreaseDebuffDuration extends SkillPart{
                 }
             })
             if (incCount) showNegativePopup(scene, container.x, container.y, "Increase Debuff\nDuration x" + incCount);
-            updateDebuffDsiplay(scene, container);
+            updateDebuffDisplay(scene, container);
         }
     }
 }
@@ -200,14 +200,14 @@ export class FullCleanse extends SkillPart{
                     ally.setData('debuffs', []);
                     const charHp = ally.getData('hp');
                     if (charHp > 0){
-                        updateDebuffDsiplay(scene, ally);
+                        updateDebuffDisplay(scene, ally);
                         showPositivePopup(scene, ally.x, ally.y, "Cleanse");
                     }
                 })
                 break;
             case 'single':
                 target.setData('debuffs', []);
-                updateDebuffDsiplay(scene, target);
+                updateDebuffDisplay(scene, target);
                 showPositivePopup(scene, target.x, target.y, "Cleanse");
                 break;
 

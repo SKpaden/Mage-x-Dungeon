@@ -1,4 +1,5 @@
 import { playDebuffPopup } from "../ui/combatTweens.js";
+import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
 import { updateHP } from "../ui/portraitFactory.js";
 import { uiStats } from "../ui/uiStats.js";
 
@@ -70,6 +71,12 @@ export class Debuff{
 
     // Applies debuff to target if allowed. Supposed to replace old apply.
     applyDebuff(scene, source, target){
+        const allowed = target.getData('char').triggerEvent('onApplyDebuff', this, source);
+        if (!allowed){
+            showPositivePopup(scene, target.x, target.y, "Immune");
+            return 0;  // trigger event and see if debuff is allowed
+        }
+
         if (target.getData('hp') > 0){  // debuff set AND target lives
             const debuffs = target.getData('debuffs') || [];
             if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
@@ -137,6 +144,12 @@ export class StatAffectingDebuff extends Debuff{
 
     // Try to apply debuff.
     applyDebuff(scene, source, target){
+        const allowed = target.triggerEvent('onApplyDebuff', this, source);
+        if (!allowed){
+            showPositivePopup(scene, target.x, target.y, "Immune");
+            return 0;  // trigger event and see if debuff is allowed
+        }
+
         if (target.getData('hp') > 0){  // debuff set AND target lives
             const debuffs = target.getData('debuffs') || [];
             if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
