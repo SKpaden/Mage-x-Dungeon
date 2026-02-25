@@ -34,6 +34,18 @@ export function previewTargets(scene, skill, index, targetedTeam, color){
     });
 }
 
+// Called whenever the window size changes. Resizes the skill display to fit new screen size.
+export function resizeSkillDisplay(scene){
+    const currentContainer = scene.currentSkillContainer;
+    if (currentContainer){
+        currentContainer.destroy();
+        scene.currentSkillContainer = null;
+    }
+    if (gameState.selectedPlayer){  // extra check to catch specific scenario (activate skill and resize window at the same time)
+        showSkills(scene, gameState.selectedPlayer);
+    }
+}
+
 // Shows a dmg popup on target location.
 export function showDmgPopup(scene, x, y, text, textOptions){
     const dmgText = scene.add.text(x, y, text, textOptions).setOrigin(0.5);

@@ -2,6 +2,8 @@ import { initBattle, initEventListeners } from '../game/gameState.js';
 import { advanceToNextTurn } from '../game/turnManager.js';
 import { initBg, initMessage, initTurnText, initPortraitDims, initPortraitDimsWithScaleManager, updateText } from '../ui/helpers.js';
 import { initCombatLog, logCombat } from '../ui/combatLog.js';
+import { resizeAllContainers } from '../ui/portraitFactory.js';
+import { uiStats } from '../ui/uiStats.js';
 
 export default class BattleScene extends Phaser.Scene {
     constructor() { super({ key: 'battle' }); }
@@ -40,16 +42,45 @@ export default class BattleScene extends Phaser.Scene {
 
     create() {
         this.bg = initBg(this);
-        this.log = initCombatLog(this, 20, this.scale.height / 2);
+        this.log = initCombatLog(this, 20, this.scale.height / 2);  // 20 padding left of log element, middle on y-axis
         logCombat(this, "The battle begins!", '#e0e0e0', '[START]');
         this.message = initMessage(this);
         this.turnText = initTurnText(this);
         initEventListeners(this);
         //initPortraitDims(this);
-        initPortraitDimsWithScaleManager(this)
+        initPortraitDimsWithScaleManager(this);
 
         initBattle(this);
         advanceToNextTurn(this);
+
+        // For dynamic resizing:
+        this.scale.on('resize', () => {
+            // BG:
+            this.bg.destroy();
+            this.bg = initBg(this);
+            this.children.sendToBack(this.bg);  // render in background under all other elements
+
+            // Combat log:
+            this.log.y = this.scale.height / 2;  // bring back to middle
+            // THis works, just need to adjust values and attributes:
+            // this.log.node.style.width = 20 + 'px';
+            // this.log.node.style.height = 20 + 'px';
+            // this.log.node.style.backgroundColor = "green";
+
+            // Center message:
+            this.message.x = this.scale.width / 2;
+            this.message.y = this.scale.height / 2;
+
+            // Turn indicator:
+            this.turnText.x = this.scale.width*0.85 + uiStats.margin;
+            this.turnText.y = this.scale.height / 2;
+
+            // Update uiStats for portraits:
+            initPortraitDimsWithScaleManager(this);
+
+            // Resize cahracter displays:
+            resizeAllContainers(this);
+        });
     }
 
     update() {}

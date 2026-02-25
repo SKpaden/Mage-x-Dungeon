@@ -1,10 +1,8 @@
 import { gameState } from "../game/gameState.js";
 import { applySkill } from "../game/combat.js";
-import { clearAffectedAllies, clearAffectedTargets, previewTargets } from "./skillUI.js";
+import { clearAffectedAllies, clearAffectedTargets, previewTargets, resizeSkillDisplay } from "./skillUI.js";
 import { uiStats } from "./uiStats.js";
 import { Debuff } from "../game/debuffs.js";
-import { Effect } from "../game/effects.js";
-import { Skill } from "../data/skills.js";
 
 // Creates enemy portraits with Character class.
 export function createEnemyPortraitAlt(scene, x, y, character, scale, team, index){
@@ -34,8 +32,16 @@ export function getPortraitTween(scene, container){
             });
 }
 
+// Called after window resize. Resizes all character displays to match new window size.
+export function resizeAllContainers(scene){
+    resizePlayerContainers(scene, gameState.playerContainers);
+    resizeEnemyContainers(scene, gameState.enemyContainers);
+    // If a skill display exists currently, resize it:
+    if (gameState.turn === 'player' && !gameState.pendingSkill && gameState.selectedPlayer) resizeSkillDisplay(scene);
+}
+
 // Updates the debuff display.
-export function updateDebuffDsiplay(scene, container){
+export function updateDebuffDisplay(scene, container){
     const debuffContainer = container.getData('debuffContainer');
     debuffContainer.destroy();  // remove old
     displayDebuffs(scene, container, container.getData('halfW'), container.getData('halfH'));  // add new
@@ -218,6 +224,72 @@ function displayDebuffs(scene, container, xOffset, yOffset){
     });
     container.add(debuffContainer);
     container.setData('debuffContainer', debuffContainer);
+}
+
+// Resizes all player containers to fit new window size.
+function resizePlayerContainers(scene, team){
+    const spaceNeeded = team.length * uiStats.portraitWidth + (team.length-1)*uiStats.margin;  // #portraits*width + margins between them
+    const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
+    var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;  // REMEMBER: CENTER-BASED POSITIONING!
+    for (let index = 0; index < team.length; index++) {
+        const container = team[index];
+        resizeCharacterDisplay(scene, container, xPos, uiStats.halfH + 20, uiStats.portraitScale);
+        xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
+    }
+}
+
+// Resizes all enemy containers to fit new window size.
+function resizeEnemyContainers(scene, team){
+    const spaceNeeded = team.length * uiStats.portraitWidth + (team.length-1)*uiStats.margin;  // #portraits*width + margins between them
+    const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
+    var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;  // REMEMBER: CENTER-BASED POSITIONING!
+    const yOffset = scene.scale.height - uiStats.halfH - 20 - 35;
+    for (let index = 0; index < team.length; index++) {
+        const container = team[index];
+        resizeCharacterDisplay(scene, container, xPos, yOffset, uiStats.portraitScale);
+        xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
+    }
+}
+
+// Rsizes container display to fit new window size including: portrait, hp bar, turn meter bar, border.
+function resizeCharacterDisplay(scene, container, newX, newY, newScale){
+    container.x = newX;
+    container.y = newY;
+    const portrait = container.list[0];
+    portrait.setScale(newScale);
+
+    // Recalculate dimensions:
+    const halfW = portrait.displayWidth / 2;
+    const halfH = portrait.displayHeight / 2;
+
+    // Update stored data (maybe remove this in the future, but storing per container may be better for boss fights ==> different individual dims):
+    container.setData('halfW', halfW);
+    container.setData('halfH', halfH);
+    container.setData('displayWidth', portrait.displayWidth);
+    container.setData('displayHeight', portrait.displayHeight);
+
+    container.input.hitArea = new Phaser.Geom.Rectangle(-halfW, -halfH, portrait.displayWidth, portrait.displayHeight);  // adjust hitArea to match new size
+
+    const hpText = container.getData('hpText');
+    const hpTextYPos = halfH + uiStats.marginPortraitHpBar + (uiStats.hpBarHeight-2*uiStats.paddingHpBar)/2 + uiStats.paddingHpBar;
+    // y = halfH + uiStats.marginPortraitHpBar + redbarHeight/2 + uiStats.paddingHpBar = halfH + 5 + 12 + 3 = halfH + 20
+    hpText.y = hpTextYPos;
+
+    // Redraw border:
+    const borderGraphics = container.getData('borderGraphics');
+    borderGraphics.clear();
+    borderGraphics.lineStyle(2, 0xFFE836, 1);
+    borderGraphics.strokeRoundedRect(-uiStats.halfW, -uiStats.halfH, portrait.displayWidth, portrait.displayHeight, uiStats.borderRadius);
+
+    // Redraw HP bar (reuse your updateHP logic):
+    const currentHp = container.getData('hp');
+    updateHP(container, currentHp);  // clears and redraws with new dimensions
+
+    // Redraw turn meter:
+    updateTurnMeter(scene, container, Math.min(container.getData('turnMeter') / gameState.combinedSpeed, 1));  // clear + redraw
+
+    // Update debuffs:
+    updateDebuffDisplay(scene, container);
 }
 
 // Sets an ally container interactive
