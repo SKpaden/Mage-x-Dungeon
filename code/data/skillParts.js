@@ -132,9 +132,10 @@ export class BoostTurnMeter extends SkillPart{
  */
 export class DealDamage extends SkillPart{
     async execute(scene, source, target, index, allies, enemies){
-        const { area = 'single', dmg, element = 'Physical', skillName} = this.params;
+        const { area = 'single', dmg, element = 'Physical'} = this.params;
         const affectedTargets = getAffectedTargets(area, index, enemies);
-    
+        const logQueueKey = getLogTarget();  // where to log?
+
         playPhysicalAttackTween(scene, source, target.x, target.y);  // only play when dmg, but fine for now
 
         // Should a debuff be applied from an elemental Skill?
@@ -152,14 +153,14 @@ export class DealDamage extends SkillPart{
             const char = currentTarget.getData('char');
             //const finalDmg = char.triggerEvent('onDealDamage', scene, source, dmg, element);
 
-            const allowDebuff = (await Reaction.triggerReactions(scene, source, currentTarget, allies, enemies, getLogTarget(), element, dmg)).allowElementalDebuff;
+            const allowDebuff = (await Reaction.triggerReactions(scene, source, currentTarget, allies, enemies, logQueueKey, element, dmg)).allowElementalDebuff;
             // Apply debuff:
             if (debuff && allowDebuff){
                 debuffsApplied += debuff.applyDebuff(scene, source, currentTarget, false);
                 updateDebuffDisplay(scene, currentTarget);
             }
         }
-        gameState.logQueue[getLogTarget()].debuffsApplied += debuffsApplied;
+        gameState.logQueue[logQueueKey].debuffsApplied += debuffsApplied;
         await Reaction.processReactionQueue(scene, source, allies, enemies);  // process Reactions in gameState queue
     }
 }

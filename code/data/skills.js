@@ -108,8 +108,7 @@ export function getSkillTemplates(){
                 { className: 'DealDamage', params: {
                                             area: 'single',
                                             dmg: 60,
-                                            element: 'Physical',
-                                            skillName: 'Claw Strike'
+                                            element: 'Physical'
                                         }
                 }
             ],
@@ -125,8 +124,7 @@ export function getSkillTemplates(){
                 { className: 'DealDamage', params: {
                                             area: 'single',
                                             dmg: 60,
-                                            element: 'Fire',
-                                            skillName: 'Fireball'
+                                            element: 'Fire'
                                         }
                 }
             ],
@@ -152,9 +150,8 @@ export function getSkillTemplates(){
             actions: [
                 { className: 'DealDamage', params: {
                                             area: 'all',
-                                            dmg: 25,
-                                            element: 'Dark',
-                                            skillName: 'Dark Nova'
+                                            dmg: 2500,
+                                            element: 'Dark'
                                         }
                 }
             ],
@@ -170,8 +167,7 @@ export function getSkillTemplates(){
                 { className: 'DealDamage', params: {
                                         area: 'all',
                                         dmg: 120,
-                                        element: 'Physical',
-                                        skillName: 'Revenge'
+                                        element: 'Physical'
                                     }
                 }
             ],
