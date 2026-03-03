@@ -56,12 +56,6 @@ export class Character{
         return true;
     }
 
-    // Draws the turn meter under the character's portrait with the new value.
-    updateTurnMeter(scene, container, value){
-        // TODO:
-
-    }
-
     // Reduces cooldown of all skills by 1 turn. Call at the end of round.
     reduceCooldowns(){
         this.skills.forEach((skill) => skill.decreaseCD());
@@ -148,8 +142,8 @@ const heroTemplates = {
         description: "A shadowy mage who manipulates void energy.",
         stats: {
             'speed': {
-                current: 20,
-                base: 20
+                current: 30,
+                base: 30
             },
             'hp': {
                 current: 250,

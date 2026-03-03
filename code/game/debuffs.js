@@ -23,26 +23,20 @@ export class Debuff{
         this.textColor = '#ED0000';
     }   
 
+    // Lookup for default elemental debuffs.
+    static defaultElementalDebuffs = {
+        'Dark': new Debuff("Scared", 1, 0, null, null, true, "cc", null),
+        'Electro': new Debuff('Shock', 2, 10, 'Electro', null, false, 'elemental', null),
+        'Fire': new Debuff('Burn', 3, 20, 'Fire', null, false, 'elemental', null),
+        'Light': new Debuff('Blinded', 3, 0, 'Light', null, false, 'elemental', null),
+        'Poison': new Debuff('Poison', 2, 50, 'Poison', null, false, 'elemental', null),
+        'Water': new Debuff('Wet', 3, 0, 'Water', null, false, 'elemental', null),
+
+        // more
+    }
+
     // Debuffs that can be applied mutliple times to one enemy:
     static stackingDebuffs = ['Poison'];
-
-    static reactionLookup = {
-        'Fire': {
-            'Electro': 'Explosion',
-            'Water': 'Steam',
-            // ...
-        },
-        'Electro': {
-            'Fire': 'Explosion',
-            'Water': 'Overload',
-            // ...
-        },
-        'Dark': {
-            'Light': 'VoidSurge',
-            // ...
-        },
-        // ...
-    }
 
     // Checks if a debuff is allowed to be added to a debuff list.
     static allowDebuff(debuffs, name){
@@ -62,19 +56,24 @@ export class Debuff{
         return contains;
     }
 
-    // Returns reaction of debuff with element or null.
-    static getReaction(debuff, element){
-        return Debuff.reactionLookup[element][debuff.element];  // maybe as lookup arrays [debuff.name] ==> also for multipliers/dmg
+    // Returns an instance of the default elemental debuff based on the element.
+    static getDefaultElementalDebuff(element){
+        const debuff = Debuff.defaultElementalDebuffs[element];
+        return debuff;
     }
 
     /////////////////////////////////////////////////////////////////// NON-STATIC ///////////////////////////////////////////////////////////////////
 
     // Applies debuff to target if allowed. Supposed to replace old apply.
-    applyDebuff(scene, source, target){
-        const allowed = target.getData('char').triggerEvent('onApplyDebuff', this, source);
+    applyDebuff(scene, source, target, showPopup = true){
+        const allowed = target.getData('char').triggerEvent('onApplyDebuff', this, source);  // trigger event and see if debuff is allowed
         if (!allowed){
-            showPositivePopup(scene, target.x, target.y, "Immune");
-            return 0;  // trigger event and see if debuff is allowed
+            if (!showPopup){  // delay to not overlap with dmg numbers
+                scene.time.delayedCall(300, () => showPositivePopup(scene, target.x, target.y, "Immune"));
+            } else{  // normal debuff application
+                showPositivePopup(scene, target.x, target.y, "Immune");
+            }
+            return 0;
         }
 
         if (target.getData('hp') > 0){  // debuff set AND target lives
@@ -82,7 +81,7 @@ export class Debuff{
             if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
                 debuffs.push(this.createCopy(source));
                 target.setData('debuffs', debuffs);
-                playDebuffPopup(scene, target.x, target.y, this.name, uiStats.negativePopupOptions);
+                if (showPopup) playDebuffPopup(scene, target.x, target.y, this.name, uiStats.negativePopupOptions);
                 return 1;  // maybe more than one in the future
             }
         }

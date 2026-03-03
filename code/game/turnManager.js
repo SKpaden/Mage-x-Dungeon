@@ -34,6 +34,7 @@ export function clearSelections(){
     gameState.selectedEnemy = null;
     gameState.selectedPlayer = null;
     gameState.logQueue = {};  // reset logQueue
+    gameState.reactionQueue = [];  // reset reaction queue
 }
 
 // End turn of unit. Cleans up state and triggers next turn.

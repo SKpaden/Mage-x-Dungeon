@@ -2,7 +2,14 @@ import { gameState } from "../game/gameState.js";
 import { uiStats } from "./uiStats.js";
 
 let logDom = null;
+let logTarget = null;
 
+// Gets the current logTarget.
+export function getLogTarget(){
+    return logTarget;
+}
+
+// Inits the combat log by adding it to the scene as a DOM element.
 export function initCombatLog(scene, x, y, width = 500, height = 180) {
     if (logDom) return logDom;  // singleton
 
@@ -60,8 +67,8 @@ export function processLogQueue(scene, queue, source){
         if (values.debuffsApplied) logText += `<small>Applied ${values.debuffsApplied} debuff(s).</small><br>`;
         if (values.reactionsTriggered) logText += `<small>Triggered ${values.reactionsTriggered} reaction(s)!</small><br>`;
 
-        if (values['dmg']) {
-            const totalDmg = values['dmg'].reduce(function(acc, element) {return acc + element;});
+        if (values['dmg'] && values['dmg'].length > 0) {
+            const totalDmg = values['dmg'].reduce(function(acc, element) {return acc + element;}, 0);  // 0 as initial value
             logText += `<strong>${key}</strong>` + `: ${totalDmg} damage to ${values['targets'].length} target(s).<br>`;
         }
     }
@@ -76,4 +83,10 @@ export function processLogQueue(scene, queue, source){
 
     // Auto-scroll to bottom:
     logDom.node.scrollTop = logDom.node.scrollHeight;
+}
+
+// Sets the logTarget.
+export function setLogTarget(logString){
+    logTarget = logString;
+    gameState.logQueue[logString] = { 'targets': [], 'dmg': [], debuffsApplied: 0, reactionsTriggered: 0};
 }

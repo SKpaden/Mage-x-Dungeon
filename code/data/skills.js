@@ -1,6 +1,5 @@
 import { createActionFromTemplate } from "./skillParts.js";
-import { Debuff, StatAffectingDebuff } from "../game/debuffs.js";
-import { Effect } from "../game/effects.js";
+import { Debuff } from "../game/debuffs.js";
 import { delay } from "../ui/helpers.js";
 import { uiStats } from "../ui/uiStats.js";
 
@@ -108,7 +107,8 @@ export function getSkillTemplates(){
             actions: [
                 { className: 'DealDamage', params: {
                                             area: 'single',
-                                            effect: new Effect(60, null, null, "Physical", '#8f8e8e'),
+                                            dmg: 60,
+                                            element: 'Physical',
                                             skillName: 'Claw Strike'
                                         }
                 }
@@ -124,7 +124,8 @@ export function getSkillTemplates(){
             actions: [
                 { className: 'DealDamage', params: {
                                             area: 'single',
-                                            effect: new Effect(60, 'Fire', new Debuff("Burn", 2, 20, "Fire", null, false, "elemental", null), "Fire"),
+                                            dmg: 60,
+                                            element: 'Fire',
                                             skillName: 'Fireball'
                                         }
                 }
@@ -151,7 +152,8 @@ export function getSkillTemplates(){
             actions: [
                 { className: 'DealDamage', params: {
                                             area: 'all',
-                                            effect: new Effect(25, 'Dark', new Debuff("Scared", 1, 0, "Dark", null, true, "cc", null), "Dark", '#b700ff'),
+                                            dmg: 25,
+                                            element: 'Dark',
                                             skillName: 'Dark Nova'
                                         }
                 }
@@ -167,7 +169,8 @@ export function getSkillTemplates(){
             actions: [
                 { className: 'DealDamage', params: {
                                         area: 'all',
-                                        effect: new Effect(120, null, null, "Physical", '#8f8e8e'),
+                                        dmg: 120,
+                                        element: 'Physical',
                                         skillName: 'Revenge'
                                     }
                 }
@@ -230,12 +233,13 @@ export function getSkillTemplates(){
             actions: [
                 { className: 'DealDamage', params: {
                                             area: 'single',
-                                            effect: new Effect(20, 'Poison', new Debuff('Poison', 2, 50, 'Poison', null, false, 'elemental', null), "Poison"),
+                                            dmg: 20,
+                                            element: 'Poison',
                                             skillName: 'Poison Claw'
                                         }
                 }
             ],
-            cooldown: 3,
+            cooldown: 0,
             description: "Places a Poison debuff on adjacent targets for 5 turns.",
         },
         // Poison Bomb:

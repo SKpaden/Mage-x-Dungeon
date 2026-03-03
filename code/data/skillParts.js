@@ -1,6 +1,11 @@
 import { getAttackOrder } from "./helpers.js";
-import { dmgTarget, getAffectedTargets, processReactions } from "../game/combat.js";
+import { dmgTarget, getAffectedTargets } from "../game/combat.js";
+import { Debuff } from "../game/debuffs.js";
+import { gameState } from "../game/gameState.js";
+import { Reaction } from "../game/reactions.js";
 import { boostTurnMeter } from "../game/turnMeterManager.js";
+import { getLogTarget } from "../ui/combatLog.js";
+import { playPhysicalAttackTween } from "../ui/combatTweens.js";
 import { delay } from "../ui/helpers.js";
 import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
 import { updateDebuffDisplay } from "../ui/portraitFactory.js";
@@ -11,6 +16,17 @@ class SkillPart{
     constructor(params = {}){
         this.params = params;
     }
+
+    /**
+     * Executes a specific part of a Skill.
+     * @param {Object} scene    Phaser scene object
+     * @param {Object} source   Phaser container of the character performing the action
+     * @param {Object} target   Phaser container of the character targeted by the source
+     * @param {int} index       Index of the target container within its team
+     * @param {Array} allies    Array of allied character containers of the source
+     * @param {Array} enemies   Array of enemy character containers of the source
+     */
+    execute(scene, source, target, index, allies, enemies){}
 }
 
 // Activates all poison stacks on targets, more poisons = more damage.
@@ -112,14 +128,42 @@ export class BoostTurnMeter extends SkillPart{
 
 // Dealing damage part of a skill (old effect).
 /**
- * Params: { area: 'all'/'single', effect: new Effect(...), skillName: skill.name}
+ * Params: { area: 'all'/'single', dmg: int, element: 'Phyisical'/'Fire', skillName: 'Fireball}
  */
 export class DealDamage extends SkillPart{
     async execute(scene, source, target, index, allies, enemies){
-        const { area = 'single', effect, skillName} = this.params;
-        await processReactions(scene, source, target, index, allies, enemies, area, effect, skillName);
+        const { area = 'single', dmg, element = 'Physical', skillName} = this.params;
+        const affectedTargets = getAffectedTargets(area, index, enemies);
+    
+        playPhysicalAttackTween(scene, source, target.x, target.y);  // only play when dmg, but fine for now
+
+        // Should a debuff be applied from an elemental Skill?
+        let debuff = null;
+        if (element !== 'Physical'){
+            debuff = Debuff.getDefaultElementalDebuff(element);
+        }
+
+        let debuffsApplied = 0;
+
+        // Go through all targets:
+        for (let i = 0; i < affectedTargets.length; i++){
+            const targetIndex = affectedTargets[i];
+            const currentTarget = enemies[targetIndex];
+            const char = currentTarget.getData('char');
+            //const finalDmg = char.triggerEvent('onDealDamage', scene, source, dmg, element);
+
+            const allowDebuff = (await Reaction.triggerReactions(scene, source, currentTarget, allies, enemies, getLogTarget(), element, dmg)).allowElementalDebuff;
+            // Apply debuff:
+            if (debuff && allowDebuff){
+                debuffsApplied += debuff.applyDebuff(scene, source, currentTarget, false);
+                updateDebuffDisplay(scene, currentTarget);
+            }
+        }
+        gameState.logQueue[getLogTarget()].debuffsApplied += debuffsApplied;
+        await Reaction.processReactionQueue(scene, source, allies, enemies);  // process Reactions in gameState queue
     }
 }
+
 // Increases CDs on enemy team.
 /**
  * Params: { area: 'all'/'single'}
@@ -127,18 +171,13 @@ export class DealDamage extends SkillPart{
 export class IncreaseCD extends SkillPart{
     execute(scene, source, target, index, allies, enemies){
         const { area = 'all'} = this.params;
-        switch (area){
-            case 'all':
-                enemies.forEach(container => {
-                    const char = container.getData('char');
-                    const charHp = container.getData('hp');
-                    if (charHp > 0 && char.lockout()) showNegativePopup(scene, container.x, container.y, "Increase\nCooldown");  // maybe pass source as arg to factor in passives
-                });
-                break;
-            case 'single':
-                if (target.getData('char').lockout()) showNegativePopup(scene, target.x, target.y, "Increase\nCooldown");
-                break;
-        }
+        const affectedTargets = getAffectedTargets(area, index, enemies);
+        affectedTargets.forEach(containerIndex => {
+            const container = enemies[containerIndex];
+            const char = container.getData('char');
+            const charHp = container.getData('hp');
+            if (charHp > 0 && char.lockout()) showNegativePopup(scene, container.x, container.y, "Increase\nCooldown");  // maybe pass source as arg to factor in passives
+        });
     }
 }
 // Increases CDs on enemy team.
@@ -222,12 +261,7 @@ export class FullCleanse extends SkillPart{
 export function createActionFromTemplate(data){
     const params = data.params;
     const className = data.className;
-    if (className === 'DealDamage'){  // unique behavior for damage skills
-        return skillPartFactories[className]({area: params.area, effect: params.effect.copy(), skillName: params.skillName});
-    }
-    else {
-        return skillPartFactories[className](params);
-    }
+    return skillPartFactories[className](params);
 }
 
 // To dynamically create SkillPart subclasses based on skill template:
