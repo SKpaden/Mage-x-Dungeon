@@ -41,7 +41,7 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     create() {
-        this.bg = initBg(this);
+        this.bg = initBg(this, 'battlefield', 0x202020);
         initGameState(this);
         this.log = initCombatLog(this, 20, this.scale.height / 2);  // 20 padding left of log element, middle on y-axis
         logCombat(this, "The battle begins!", '#e0e0e0', '[START]');
@@ -54,11 +54,10 @@ export default class BattleScene extends Phaser.Scene {
         initBattle(this);
         advanceToNextTurn(this);
 
-        // For dynamic resizing:
-        this.scale.on('resize', () => {
+        this.resizeHandler = () => {
             // BG:
             this.bg.destroy();
-            this.bg = initBg(this);
+            this.bg = initBg(this, 'battlefield', 0x202020);
             this.children.sendToBack(this.bg);  // render in background under all other elements
 
             // Combat log:
@@ -81,6 +80,15 @@ export default class BattleScene extends Phaser.Scene {
 
             // Resize cahracter displays:
             resizeAllContainers(this);
+        }
+
+        // For dynamic resizing:
+        this.scale.on('resize', this.resizeHandler);
+
+        // Cleanup on shutdown:
+        this.events.once("shutdown", () => {
+            this.scale.off('resize', this.resizeHandler);
+            this.resizeHandler = null;  // clear reference
         });
     }
 

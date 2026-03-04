@@ -7,19 +7,20 @@ export function delay(scene, ms) {
 }
 
 // Displays the bg image at correct scale.
-export function initBg(scene){
+export function initBg(scene, imageKey, tint = null){
     const tempBg = scene.make.image({
-            key: 'battlefield',
+            key: imageKey,
             x: 0,
             y:0,
             add: false
         });
 
-        // Background:
-        const bgWidth = tempBg.displayWidth;
-        const coverRatio = scene.scale.width/bgWidth;  // how to cover whole screen?
-        tempBg.destroy();
-        return scene.add.image(scene.scale.width/2, scene.scale.height/2, 'battlefield').setScale(coverRatio).setTint(0x202020);
+    // Background:
+    const bgWidth = tempBg.displayWidth;
+    const coverRatio = scene.scale.width/bgWidth;  // how to cover whole screen?
+    tempBg.destroy();
+    const bg = scene.add.image(scene.scale.width/2, scene.scale.height/2, imageKey).setScale(coverRatio);
+    return tint ? bg.setTint(tint) : bg;
 }
 // Adds texts to the scene.
 export function initMessage(scene){
@@ -177,12 +178,12 @@ export function showEndScreen(scene, winner){
     restartBtn.on('pointerdown', () => {
         overlay.destroy();
         scene.scene.restart();  // restart this battle scene
-        // scene.scene.start('battle');
     });
 
     menuBtn.on('pointerdown', () => {
         overlay.destroy();
-        scene.scene.start('main_menu');  // switch to menu scene
+        // scene.scale.off('resize');
+        scene.scene.start('mainMenu');  // switch to menu scene
     });
 
     // // ESC to restart (fallback):
