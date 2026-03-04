@@ -100,7 +100,7 @@ export class Debuff{
         const text = this.name;
         let displayText = dmgPT ? `-${dmgPT}\n`+text : text;
 
-        const debuffText = scene.add.text(x, y, displayText, {fontSize: uiStats.dmgPopupFontsize, color: textColor}).setOrigin(0.5);
+        const debuffText = scene.add.text(x, y, displayText, {fontSize: uiStats.dmgPopupFontsize, color: textColor, align: 'center'}).setOrigin(0.5);
         scene.tweens.add({
             targets: debuffText,
             y: '-=100',

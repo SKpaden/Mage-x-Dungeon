@@ -20,7 +20,6 @@ export function clearAffectedTargets(){
 
 // Inits event listeners for skill display.
 export function initSkillEventListener(scene){
-    if (escBtn) return;
     escBtn = scene.input.keyboard.addKey("ESC");
     escBtn.on('down', () => handleEscDown(scene));
 }

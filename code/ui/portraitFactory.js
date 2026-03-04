@@ -3,6 +3,7 @@ import { applySkill } from "../game/combat.js";
 import { clearAffectedAllies, clearAffectedTargets, previewTargets, resizeSkillDisplay } from "./skillUI.js";
 import { uiStats } from "./uiStats.js";
 import { Debuff } from "../game/debuffs.js";
+import { setHighlight } from "./helpers.js";
 
 // Creates enemy portraits with Character class.
 export function createEnemyPortraitAlt(scene, x, y, character, scale, team, index){
@@ -38,6 +39,7 @@ export function resizeAllContainers(scene){
     resizeEnemyContainers(scene, gameState.enemyContainers);
     // If a skill display exists currently, resize it:
     if (gameState.turn === 'player' && !gameState.pendingSkill && gameState.selectedPlayer) resizeSkillDisplay(scene);
+    if (gameState.turn === 'player' && gameState.selectedPlayer) setHighlight(gameState.selectedPlayer);
 }
 
 // Updates the debuff display.

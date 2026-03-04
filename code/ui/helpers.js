@@ -99,30 +99,18 @@ export function initTurnText(scene){
                           scene.scale.height/2, 'Player Turn', { fontSize: '36px', color: '#00ff00' }).setOrigin(0.5);
 }
 
+// Removes the highlight border from a player container.
+export function removeHighlight(container){
+    const {graphics, dimensions} = getContainerHighlightData(container);  // clear graphics and get data
+    redrawBorder(graphics, uiStats.portraitBorderWidth, uiStats.portraitDefaultBorderColor, dimensions, uiStats.borderRadius);
+    gameState.selectedPlayer = null;
+}
+
 // Highlights a portrait as selected or removes the highlight.
-export function setHighlight(container, enable) {
-    const graphics = container.getData('borderGraphics');
-    const halfW = container.getData('halfW');
-    const halfH = container.getData('halfH');
-    const portraitWidth = container.getData('displayWidth');
-    const portraitHeight = container.getData('displayHeight');
-    graphics.clear();
-    if (enable) { // no recursive call ==> triggered from a click
-        if(gameState.selectedPlayer && gameState.selectedPlayer === container){  // same container twice in a row
-            graphics.lineStyle(uiStats.portraitBorderWidth, 0xFFE836, 1);  // base border
-            graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, uiStats.borderRadius);
-            gameState.selectedPlayer = null;  // reset
-            return;  // break
-        }
-    }
-    graphics.lineStyle(enable ? uiStats.portraitHighlightBorderWidth : uiStats.portraitBorderWidth, enable ? 0xffffff : 0xFFE836, 1);
-    graphics.strokeRoundedRect(-halfW, -halfH, portraitWidth, portraitHeight, uiStats.borderRadius);  // redraw
-    if (enable){
-        if(gameState.selectedPlayer) {
-            setHighlight(gameState.selectedPlayer, false);  // remove old selected
-        }
-        gameState.selectedPlayer = container;  // update selected
-    }
+export function setHighlight(container) {
+    const {graphics, dimensions} = getContainerHighlightData(container);  // clear graphics and get data
+    redrawBorder(graphics, uiStats.portraitHighlightBorderWidth, uiStats.portraitHighlightBorderColor, dimensions, uiStats.borderRadius);
+    gameState.selectedPlayer = container;
 }
 
 // Shows computer's selected target.
@@ -141,6 +129,90 @@ export function setPlayerTarget(scene, target){  // clear is already done by cle
     gameState.selectedPlayer = target;
 }
 
+// Shows the end screen after a battle is over.
+export function showEndScreen(scene, winner){
+    // Create full-screen overlay:
+    const overlay = scene.add.container(scene.scale.width/2, scene.scale.height/2).setDepth(1000);
+    overlay.setSize(scene.scale.width, scene.scale.height);
+
+    // Darken background (semi-transparent black rect) ==> render above everything else that is supposed to be tinted:
+    const darkenRect = scene.add.rectangle(0, 0, scene.scale.width * 2, scene.scale.height * 2, 0x000000, 0.75)
+        .setOrigin(0.5);
+    overlay.add(darkenRect);
+
+    // Result text (big, centered):
+    const resultText = scene.add.text(0, -100, winner === 'player' ? 'VICTORY!' : 'DEFEAT!', {
+        fontSize: '64px',
+        fontFamily: 'Arial Black',
+        color: winner === 'player' ? '#00ff88' : '#ff4444',
+        stroke: '#000000',
+        strokeThickness: 8
+    }).setOrigin(0.5);
+    overlay.add(resultText);
+
+    // Subtext:
+    const subText = scene.add.text(0, -20, winner === 'player' ? 'Enemies defeated!' : 'Try again...', {
+        fontSize: '28px',
+        color: '#ffffff'
+    }).setOrigin(0.5);
+    overlay.add(subText);
+
+    // Restart button:
+    const restartBtn = scene.add.rectangle(-120, 80, 220, 70, 0x4a7c59).setInteractive({ useHandCursor: true });
+    const restartText = scene.add.text(-120, 80, 'Restart Battle', {
+        fontSize: '24px',
+        color: '#ffffff'
+    }).setOrigin(0.5);
+    overlay.add([restartBtn, restartText]);
+
+    // Main Menu button (placeholder for later):
+    const menuBtn = scene.add.rectangle(120, 80, 220, 70, 0x4a7c59).setInteractive({ useHandCursor: true });
+    const menuText = scene.add.text(120, 80, 'Main Menu', {
+        fontSize: '24px',
+        color: '#ffffff'
+    }).setOrigin(0.5);
+    overlay.add([menuBtn, menuText]);
+
+    // Button interactions:
+    restartBtn.on('pointerdown', () => {
+        overlay.destroy();
+        scene.scene.restart();  // restart this battle scene
+        // scene.scene.start('battle');
+    });
+
+    menuBtn.on('pointerdown', () => {
+        overlay.destroy();
+        scene.scene.start('main_menu');  // switch to menu scene
+    });
+
+    // // ESC to restart (fallback):
+    // scene.input.keyboard.once('keydown-ESC', () => {
+    //     overlay.destroy();
+    //     scene.scene.restart();
+    // });
+
+    // Fade-in animation:
+    overlay.setAlpha(0);
+    scene.tweens.add({
+        targets: overlay,
+        alpha: 1,
+        duration: 600,
+        ease: 'Power2'
+    });
+
+    // Make overlay capture all input (disable underlying game):
+    overlay.setInteractive(new Phaser.Geom.Rectangle(-scene.scale.width, -scene.scale.height, scene.scale.width * 2, scene.scale.height * 2), Phaser.Geom.Rectangle.Contains);
+
+    // Responsive: reposition on resize:
+    scene.scale.on('resize', () => {
+        overlay.x = scene.scale.width / 2;
+        overlay.y = scene.scale.height / 2;
+    });
+
+    // Store for cleanup:
+    scene.endOverlay = overlay;
+}
+
 // Updates text and color of text object.
 export function updateText(object, newText, color){
     object.setText(newText);
@@ -150,6 +222,32 @@ export function updateText(object, newText, color){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // INTERNAL HELPER FUNCTIONS:
 
+// Clears graphics and returns all needed data to redraw border.
+function getContainerHighlightData(container){
+    const graphics = container.getData('borderGraphics');
+    const halfW = container.getData('halfW');
+    const halfH = container.getData('halfH');
+    const portraitWidth = container.getData('displayWidth');
+    const portraitHeight = container.getData('displayHeight');
+    graphics.clear();  // remove old border
+
+    return {graphics: graphics,
+            dimensions: {
+                halfW: halfW,
+                halfH: halfH,
+                portraitWidth: portraitWidth,
+                portraitHeight: portraitHeight,
+            }
+    };
+}
+
+// Redraws the border of a container.
+function redrawBorder(graphics, borderWidth, borderColor, dims, borderRadius){
+    graphics.lineStyle(borderWidth, borderColor, 1);
+    graphics.strokeRoundedRect(-dims.halfW, -dims.halfH, dims.portraitWidth, dims.portraitHeight, borderRadius);  // redraw
+}
+
+// Inits skill icon dimensions based on size of canvas.
 function initSkillIconDims(scene, portraitWidth){
     const spaceAvailabe = portraitWidth - 4*uiStats.paddingHpBar - 3*uiStats.skillIconMargin;  // padding on each side (twice because of border as well), 4 skills max ==> 3 gaps
     const iconWidth = spaceAvailabe / 4;

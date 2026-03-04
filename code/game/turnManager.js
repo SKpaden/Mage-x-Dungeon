@@ -1,10 +1,10 @@
-import { applySkillToPlayer, checkDeath, checkWinner, endBattle, processSkill } from "./combat.js";
+import { applySkillToPlayer, checkDeath, checkWinner, endBattle } from "./combat.js";
 import { gameState } from "./gameState.js";
 import { fillAllTurnMeters, resetTurnMeter } from "./turnMeterManager.js";
 import { logCombat } from "../ui/combatLog.js";
-import { delay, updateText, setHighlight, setPlayerTarget } from "../ui/helpers.js";
+import { delay, removeHighlight, setHighlight, setPlayerTarget, updateText } from "../ui/helpers.js";
 import { getPortraitTween, updateDebuffDisplay} from "../ui/portraitFactory.js";
-import { showSkills, clearAffectedTargets } from "../ui/skillUI.js";
+import { showSkills } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
 
 // Decides who acts next in turn order.
@@ -27,7 +27,7 @@ export function advanceToNextTurn(scene){
 export function clearSelections(){
     const hero = gameState.selectedPlayer;
     if(hero){
-        setHighlight(hero, false);
+        removeHighlight(hero);
     }
     // clearAffectedTargets();
     gameState.pendingSkill = null;
@@ -89,7 +89,7 @@ async function playerTurn(scene, unit){
         // processBuffs(scene, unit);
         const tween = getPortraitTween(scene, unit);
         tween.play();
-        setHighlight(unit,true);
+        setHighlight(unit);
         showSkills(scene, unit);
     }
 }

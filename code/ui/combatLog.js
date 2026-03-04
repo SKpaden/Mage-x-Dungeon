@@ -11,7 +11,7 @@ export function getLogTarget(){
 
 // Inits the combat log by adding it to the scene as a DOM element.
 export function initCombatLog(scene, x, y, width = 500, height = 180) {
-    if (logDom) return logDom;  // singleton
+    // if (logDom) return logDom;  // singleton
 
     const div = document.createElement('div');
     div.className = 'combat-log';

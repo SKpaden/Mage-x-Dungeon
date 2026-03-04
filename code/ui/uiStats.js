@@ -21,6 +21,8 @@ export const uiStats = {
     debuffDelay: 600,
     reactionDelay: 400,
     // Colors:
+    portraitDefaultBorderColor: 0xFFe836,
+    portraitHighlightBorderColor: 0xffffff,
     playerLogColor: '#00aa00',
     enemyLogColor: '#ED0000',
     enemyPlayerTargetColor: 0xff0000,
@@ -31,8 +33,8 @@ export const uiStats = {
     allyHoverTint: 0x00ff00,
     allyTargetTint: '0x44ff44',
     // Popups:
-    negativePopupOptions: {fontSize: '26px', color: '#ED0000'},
-    positivePopupOptions: {fontSize: '26px', color: '#00aa00'},
+    negativePopupOptions: {fontSize: '26px', color: '#ED0000', align: 'center'},
+    positivePopupOptions: {fontSize: '26px', color: '#00aa00', align: 'center'},
     // better readability:
     // negativePopupOptions: {fontSize: '26px', color: '#ED0000', backgroundColor: 'rgba(0,0,0,0.8)'},
     // positivePopupOptions: {fontSize: '26px', color: '#00aa00', backgroundColor: 'rgba(0,0,0,0.8)'},

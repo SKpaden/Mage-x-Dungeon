@@ -37,45 +37,21 @@ export function initBattle(scene){
     buildQueue();
 }
 
-// Initialises enemy team.
-export function initEnemyTeam(scene){
-    const enemies = ['hero5', 'hero5', 'hero5', 'hero5', 'hero5'];
-    const enemyNames = ['Grunt1', 'Grunt2', 'Grunt3', 'Grunt4', 'Grunt5'];
-    gameState.enemyAlive = enemies.length;
-    
-    const spaceNeeded = enemies.length * uiStats.portraitWidth + (enemies.length-1)*uiStats.margin;  // #portraits*width + margins between them
-    const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
-    var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;
-
-    const yOffset = scene.scale.height-200-30;
-    for (let index = 0; index  < enemies.length; index++) {
-        const container = createEnemyPortrait(scene, xPos, scene.scale.height - uiStats.halfH - 20 - 35, enemies[index], uiStats.portraitScale,  // location and size
-                                                500, 2, enemyNames[index], 'enemy', index);  // stats
-        xPos+= uiStats.portraitWidth + uiStats.margin;
-        gameState.enemyContainers.push(container);
-    }
-}
-
 // Maybe useful for later.
 export function initEventListeners(scene){
     initSkillEventListener(scene);
 }
 
-// Initialises player team.
-export function initPlayerTeam(scene){
-    const portraits = ['my-hero', 'hero2', 'hero3', 'hero4', 'hero5'];  // array of portraits
-    const heroNames = ['Dark Mage', 'Blue Dragon Queen', 'Draconoid Warrior', 'Poison Dragon Queen', 'Necromancer'];
-    gameState.playerAlive = portraits.length;
-
-    const spaceNeeded = portraits.length * uiStats.portraitWidth + (portraits.length-1)*uiStats.margin;  // #portraits*width + margins between them
-    const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
-    var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;  // REMEMBER: CENTER-BASED POSITIONING!
-    for (let index = 0; index < portraits.length; index++) {
-        const container = createHeroPortrait(scene, xPos, uiStats.halfH + 20, portraits[index], uiStats.portraitScale,  // location and size
-                                             500, index+1, heroNames[index], 'player', index);  // stats
-        xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
-        gameState.playerContainers.push(container);
-    }
+// Inits the global gameState variable.
+export function initGameState(scene){
+    gameState.turnNumber = 0;
+    gameState.playerContainers = [];
+    gameState.enemyContainers = [];
+    gameState.selectedEnemy = null;
+    gameState.selectedPlayer = null;
+    gameState.turnQueue = [];
+    gameState.winner = null;
+    gameState.combinedSpeed = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
