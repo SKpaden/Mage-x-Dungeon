@@ -1,4 +1,6 @@
-import TestScene from './scenes/TestScene.js';
+import TestScene from './testScenes/TestScene.js';
+import TestSceneA from './testScenes/TestSceneA.js';
+import TestSceneB from './testScenes/TestSceneB.js';
 
 var config = {
         type: Phaser.AUTO,
@@ -11,7 +13,8 @@ var config = {
         dom: {
         createContainer: true
         },
-        scene: [TestScene]
+        // scene: [TestScene]
+        scene: [TestSceneA, TestSceneB]
     }
 
 var game = new Phaser.Game(config);
