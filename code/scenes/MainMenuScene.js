@@ -26,7 +26,7 @@ export default class MainMenuScene extends Phaser.Scene {
         this.title = this.add.text(this.scale.width / 2, 80, "Mage x Dungeon", uiStats.titleOptions).setOrigin(0.5);
 
         const btnTexts = ['Battle', 'Collection', 'Summon'];
-        const btnTargets = ['battle', 'collection', 'summon'];
+        const btnTargets = ['map', 'collection', 'summon'];
 
         // Create buttons and texts:
         const btns = [];
