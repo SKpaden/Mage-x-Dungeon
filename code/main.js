@@ -1,6 +1,7 @@
 import BattleScene from './scenes/BattleScene.js';
 import MainMenuScene from './scenes/MainMenuScene.js';
 import MapScene from './scenes/MapScene.js';
+import TeamSelectScene from './scenes/TeamSelectScene.js';
 
 var config = {
         type: Phaser.AUTO,
@@ -15,7 +16,7 @@ var config = {
         dom: {
         createContainer: true
         },
-        scene: [MainMenuScene, MapScene, BattleScene]
+        scene: [MainMenuScene, MapScene, TeamSelectScene, BattleScene]
     }
 
 var game = new Phaser.Game(config);

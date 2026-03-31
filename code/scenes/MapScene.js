@@ -130,7 +130,8 @@ export default class MapScene extends Phaser.Scene{
             yesBtn.setInteractive({ useHandCursor: true })
                 .on('pointerover', () => yesBtn.setFillStyle(uiStats.confirmBtnHoverColor))
                 .on('pointerout', () => yesBtn.setFillStyle(uiStats.confirmBtnBaseColor))
-                .on('pointerdown', () => scene.scene.start('battle'));
+                .on('pointerdown', () => scene.scene.start('teamSelect'));
+                // .on('pointerdown', () => scene.scene.start('battle'));
             noBtn.setInteractive({useHandCursor: true })
                 .on('pointerover', () => noBtn.setFillStyle(uiStats.confirmBtnHoverColor))
                 .on('pointerout', () => noBtn.setFillStyle(uiStats.confirmBtnBaseColor))

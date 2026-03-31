@@ -24,6 +24,8 @@ export class Character{
         this.tags = tags;
         this.description = description;
         this.statManager = new StatManager(StatManager.copyStats(stats));  // I didn't copy and had mutation...
+
+        this.createDate = Date.now();  // to allow multiple copies of same hero while being able to distinguish them
     }
 
     // Add a passive to array of passives and register its event.
@@ -80,6 +82,16 @@ export class Character{
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE HEROES FROM TEMPLATES:
+
+export function getHeroWithID(id){
+    try { return createHeroFromTemplate(id); }
+    catch (error){ console.error(error); }
+}
+
+export function getHeroPortraitWithID(id){
+    try { return heroTemplates[id].portrait; }
+    catch (error){ console.error(error); }
+}
 
 export function getHeroTeam(){
     return [createHeroFromTemplate(1), createHeroFromTemplate(2), createHeroFromTemplate(4), createHeroFromTemplate(7), createHeroFromTemplate(6)];
