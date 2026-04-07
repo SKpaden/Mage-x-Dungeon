@@ -5,7 +5,7 @@
  * @returns                     The registry data or null                    
  */
 export function getRegistryData(scene, key){
-    return scene.registry.get(key) || null;
+    return scene.registry.get(key);
 }
 
 /**

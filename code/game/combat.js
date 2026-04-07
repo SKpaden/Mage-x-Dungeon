@@ -3,9 +3,9 @@ import { clearAffectedTargets, showDmgPopup } from "../ui/skillUI.js";
 import { updateDebuffDisplay, updateHP, updateTurnMeter } from "../ui/portraitFactory.js";
 import { showEndScreen } from "../ui/helpers.js";
 import { logCombat, processLogQueue, setLogTarget } from "../ui/combatLog.js";
-import { playPhysicalAttackTween } from "../ui/combatTweens.js";
 import { uiStats } from "../ui/uiStats.js";
 import { endTurn } from "./turnManager.js";
+import { updateStageAccountData } from "../managers/accountManager.js";
 
 // Applies skill to current target.
 export function applySkill(scene, index, skill){
@@ -103,6 +103,7 @@ export function endBattle(scene){
         logCombat(scene, `You lost!`, '#ED0000', '[END]');
     } else {
         logCombat(scene, `You win!`, '#00aa00', '[END]');
+        updateStageAccountData(scene);
     }
 
     showEndScreen(scene, gameState.winner);

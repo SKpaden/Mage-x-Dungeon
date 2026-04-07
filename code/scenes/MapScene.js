@@ -1,3 +1,5 @@
+import { getRegistryData, setRegistryData } from "../data/registryData.js";
+import { getCompletedStages, getStageLabels, getStages, getUnlockedStages } from "../managers/stageManager.js";
 import { initBg } from "../ui/helpers.js";
 
 export default class MapScene extends Phaser.Scene{
@@ -31,25 +33,21 @@ export default class MapScene extends Phaser.Scene{
         this.bg = initBg(this, 'map');
         setVariableUiStats(this);  // set after bg init
 
-        // this.registry.set('unlockedStages', ['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4', 'Stage 5']);
-        // this.registry.set('completedStages', ['Stage 1', 'Stage 2', 'Stage 3']);
-
-        // Get unlocked/completed stages from registry:
-        const unlockedStages = this.registry.get('unlockedStages') || ['Stage 1', 'Stage 2'];
-        const completedStages = this.registry.get('completedStages') || ['Stage 1'];
-
-        // Consts:
-        const stages = [1,2,3,4,5];
-        const labels = ['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4', 'Stage 5'];
+        // Get unlocked/completed stages from stageManager:
+        const unlockedStages = getUnlockedStages(this);
+        const completedStages = getCompletedStages(this)  || [];
+        const stages = getStages();
+        const labels = getStageLabels();
 
         this.shapes = [];
         this.labels = [];
         this.selectedStage = null;
 
         // Put stage displays on map:
-        labels.forEach(label => {
-            const { x,y } = getXYForCircle(this, this.bg, label);
-            const color = getColor(label);
+        labels.forEach((label, i) => {
+            const { x,y } = getXYForCircle(this.bg, label);
+            const stageID = stages[i];
+            const color = getColor(stageID);
             
             const circle = this.add.circle(x, y, uiStats.nodeRadius, color);
             circle.currentColor = color;  // store start color for tween
@@ -57,15 +55,17 @@ export default class MapScene extends Phaser.Scene{
             const stageLabel = this.add.text(x, y - uiStats.labelMargin, label, { fontSize: uiStats.labelFontSize, color: 'red', backgroundColor: 'rgba(0,0,0,0.7)'} ).setOrigin(0.5);
             this.labels.push(stageLabel);
             circle.label = stageLabel;
+            circle.stage = stageID;
         })
 
         // Set stages interactive:
         for (let i = 0; i < this.shapes.length; i++) {
             const shape = this.shapes[i];
             const label = this.labels[i];
+            const id = stages[i];
             shape.setInteractive( { useHandCursor: true});
             shape.on('pointerdown', () => {
-                if (!unlockedStages.includes(label.text)) return;
+                if (!unlockedStages.includes(id)) return;
 
                 resetSelectTween(this);
                 this.selectTween = getStageSelectTween(this, shape, label);
@@ -82,9 +82,7 @@ export default class MapScene extends Phaser.Scene{
             setVariableUiStats(this);  // set after bg init
 
             this.children.sendToBack(this.bg);
-            // this.title.x = this.scale.width / 2;
 
-            // resizeButtons(this, btns, btnTextObjects);
             repositionStages(this);
             repositionConfirm(this);
         }
@@ -130,8 +128,14 @@ export default class MapScene extends Phaser.Scene{
             yesBtn.setInteractive({ useHandCursor: true })
                 .on('pointerover', () => yesBtn.setFillStyle(uiStats.confirmBtnHoverColor))
                 .on('pointerout', () => yesBtn.setFillStyle(uiStats.confirmBtnBaseColor))
-                .on('pointerdown', () => scene.scene.start('teamSelect'));
-                // .on('pointerdown', () => scene.scene.start('battle'));
+                .on('pointerdown', () => {
+                    setRegistryData(scene, "selectedStage", circle.stage);
+                    // Had to clean this up manually, otherwise runtime error for resize. This is because the scene object does not get destroyed on stop => fields remain:
+                    scene.confirmContainer.destroy();
+                    scene.confirmContainer = null;
+
+                    scene.scene.start('teamSelect');
+                });
             noBtn.setInteractive({useHandCursor: true })
                 .on('pointerover', () => noBtn.setFillStyle(uiStats.confirmBtnHoverColor))
                 .on('pointerout', () => noBtn.setFillStyle(uiStats.confirmBtnBaseColor))
@@ -145,14 +149,14 @@ export default class MapScene extends Phaser.Scene{
 
         /**
          * Gets the color of the stage circle based on whether it is unlocked or completed.
-         * @param {String} label    The name of the stage
-         * @returns {int}           The color value for the stage circle
+         * @param {int} id  The id of the stage
+         * @returns {int}   The color value for the stage circle
          */
-        function getColor(label){
+        function getColor(id){
             let color;
 
-            const isUnlocked = unlockedStages.includes(label);
-            const isCompleted = completedStages.includes(label);
+            const isUnlocked = unlockedStages.includes(id);
+            const isCompleted = completedStages.includes(id);
             if (isUnlocked && isCompleted) color = uiStats.stageCompletedColor;
             else if (isUnlocked) color = uiStats.stageBaseColor;
             else color = uiStats.stageLockedColor;
@@ -185,7 +189,6 @@ export default class MapScene extends Phaser.Scene{
                 duration: 800,
                 alpha: 0.5,
                 yoyo: true,  // return to starting state
-                //ease: 'Expo.easeInOut',
                 ease: 'Sine.easeInOut',
                 repeat: -1,
             })
@@ -200,12 +203,11 @@ export default class MapScene extends Phaser.Scene{
 
         /**
          * Gets x and y coordinates based on stage label. Stages have fixed points on the map.
-         * @param {MapScene} scene  The Phase scene object
          * @param {Object} bg       The background map Phaser object
          * @param {String} label    The label of the stage
          * @returns {Object}        The x and y coordinates for the stage display { x: 0, y: 0}
          */
-        function getXYForCircle(scene, bg, label){
+        function getXYForCircle(bg, label){
             switch (label){
                 case 'Stage 1':
                     return {x: bg.x - bg.displayWidth / 3.6, y: bg.y - bg.displayHeight / 4.5};
@@ -302,7 +304,7 @@ export default class MapScene extends Phaser.Scene{
                 const shape = scene.shapes[index];
                 const labelObject = scene.labels[index];
                 const labelText = labelObject.text;
-                const { x,y } = getXYForCircle(scene, scene.bg, labelText);
+                const { x,y } = getXYForCircle(scene.bg, labelText);
                 shape.x = x;
                 shape.y = y;
                 shape.setRadius(uiStats.nodeRadius);
