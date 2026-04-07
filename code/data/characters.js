@@ -24,14 +24,20 @@ export class Character{
         this.tags = tags;
         this.description = description;
         this.statManager = new StatManager(StatManager.copyStats(stats));  // I didn't copy and had mutation...
-
-        this.createDate = Date.now();  // to allow multiple copies of same hero while being able to distinguish them
     }
 
     // Add a passive to array of passives and register its event.
     addPassive(passive){
         this.passives.push(passive);
         passive.registerEvents(this.passiveEvents);
+    }
+
+    /**
+     * Returns the relative path for the hero portrait.
+     * @returns {String}    The path to the hero portrait
+     */
+    getPortraitPath(){
+        return "assets/portraits/" + this.portrait;
     }
 
     // Choose skill to use based on priorities.
@@ -107,7 +113,7 @@ export function getEnemyTeam(){
  * @param  {int} id     ID of the hero
  * @return {Character}  The Character created from the template
  */
-function createHeroFromTemplate(id){
+export function createHeroFromTemplate(id){
     if (!heroTemplates[id]){
         throw new IllegalArgumentException("Unknown hero: " + id);
     }
@@ -136,6 +142,15 @@ function createHeroFromTemplate(id){
         data.description,
         data.stats
     );
+}
+
+/**
+ * Checks whether or not a hero with a certain ID exists.
+ * @param {int} id      The id of a hero to be confirmed to exist
+ * @returns {boolean}   Whether hero exists or not
+ */
+export function validateHeroID(id){
+    return heroTemplates[id] ? true : false;
 }
 
 // Stores templates to create all heros via id.

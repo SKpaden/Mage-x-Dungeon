@@ -1,3 +1,4 @@
+import { Collection } from "../collection/collection.js";
 import { getHeroPortraitWithID, getHeroWithID } from "../data/characters.js";
 import { getRegistryData, setRegistryData } from "../data/registryData.js";
 
@@ -21,11 +22,14 @@ export default class TeamSelectScene extends Phaser.Scene{
             titleColor: 'white',
         }
 
-        const fallbackBaseHeroes = [{id: 1, createDate: 1}, {id: 2, createDate: 2}, {id: 3, createDate: 3}, {id: 4, createDate: 4}, {id: 5, createDate: 5}];
+        const newCollection = new Collection();
+        const fallbackBaseHeroes = [1,2,3,4,5];
+        newCollection.addManyToCollection(fallbackBaseHeroes);
+        const fallbackBaseCollection = newCollection.collection;
+        // const fallbackBaseHeroes = [{id: 1, createDate: 1}, {id: 2, createDate: 2}, {id: 3, createDate: 3}, {id: 4, createDate: 4}, {id: 5, createDate: 5}];
 
         // Get collected heroes data:
-        // setRegistryData(this, 'collection', [1,2,3]);  // works!
-        const collection = getRegistryData(this, 'collection') || fallbackBaseHeroes;  // fallback to base heroes for now
+        const collection = getRegistryData(this, 'collection') || fallbackBaseCollection;  // fallback to base heroes for now
         const teamLimit = getRegistryData(this, 'teamLimit') || 5;  // default 5 team members, probably won't change
 
         let selectedTeam = [];
@@ -71,7 +75,7 @@ export default class TeamSelectScene extends Phaser.Scene{
         batteBtnDOM.append(btn);
 
         btn.addEventListener('click', () => {
-            setRegistryData(this, 'playerTeam', selectedTeam);  // save seleced team.
+            setRegistryData(this, 'playerTeam', saveSelection(selectedTeam, collection));  // save seleced team.
             this.scene.start('battle');  // render battle scene
         });
 
@@ -130,15 +134,13 @@ export default class TeamSelectScene extends Phaser.Scene{
             dom.style.scrollbarColor = 'rgba(25,25,25,0.5) transparent';
             
             for (let i = 0; i < collection.length; i++){
-                const id = collection[i].id;
-                const createDate = collection[i].createDate;
-                const hero = getHeroWithID(id);
-                const portraitPath = "assets/portraits/" + hero.portrait;
+                const hero = collection[i].hero;
+                const portraitPath = hero.getPortraitPath();
 
                 const elem = document.createElement("div");
                 elem.classList = 'collection-select-hero';
 
-                elem.innerHTML = `<img class="collection-select-img" src="${portraitPath}" alt="Portrait" data-id="${id}-${createDate}">`;
+                elem.innerHTML = `<img class="collection-select-img" src="${portraitPath}" alt="Portrait" data-index="${i}">`;
                 dom.append(elem);
             }
 
@@ -148,37 +150,33 @@ export default class TeamSelectScene extends Phaser.Scene{
                     const classList = element.classList;
                     if (Array.from(classList).includes('selected')) {  // already selected?
                         element.classList.remove('selected');  // ...then unselect
-                        const idString = element.dataset.id;
-                        const splits = idString.split('-');
-                        const id = Number(splits[0]);
-                        const createDate = Number(splits[1]);
-                        const toBeRemoved = selectedDOM.querySelector(`[data-id="${idString}"]`);
+                        const i = Number(element.dataset.index);
+                        const toBeRemoved = selectedDOM.querySelector(`[data-index="${i}"]`);
                         toBeRemoved.remove();
                         selected--;
                         if (!selected) disableBattleBtn();  // disable btn because selection is empty
 
                         // Remove from array:
-                        selectedTeam = selectedTeam.filter((entry) => {
-                            return entry.id == id & entry.createDate == createDate ? false : true;
+                        selectedTeam = selectedTeam.filter((entry) => {  // entries = indexes
+                            return entry === i ? false : true;
                         })
                     } else {  // otherwise add class for border
                         if (selected < teamLimit){
                             element.classList.add('selected');  // for CSS styling
-                            const idString = element.dataset.id;
-                            const splits = idString.split('-');
-                            const id = Number(splits[0]);
-                            const createDate = Number(splits[1]);
-                            const portraitPath = "assets/portraits/" + getHeroPortraitWithID(id);
+                            // const idString = element.dataset.index;
+                            const i = Number(element.dataset.index);
+                            const heroID = collection[i].heroID;  // lookup has index in collection
+                            const portraitPath = "assets/portraits/" + getHeroPortraitWithID(heroID);
                             const elem = document.createElement("div");
                             elem.classList = 'selected-team-member';
-                            elem.dataset.id = `${idString}`;
+                            elem.dataset.index = `${i}`;
                             elem.innerHTML = `<img class="collection-select-img" src="${portraitPath}" alt="Portrait">`;
 
-                            elem.addEventListener('click', () => removeSelectedHero(elem, element, id, createDate));
+                            elem.addEventListener('click', () => removeSelectedHero(elem, element, i));
 
                             selectedDOM.append(elem);
                             selected++;
-                            selectedTeam.push({id: id, createDate: createDate});
+                            selectedTeam.push(i);
 
                             const btn = document.getElementById('team-select-battle-btn');
                             if (btn.disabled) {
@@ -196,17 +194,16 @@ export default class TeamSelectScene extends Phaser.Scene{
          * Removes a hero from selection. Removes DOM portrait from selection display and resets border in collection display.
          * @param {Object} domElement The DOM element to be removed containing the hero portrait
          * @param {Object} collectionElement The DOM element inside the collection container
-         * @param {int} id The id of the hero
-         * @param {int} createDate The creation date of the hero
+         * @param {int} index The index of the hero in the collection
          */
-        function removeSelectedHero(domElement, collectionElement, id, createDate){
+        function removeSelectedHero(domElement, collectionElement, index){
             collectionElement.classList.remove('selected');  // unselect
             selected--;
             if (!selected) disableBattleBtn();  // disable btn because selection is empty
 
             // Remove from array:
             selectedTeam = selectedTeam.filter((entry) => {
-                return entry.id == id & entry.createDate == createDate ? false : true;
+                return entry == index ? false : true;
             })
 
             domElement.remove();  // remove portrait container from selection display
@@ -223,6 +220,20 @@ export default class TeamSelectScene extends Phaser.Scene{
             btn.on('pointerover', () => btn.setFillStyle(uiStats.backBtnHoverColor))
                .on('pointerout', () => btn.setFillStyle(uiStats.backBtnColor))
                .on('pointerdown', () => scene.scene.start('map'));
+        }
+
+        /**
+         * Returns an array of CollectionEntries reflecting the selected team.
+         * @param {Array.<int>} indexes         Array of indexes for the collection
+         * @param {Array.<Object>} collection   Array of CollectionEntries
+         * @returns {Array.<Object>}            The selected team
+         */
+        function saveSelection(indexes, collection){
+            const team = [];
+            indexes.forEach(index => {
+                team.push(collection[index]);
+            })
+            return team;
         }
 
         /**

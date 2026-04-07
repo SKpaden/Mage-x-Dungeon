@@ -48,7 +48,6 @@ export default class BattleScene extends Phaser.Scene {
         this.message = initMessage(this);
         this.turnText = initTurnText(this);
         initEventListeners(this);
-        //initPortraitDims(this);
         initPortraitDimsWithScaleManager(this);
 
         initBattle(this);
@@ -62,10 +61,6 @@ export default class BattleScene extends Phaser.Scene {
 
             // Combat log:
             this.log.y = this.scale.height / 2;  // bring back to middle
-            // THis works, just need to adjust values and attributes:
-            // this.log.node.style.width = 20 + 'px';
-            // this.log.node.style.height = 20 + 'px';
-            // this.log.node.style.backgroundColor = "green";
 
             // Center message:
             this.message.x = this.scale.width / 2;

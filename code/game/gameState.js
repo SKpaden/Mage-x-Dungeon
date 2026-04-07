@@ -1,4 +1,5 @@
 import { getHeroTeam, getEnemyTeam } from "../data/characters.js";
+import { getRegistryData } from "../data/registryData.js";
 import { createHeroPortraitAlt, createEnemyPortraitAlt } from "../ui/portraitFactory.js";
 import { initSkillEventListener } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
@@ -58,15 +59,16 @@ export function initGameState(scene){
 // ALT FUNCTIONS WITH CLASSES:
 
 export function initPlayerTeamAlt(scene){
-    const heros = getHeroTeam();
+    // Read team from registry:
+    const heroes = getRegistryData(scene, 'playerTeam');  // Array.<CollectionEntry>
 
-    gameState.playerAlive = heros.length;
+    gameState.playerAlive = heroes.length;
 
-    const spaceNeeded = heros.length * uiStats.portraitWidth + (heros.length-1)*uiStats.margin;  // #portraits*width + margins between them
+    const spaceNeeded = heroes.length * uiStats.portraitWidth + (heroes.length-1)*uiStats.margin;  // #portraits*width + margins between them
     const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
     var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;  // REMEMBER: CENTER-BASED POSITIONING!
-    for (let index = 0; index < heros.length; index++) {
-        const hero = heros[index];
+    for (let index = 0; index < heroes.length; index++) {
+        const hero = heroes[index].hero;
         gameState.combinedSpeed += hero.getSpeed();
         const container = createHeroPortraitAlt(scene, xPos, uiStats.halfH + 20, hero, uiStats.portraitScale, 'player', index);  // stats
         xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
