@@ -89,6 +89,14 @@ export class Character{
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE HEROES FROM TEMPLATES:
 
+/**
+ * Gets all the existing hero IDs in an array.
+ * @returns {Array.<int>} The array containing all existing hero ids.
+ */
+export function getAllHeroIDs(){
+    return Object.keys(heroTemplates);  // ids are keys in the template object
+}
+
 export function getHeroWithID(id){
     try { return createHeroFromTemplate(id); }
     catch (error){ console.error(error); }

@@ -1,4 +1,4 @@
-import { createHeroFromTemplate, validateHeroID } from "../data/characters.js";
+import { createHeroFromTemplate, getAllHeroIDs, validateHeroID } from "../data/characters.js";
 
 export class Collection {
     static id = 0;
@@ -10,6 +10,29 @@ export class Collection {
         Collection.id++;
         this.collection = [];
         this.entryID = 0;
+    }
+
+    /**
+     * Creates and returns a full collection mainly for testing purposes.
+     * @param {int} playerID A player ID whom the full collection will belong to
+     * @returns {Collection} A full collection containing every existing hero
+     */
+    static getFullCollection(playerID = null){
+        const newCollection = new Collection(playerID);
+        newCollection.addManyToCollection(getAllHeroIDs());
+        return newCollection;
+    }
+
+    /**
+     * Creates and returns a sample collection mainly for testing purposes.
+     * @param {int} playerID A player ID whom the sample collection will belong to
+     * @returns {Collection} A sample collection with 5 starter heroes
+     */
+    static getSampleCollection(playerID = null){
+        const newCollection = new Collection(playerID);
+        const sampleTeam = [1,2,3,4,5];
+        newCollection.addManyToCollection(sampleTeam);
+        return newCollection;
     }
 
     /**

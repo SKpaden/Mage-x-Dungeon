@@ -1,5 +1,4 @@
 import { Collection } from "../collection/collection.js";
-import { getHeroPortraitWithID, getHeroWithID } from "../data/characters.js";
 import { getRegistryData, setRegistryData } from "../data/registryData.js";
 
 export default class TeamSelectScene extends Phaser.Scene{
@@ -18,24 +17,24 @@ export default class TeamSelectScene extends Phaser.Scene{
             // Colors:
             backBtnColor: 0x252525,
             backBtnHoverColor: 0x2f2f2f,
+            cameraBgColor: 'rgb(20,20,20)',
             collectionBgColor: 'gray',
             titleColor: 'white',
         }
 
-        const newCollection = new Collection();
-        const fallbackBaseHeroes = [1,2,3,4,5];
-        newCollection.addManyToCollection(fallbackBaseHeroes);
+        // const newCollection = Collection.getSampleCollection();
+        const newCollection = Collection.getFullCollection();
         const fallbackBaseCollection = newCollection.collection;
-        // const fallbackBaseHeroes = [{id: 1, createDate: 1}, {id: 2, createDate: 2}, {id: 3, createDate: 3}, {id: 4, createDate: 4}, {id: 5, createDate: 5}];
 
         // Get collected heroes data:
         const collection = getRegistryData(this, 'collection') || fallbackBaseCollection;  // fallback to base heroes for now
         const teamLimit = getRegistryData(this, 'teamLimit') || 5;  // default 5 team members, probably won't change
 
+        // Init tracking variables:
         let selectedTeam = [];
         let selected = 0;
 
-        this.cameras.main.setBackgroundColor('rgb(20,20,20)');  // set background color of scene
+        this.cameras.main.setBackgroundColor(uiStats.cameraBgColor);  // set background color of scene
 
         setVariableUiStats(this);
 
@@ -112,6 +111,61 @@ export default class TeamSelectScene extends Phaser.Scene{
 
 
         /**
+         * Adds a click event listener to all elements in array responsible for selecting and unselecting heroes for battle.
+         * @param {Array} elements Array of DOM elements that are the portraits inside the collection
+         */
+        function addEventListeners(elements){
+            elements.forEach(element => {
+                element.addEventListener('click', () => {
+                    const classList = element.classList;
+                    if (Array.from(classList).includes('selected')) {  // already selected?
+                        // ...then unselect:
+                        const i = Number(element.dataset.index);
+                        const toBeRemoved = selectedDOM.querySelector(`[data-index="${i}"]`);
+                        removeSelectedHero(toBeRemoved, element, i);
+
+                    } else {  // otherwise add class for border
+                        if (selected < teamLimit){
+                            element.classList.add('selected');  // for CSS styling
+                            const i = Number(element.dataset.index);
+                            const hero = collection[i].hero;  // lookup has index in collection
+                            const portraitPath = hero.getPortraitPath();
+                            const elem = document.createElement("div");
+                            elem.classList = 'selected-team-member';
+                            elem.dataset.index = `${i}`;
+                            elem.innerHTML = `<img class="collection-select-img" src="${portraitPath}" alt="Portrait">`;
+
+                            selectedDOM.append(elem);
+                            elem.addEventListener('click', () => removeSelectedHero(elem, element, i));
+                            selected++;
+                            selectedTeam.push(i);
+
+                            const btn = document.getElementById('team-select-battle-btn');
+                            if (btn.disabled) {
+                                btn.disabled = false;
+                                btn.classList = 'active';
+                            }
+                        }
+                    }
+
+                });
+            });
+        }
+
+        /**
+         * Creates a new div-element that contains the hero image and appends it to the collection DOM to display hero collection.
+         * @param {Object} dom          The parent DOM element to append the new element to
+         * @param {String} portraitPath The portrait image path relative to server root
+         * @param {int} index           The index of the hero within the collection array to add to DOM dataset
+         */
+        function createCollectionHeroDOM(dom, portraitPath, index){
+            const elem = document.createElement("div");
+            elem.classList = 'collection-select-hero';
+            elem.innerHTML = `<img class="collection-select-img" src="${portraitPath}" alt="Portrait" data-index="${index}">`;
+            dom.append(elem);
+        }
+
+        /**
          * Disables the battle button by setting the disabled property and clearing its classList.
          */
         function disableBattleBtn(){
@@ -128,66 +182,15 @@ export default class TeamSelectScene extends Phaser.Scene{
          */
         function populateHeroCollection(dom, collection, selectedDOM){
             dom.classList = 'collection collection-select';
-            dom.style.overflowY = "auto";
-            // Scrollbar styling
-            dom.style.scrollbarWidth = 'thin';
-            dom.style.scrollbarColor = 'rgba(25,25,25,0.5) transparent';
             
             for (let i = 0; i < collection.length; i++){
                 const hero = collection[i].hero;
                 const portraitPath = hero.getPortraitPath();
-
-                const elem = document.createElement("div");
-                elem.classList = 'collection-select-hero';
-
-                elem.innerHTML = `<img class="collection-select-img" src="${portraitPath}" alt="Portrait" data-index="${i}">`;
-                dom.append(elem);
+                createCollectionHeroDOM(dom, portraitPath, i);
             }
 
             const portraits = document.querySelectorAll('.collection-select-img');
-            portraits.forEach(element => {
-                element.addEventListener('click', () => {
-                    const classList = element.classList;
-                    if (Array.from(classList).includes('selected')) {  // already selected?
-                        element.classList.remove('selected');  // ...then unselect
-                        const i = Number(element.dataset.index);
-                        const toBeRemoved = selectedDOM.querySelector(`[data-index="${i}"]`);
-                        toBeRemoved.remove();
-                        selected--;
-                        if (!selected) disableBattleBtn();  // disable btn because selection is empty
-
-                        // Remove from array:
-                        selectedTeam = selectedTeam.filter((entry) => {  // entries = indexes
-                            return entry === i ? false : true;
-                        })
-                    } else {  // otherwise add class for border
-                        if (selected < teamLimit){
-                            element.classList.add('selected');  // for CSS styling
-                            // const idString = element.dataset.index;
-                            const i = Number(element.dataset.index);
-                            const heroID = collection[i].heroID;  // lookup has index in collection
-                            const portraitPath = "assets/portraits/" + getHeroPortraitWithID(heroID);
-                            const elem = document.createElement("div");
-                            elem.classList = 'selected-team-member';
-                            elem.dataset.index = `${i}`;
-                            elem.innerHTML = `<img class="collection-select-img" src="${portraitPath}" alt="Portrait">`;
-
-                            elem.addEventListener('click', () => removeSelectedHero(elem, element, i));
-
-                            selectedDOM.append(elem);
-                            selected++;
-                            selectedTeam.push(i);
-
-                            const btn = document.getElementById('team-select-battle-btn');
-                            if (btn.disabled) {
-                                btn.disabled = false;
-                                btn.classList = 'active';
-                            }
-                        }
-                    }
-
-                });
-            });
+            addEventListeners(portraits);
         }
 
         /**
@@ -244,9 +247,6 @@ export default class TeamSelectScene extends Phaser.Scene{
             uiStats.titleFontSize = scene.scale.height / 10;
             uiStats.titleOffset = uiStats.titleFontSize / 2;
             uiStats.margin = uiStats.titleFontSize / 4;
-
-            // uiStats.collectionWidth = Math.floor(scene.scale.width * 3/4);
-            // uiStats.collectionHeight = Math.floor(scene.scale.height / 2);
         }
     }
 }
