@@ -61,6 +61,14 @@ export class Skill{
         if (this.cooldown && this.currentCD) this.currentCD--;
     }
 
+    /**
+     * Gets the relative icon image path for the skill.
+     * @returns {String} The relative icon image path
+     */
+    getIconPath(){
+        return 'assets/skill icons/' + this.icon;
+    }
+
     // Sets skill on CD.
     putCooldown(){
         if (this.cooldown) this.currentCD = this.cooldown;

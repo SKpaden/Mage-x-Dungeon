@@ -173,7 +173,7 @@ const heroTemplates = {
         skillPriorities: [3, 2, 1, 0],
         resistances: { fire: 0.5, water: 1.2 },  // Later: multipliers
         passives: null,  // String or object for logic
-        tags: ['Dark', 'Mage'],
+        tags: ['Dark', 'Debuffs', 'Mage'],
         description: "A shadowy mage who manipulates void energy.",
         stats: {
             'speed': {

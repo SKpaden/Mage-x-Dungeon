@@ -23,6 +23,275 @@
     </div>
 </body>
 <style>
+.scene-title{
+    --size: clamp(3rem, 8vw, 5rem);
+    font-size: var(--size);
+    color: white;
+    margin: auto;
+    left: 5%;
+    right: 5%;
+    text-align: center;
+}
+.scroll-text-container{
+    flex: 0 1 auto;
+    /* The above is shorthand for (source: https://stackoverflow.com/questions/90178/make-a-div-fill-the-height-of-the-remaining-screen-space):
+    flex-grow: 0,
+    flex-shrink: 1,
+    flex-basis: auto
+    */
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(25,25,25,0.5) transparent;
+}
+/* COLLECTION: */
+.collection-container{
+    display: flex !important;
+    width: 100%;
+    height: 100%;
+    padding: 1%;
+    --topbarSize: clamp(3rem, 8vw, 5rem);
+    padding-top: calc(var(--topbarSize) + 2rem);
+    box-sizing: border-box;
+}
+.collection-container img{
+    box-shadow: 5px 5px 5px rgb(20, 20, 20);
+}
+#collection-list{
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    grid-auto-rows: max-content;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(25,25,25,0.5) transparent;
+    width: 28%;
+    height: 100%;
+    padding: 3px;
+    box-sizing: border-box;
+    background-color: rgb(122, 122, 122);
+    border: 2px solid gold;
+}
+#collection-inspect{
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    width: 70%;
+    padding: 5px;
+    box-sizing: border-box;
+    margin-left: 2%;
+    background-color: rgb(122, 122, 122);
+    border: 2px solid gold;
+}
+.collection-list-entry{
+    padding: 2px;
+    box-sizing: border-box;
+    height: fit-content;
+}
+/* Small effect when clicking: */
+.collection-list-entry:active{
+    scale: 0.9;
+}
+/* Collection portraits: */
+.collection-list-img{
+    box-sizing: border-box;
+    border: 0.2rem solid darkgray;
+    /* box-shadow: 5px 5px 5px rgb(20, 20, 20); */
+    border-radius: 5px;
+    max-width: 100%; /* I only need mas-width because size is determined by columns */
+    cursor: pointer;
+}
+.collection-list-img:hover{
+    border: 0.2rem solid gold;
+    /* animation: pulseCollectionBorder 1s ease-in-out infinite; */
+}
+/* For later some select animation: */
+@keyframes pulseCollectionBorder {
+    0% { border-top: 0.2rem solid green; }  /* green border */
+    20% { border-right: 0.2rem solid green; border-top: 0.2rem solid gold; }  /* fade to no border */
+    40% { border-bottom: 0.2rem solid green;}
+    60% { border-left: 0.2rem solid green; }
+    100% { border-top: 0.2rem solid green; }
+}
+.collection-container img.selected{
+    border: 0.2rem solid rgb(0, 200, 0);
+}
+/* Collection inspect (detailed hero display): */
+.collection-inspect-images{
+    display: flex;
+    max-height: 70%;
+}
+#collection-inspect-portrait{
+    max-width: 30%;
+    max-height: 100%;
+}
+img.collection-inspect-img{
+    max-width: 100%;
+    max-height: 100%;
+    border: 0.2rem solid gold;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+/* Skills: */
+#collection-inspect-skill-wrapper{
+    width: 68%;
+    margin-left: 2%;
+    display: flex;
+    flex-direction: column;
+}
+#collection-inspect-skills{
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+    grid-auto-rows: max-content;
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+.collection-inspect-skill{
+    padding: 1rem;
+    box-sizing: border-box;
+}
+img.collection-inspect-icon{
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    cursor: pointer;
+}
+img.collection-inspect-icon:hover{
+    border: 0.2rem solid gold;
+}
+img.collection-inspect-icon:active{
+    scale: 0.9;
+}
+#skill-description{
+    padding: 1rem;
+    border: 2px solid white;
+    box-sizing: border-box;
+    flex: 1 1 auto;
+}
+/* Text content: */
+.collection-inspect-description{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 19%;
+    margin-top: 1%;
+    padding: 1rem;
+    box-sizing: border-box;
+    border: 2px solid white;
+}
+.collection-inspect-description h3{
+    margin: 0;
+    margin-bottom: 1rem;
+}
+.collection-inspect-tags{
+    width: 100%;
+    height: 10%;
+    text-align: center;
+}
+.collection-inspect-tags h3{
+    padding-bottom: 1%;
+    margin: 0;
+}
+.collection-inspect-tags span{
+    margin: 0 2%;
+    background-color: rgb(20, 20, 20);
+    border-radius: 5px;
+    color: white;
+    padding: 5px;
+}
+
+/* ----------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* MENU BUTTON: */
+.top-menu-btn {
+    display: flex !important; /* override Phaser block display */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    --size: clamp(3rem, 8vw, 5rem); 
+    width: var(--size);
+    height: var(--size);
+    aspect-ratio: 1 / 1;
+    
+    /* Top right corner: */
+    position: fixed !important;  /* override Phaser */
+    top: 1rem;
+    right: 1rem;
+    
+    background-color: rgb(122, 122, 122);
+    color: white;
+    border-radius: 50%;
+    box-shadow: 5px 5px 5px rgb(20,20,20);
+    
+    font-size: calc(var(--size));
+    
+    /* Prevent selecting/highlighting of button symbol: */
+    -webkit-user-select: none;  /* Safari */
+    -ms-user-select: none;  /* IE 10 and IE 11 */
+    user-select: none;  /* other browsers */
+}
+.top-menu-btn:hover{
+    background-color: rgb(185, 185, 185);
+}
+.top-menu-btn:active{
+    background-color: rgb(204, 204, 204);
+}
+/* Open menu: */
+.base-menu{
+    padding: 2rem;
+    box-sizing: border-box;
+    position: fixed !important;
+    --wsize: clamp(20rem, 40vw, 100rem); 
+    --hsize: clamp(40rem, 80vh, 100rem);
+    width: var(--wsize);
+    height: var(--hsize);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    
+    background-color: rgba(43, 43, 43, 0.7);
+    color: rgb(206, 75, 0);
+    border-radius: 2%;
+        
+    justify-content: center;
+    align-items: top;
+    text-align: center;
+}
+.base-menu.hidden{
+    display: none !important;
+}
+.base-menu-options{
+    display: flex;
+    flex-direction: column;
+    height: 80%;
+    justify-content: center;
+}
+.base-menu-option{
+    width: 100%;
+    height: 20%;
+    padding: 1rem 0;
+    box-sizing: border-box;
+}
+.base-menu #base-menu-title{
+    height: 20%;
+    font-size: 5rem;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+.base-menu-button{
+    width: 100%;
+    height: 100%;
+    color: rgb(206, 75, 0);
+    background-color: rgb(90, 89, 89);
+    font-size: x-large;
+    cursor: pointer;
+}
+.base-menu-button:hover{
+    background-color: rgb(114, 114, 114);
+
+}
+.base-menu-button:active{
+    background-color: rgb(151, 150, 150);
+
+}
 /* ----------------------------------------------------------------------------------------------------------------------------------------------------- */
 /* TEAM SELECTOR: */
 
