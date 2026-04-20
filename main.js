@@ -2,6 +2,7 @@ import BattleScene from './scenes/BattleScene.js';
 import CollectionScene from './scenes/CollectionScene.js';
 import MainMenuScene from './scenes/MainMenuScene.js';
 import MapScene from './scenes/MapScene.js';
+import SummonScene from './scenes/SummonScene.js';
 import TeamSelectScene from './scenes/TeamSelectScene.js';
 
 var config = {
@@ -17,7 +18,7 @@ var config = {
         dom: {
         createContainer: true
         },
-        scene: [MainMenuScene, MapScene, CollectionScene, TeamSelectScene, BattleScene]
+        scene: [MainMenuScene, MapScene, CollectionScene, SummonScene, TeamSelectScene, BattleScene]
     }
 
 var game = new Phaser.Game(config);

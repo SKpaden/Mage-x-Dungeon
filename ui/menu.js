@@ -7,6 +7,7 @@
  * @returns {Object} The Phaser DOM game object
  */
 export function createMenuButton(scene, x, y, dims){
+    if (scene.menuBtn) return scene.menuBtn;  // should not happen, but a little safer
     const menuBtn = scene.add.dom(0, 0, 'div');
     const node = menuBtn.node;
     node.classList = "top-menu-btn";
