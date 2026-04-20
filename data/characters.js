@@ -69,6 +69,14 @@ export class Character{
         this.skills.forEach((skill) => skill.decreaseCD());
     }
 
+    /**
+     * Resets state of the Character (skills, stats).
+     */
+    reset(){
+        this.resetCDs();
+        // this.resetStats();  // later maybe
+    }
+
     resetCDs(){
         // Potential effects that deny reset here ==> return false.
         this.skills.forEach((skill) => skill.currentCD = 0);

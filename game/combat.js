@@ -1,4 +1,4 @@
-import { gameState } from "./gameState.js";
+import { gameState, resetCharacters } from "./gameState.js";
 import { clearAffectedTargets, showDmgPopup } from "../ui/skillUI.js";
 import { updateDebuffDisplay, updateHP, updateTurnMeter } from "../ui/portraitFactory.js";
 import { showEndScreen } from "../ui/helpers.js";
@@ -107,6 +107,7 @@ export function endBattle(scene){
     }
 
     showEndScreen(scene, gameState.winner);
+    resetCharacters();
 }
 
 // Gets indeces of all from gameState.pendingSkill affected targets.

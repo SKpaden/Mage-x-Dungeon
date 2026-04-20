@@ -94,3 +94,25 @@ export function initEnemyTeamAlt(scene){
         gameState.enemyContainers.push(container);
     }
 }
+
+/**
+ * Resets the state of all Characters within the battle.
+ */
+export function resetCharacters(){
+    resetChars(gameState.playerContainers);
+    resetChars(gameState.enemyContainers);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// INTERNAL HELPER FUNCTIONS:
+
+/**
+ * Resets all Characters within the containers.
+ * @param {Array.<Object>} containers The array of containers
+ */
+function resetChars(containers){
+    containers.forEach(playerCont => {
+        const char = playerCont.getData('char');
+        char.reset();
+    });
+}
