@@ -28,6 +28,7 @@ export default class SummonScene extends Phaser.Scene {
             summonBtnWidth: null,
             summonBtnHeight: null,
             // Fontsize:
+            qMarkFontSize: null,
             shardDsiplayFontSize: 0,
             summonTextFontSize: 0,
             // Positioning:
@@ -55,7 +56,7 @@ export default class SummonScene extends Phaser.Scene {
         this.portrait = null;
 
         // Question mark:
-        const qMark = this.add.text(this.scale.width/2, this.scale.height/2, "?", {fontSize: this.scale.height/4}).setOrigin(0.5);
+        const qMark = this.add.text(uiStats.portraitX, uiStats.portraitY, "?", {fontSize: uiStats.qMarkFontSize}).setOrigin(0.5);
         // "Animated" border:
         const graphics = this.add.graphics({lineStyle: {color: 0xffffff, width: 5}});
         const colors = [  // rarity colors, but currently no rarities exist really
@@ -89,7 +90,7 @@ export default class SummonScene extends Phaser.Scene {
 
                 graphics.clear();
                 graphics.lineStyle(5, newColor, 1);
-                graphics.strokeRect(qMark.x - uiStats.portraitWidth / 2, qMark.y - uiStats.portraitHeight / 2, uiStats.portraitWidth, uiStats.portraitHeight);
+                graphics.strokeRect(uiStats.portraitX - uiStats.portraitWidth / 2, uiStats.portraitY - uiStats.portraitHeight / 2, uiStats.portraitWidth, uiStats.portraitHeight);
             }
         });
 
@@ -219,6 +220,10 @@ export default class SummonScene extends Phaser.Scene {
             shardCount.setFontSize(uiStats.shardDsiplayFontSize);
             shardCount.x = summonBtn.x + summonBtn.displayWidth / 2 + 20;
             shardCount.y = summonBtn.y;
+            // Mystery placeholder display:
+            qMark.x = uiStats.portraitX;
+            qMark.y = uiStats.portraitY;
+            qMark.setFontSize(uiStats.qMarkFontSize);
         }
 
         /**
@@ -253,6 +258,7 @@ export default class SummonScene extends Phaser.Scene {
             uiStats.margin = uiStats.summonBtnHeight;
 
             // Text:
+            uiStats.qMarkFontSize = scene.scale.height / 4;
             uiStats.summonTextFontSize = Math.floor(scene.scale.height / 20);
             uiStats.shardDsiplayFontSize = uiStats.summonTextFontSize / 2;
 
