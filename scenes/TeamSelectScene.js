@@ -1,5 +1,5 @@
-import { Collection } from "../collection/collection.js";
 import { getRegistryData, setRegistryData } from "../data/registryData.js";
+import { createOrRetrieveAccount } from "../managers/accountManager.js";
 
 export default class TeamSelectScene extends Phaser.Scene{
     constructor() { super({key: 'teamSelect'}); }
@@ -22,12 +22,9 @@ export default class TeamSelectScene extends Phaser.Scene{
             titleColor: 'white',
         }
 
-        // const newCollection = Collection.getSampleCollection();
-        const newCollection = Collection.getFullCollection();
-        const fallbackBaseCollection = newCollection.collection;
-
         // Get collected heroes data:
-        const collection = getRegistryData(this, 'collection') || fallbackBaseCollection;  // fallback to base heroes for now
+        const account = createOrRetrieveAccount(this);
+        const collection = account.getCollection().collection;
         const teamLimit = getRegistryData(this, 'teamLimit') || 5;  // default 5 team members, probably won't change
 
         // Init tracking variables:

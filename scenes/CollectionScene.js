@@ -1,7 +1,7 @@
-import { Collection } from "../collection/collection.js";
 import { Character } from "../data/characters.js";
-import { getRegistryData } from "../data/registryData.js";
 import { Skill } from "../data/skills.js";
+import { createOrRetrieveAccount } from "../managers/accountManager.js";
+import { createBackBtn, destroyBackBtn } from "../ui/backButton.js";
 import { createMenuButton, destroyMenu, resizeMenuButton } from "../ui/menu.js";
 
 export default class CollectionScene extends Phaser.Scene {
@@ -29,16 +29,17 @@ export default class CollectionScene extends Phaser.Scene {
         }
         
         setVariableUiStats(this);
-        
-        const newCollection = Collection.getFullCollection();
-        const fallbackBaseCollection = newCollection.collection;
-        this.collectionContainer = createCollectionDOM(this, getRegistryData(this, "collection") || fallbackBaseCollection);
+        const account = createOrRetrieveAccount(this);
+        const playerCollection = account.getCollection();  // retrieve collection or create full collection for testing
+
+        this.collectionContainer = createCollectionDOM(this, playerCollection.collection);
         this.title = this.add.dom(0, 0, 'h1');
         this.title.node.classList = 'scene-title';
         this.title.node.innerHTML = "Your Collection";
 
         this.cameras.main.setBackgroundColor(uiStats.cameraBgColor);  // set background color of scene
         this.menuBtn = createMenuButton(this, uiStats.menuBtnX, uiStats.menuBtnY, uiStats.menuBtnDims);
+        this.backBtn = createBackBtn(this, 'mainMenu');
 
         const container = document.getElementById('collection-inspect-skills');
         container.addEventListener('click', (event) => {
@@ -64,8 +65,9 @@ export default class CollectionScene extends Phaser.Scene {
             this.resizeHandler = null;  // clear reference
             this.title.destroy();
             this.title = null;
-            // Menu button:
+            // Menu + Back button:
             destroyMenu(this);
+            destroyBackBtn(this);
         });
 
         /**

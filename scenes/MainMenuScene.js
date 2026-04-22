@@ -1,3 +1,5 @@
+import { setRegistryData } from "../data/registryData.js";
+import { Account, createOrRetrieveAccount } from "../managers/accountManager.js";
 import { initBg } from "../ui/helpers.js";
 
 export default class MainMenuScene extends Phaser.Scene {
@@ -10,6 +12,8 @@ export default class MainMenuScene extends Phaser.Scene {
     }
 
     create(){
+        createOrRetrieveAccount(this);  // create account if first page load or reload (F5)
+
         const uiStats = {
             titleOptions: {fontSize: 100, color: '#ffffff'},
             btnFillStyle: 0x202020,

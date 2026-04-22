@@ -23,8 +23,10 @@
     </div>
 </body>
 <style>
+body{
+    --size: clamp(3rem, 8vw, 5rem); 
+}
 .scene-title{
-    --size: clamp(3rem, 8vw, 5rem);
     font-size: var(--size);
     color: white;
     margin: auto;
@@ -43,14 +45,51 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(25,25,25,0.5) transparent;
 }
+.global-btn{
+    display: flex !important;  /* override Phaser's block display */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    
+    width: var(--size);
+    height: var(--size);
+    aspect-ratio: 1 / 1;
+    
+    /* Top right corner: */
+    position: fixed !important;  /* override Phaser */
+
+    background-color: rgb(122, 122, 122);
+    color: white;
+    border-radius: 50%;
+    box-shadow: 5px 5px 5px rgb(20,20,20);
+    
+    font-size: calc(var(--size));
+    
+    /* Prevent selecting/highlighting of button symbol: */
+    -webkit-user-select: none;  /* Safari */
+    -ms-user-select: none;  /* IE 10 and IE 11 */
+    user-select: none;  /* other browsers */
+}
+.global-btn:hover{
+    background-color: rgb(185, 185, 185);
+}
+.global-btn:active{
+    background-color: rgb(204, 204, 204);
+}
+.back-btn{
+    /* Top right corner: */
+    top: 1rem;
+    left: 1rem;
+
+    font-size: calc(var(--size)*3/4);
+}
 /* COLLECTION: */
 .collection-container{
     display: flex !important;
     width: 100%;
     height: 100%;
     padding: 1%;
-    --topbarSize: clamp(3rem, 8vw, 5rem);
-    padding-top: calc(var(--topbarSize) + 2rem);
+    padding-top: calc(var(--size) + 2rem);
     box-sizing: border-box;
 }
 .collection-container img{
@@ -58,7 +97,7 @@
 }
 #collection-list{
     display: grid;
-    grid-template-columns: auto auto auto auto;
+    grid-template-columns: 25% 25% 25% 25%;  /* force 25%, even when less present */
     grid-auto-rows: max-content;
     overflow-y: auto;
     scrollbar-width: thin;
@@ -105,11 +144,10 @@
 }
 /* For later some select animation: */
 @keyframes pulseCollectionBorder {
-    0% { border-top: 0.2rem solid green; }  /* green border */
-    20% { border-right: 0.2rem solid green; border-top: 0.2rem solid gold; }  /* fade to no border */
-    40% { border-bottom: 0.2rem solid green;}
-    60% { border-left: 0.2rem solid green; }
-    100% { border-top: 0.2rem solid green; }
+    0% { border-top: 0.2rem solid rgb(13, 0, 128); }  /* green border */
+    33% { border-right: 0.2rem solid rgb(13, 0, 128); }  /* fade to no border */
+    66% { border-bottom: 0.2rem solid rgb(13, 0, 128); }
+    100% { border-left: 0.2rem solid rgb(13, 0, 128); }
 }
 .collection-container img.selected{
     border: 0.2rem solid rgb(0, 200, 0);
@@ -201,38 +239,9 @@ img.collection-inspect-icon:active{
 /* ----------------------------------------------------------------------------------------------------------------------------------------------------- */
 /* MENU BUTTON: */
 .top-menu-btn {
-    display: flex !important; /* override Phaser block display */
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-
-    --size: clamp(3rem, 8vw, 5rem); 
-    width: var(--size);
-    height: var(--size);
-    aspect-ratio: 1 / 1;
-    
     /* Top right corner: */
-    position: fixed !important;  /* override Phaser */
     top: 1rem;
     right: 1rem;
-    
-    background-color: rgb(122, 122, 122);
-    color: white;
-    border-radius: 50%;
-    box-shadow: 5px 5px 5px rgb(20,20,20);
-    
-    font-size: calc(var(--size));
-    
-    /* Prevent selecting/highlighting of button symbol: */
-    -webkit-user-select: none;  /* Safari */
-    -ms-user-select: none;  /* IE 10 and IE 11 */
-    user-select: none;  /* other browsers */
-}
-.top-menu-btn:hover{
-    background-color: rgb(185, 185, 185);
-}
-.top-menu-btn:active{
-    background-color: rgb(204, 204, 204);
 }
 /* Open menu: */
 .base-menu{

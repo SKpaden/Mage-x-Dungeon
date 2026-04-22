@@ -1,3 +1,4 @@
+import { Account } from "../managers/accountManager.js";
 import { getPassiveObjects } from "./passives.js";
 import { createSkillFromTemplate, Skill } from "./skills.js";
 import { StatManager } from "./statManager.js";
@@ -161,6 +162,34 @@ export function createHeroFromTemplate(id){
 }
 
 /**
+ * Gets the summoning cost for 1 hero.
+ * @returns {int} The shard cost of 1 summon
+ */
+export function getSummonCost(){
+    return heroPrice;
+}
+
+/**
+ * Pulls a random hero from all available ones and returns its ID.
+ * @param {Account} account The player Account
+ * @param {int} shards Number of shards available
+ * @param {int|null} exclude ID to be excluded (prevent duplicates twice in a row)
+ * @returns {int} The randomly pulled hero ID
+ */
+export function pullHero(account, shards, exclude = null){
+    if (shards >= heroPrice){
+        account.setShards(shards - heroPrice);
+        let pool = Object.keys(heroTemplates);
+        if (exclude && pool.length > 1){
+            pool = pool.filter((id) => id === exclude ? false : true);
+        }
+        let randInd = Math.floor(Math.random() * pool.length);  // filter out excluded id
+        return pool[randInd];
+    }
+    throw new Error("Insufficient shards!");
+}
+
+/**
  * Checks whether or not a hero with a certain ID exists.
  * @param {int} id      The id of a hero to be confirmed to exist
  * @returns {boolean}   Whether hero exists or not
@@ -168,6 +197,8 @@ export function createHeroFromTemplate(id){
 export function validateHeroID(id){
     return heroTemplates[id] ? true : false;
 }
+
+const heroPrice = 100;
 
 // Stores templates to create all heros via id.
 const heroTemplates = {

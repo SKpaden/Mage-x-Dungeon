@@ -36,6 +36,18 @@ export class Collection {
     }
 
     /**
+     * Creates and returns a starter collection with the first hero only.
+     * @param {int} playerID The player's id
+     * @returns {Collection} The starter collection with 1 hero
+     */
+    static getStarterCollection(playerID = null){
+        const newCollection = new Collection(playerID);
+        const starterHero = 1;
+        newCollection.addToCollection(starterHero);
+        return newCollection;
+    }
+
+    /**
      * Adds a list of heroes with the corresponding IDs to a collection.
      * @param {Array.<int>} ids The array of hero IDs to add to a collection
      */
