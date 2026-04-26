@@ -1,5 +1,6 @@
 import { getHeroTeam, getEnemyTeam } from "../data/characters.js";
 import { getRegistryData } from "../data/registryData.js";
+import { getStageEnemies } from "../managers/stageManager.js";
 import { createHeroPortraitAlt, createEnemyPortraitAlt } from "../ui/portraitFactory.js";
 import { initSkillEventListener } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
@@ -32,9 +33,9 @@ export function updateQeue(){
 }
 
 // Initialises battle.
-export function initBattle(scene){
+export function initBattle(scene, stage){
     initPlayerTeamAlt(scene);
-    initEnemyTeamAlt(scene);
+    initEnemyTeamAlt(scene, stage);
     buildQueue();
 }
 
@@ -76,8 +77,8 @@ export function initPlayerTeamAlt(scene){
     }
 }
 
-export function initEnemyTeamAlt(scene){
-    const enemies = getEnemyTeam();
+export function initEnemyTeamAlt(scene, stage){
+    const enemies = getEnemyTeam(getStageEnemies(stage));
 
     gameState.enemyAlive = enemies.length;
     

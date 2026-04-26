@@ -10,6 +10,16 @@ export function getCompletedStages(scene){
 }
 
 /**
+ * Gets the enemies for the encounter via the stageID.
+ * @param {int} stageID The id of the current stage
+ * @returns {Array.<int>} The IDs of the characters for the stage encounter
+ */
+export function getStageEnemies(stageID){
+    if (stageEnemies[stageID]) return stageEnemies[stageID];
+    return [1, 2, 3, 4, 5];
+}
+
+/**
  * Gets all available stages.
  * @returns {Array.<int>}   The array of all stages (ids)
  */
@@ -83,6 +93,13 @@ function unlockNextStage(stage, unlocked){
     if (!unlocked.includes(nextStage)) unlocked.push(nextStage);  // unlock only if locked
 }
 
+const stageEnemies = {
+    1: [8, 8, 8],
+    2: [8, 8, 9, 8, 8],
+    // 3: [1, 2, 3, 4, 5],
+    4: [8, 8, 9, 8, 8],
+    5: [8, 6, 7, 2, 8]
+}
 const stages = [1,2,3,4,5];
 const stageLabels = ['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4', 'Stage 5'];
 const unlockLookup = {
