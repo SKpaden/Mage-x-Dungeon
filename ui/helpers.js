@@ -166,13 +166,13 @@ export function showEndScreen(scene, winner){
     }).setOrigin(0.5);
     overlay.add([restartBtn, restartText]);
 
-    // Main Menu button (placeholder for later):
-    const menuBtn = scene.add.rectangle(120, 80, 220, 70, 0x4a7c59).setInteractive({ useHandCursor: true });
-    const menuText = scene.add.text(120, 80, 'Main Menu', {
+    // Map button (placeholder for later):
+    const mapBtn = scene.add.rectangle(120, 80, 220, 70, 0x4a7c59).setInteractive({ useHandCursor: true });
+    const mapText = scene.add.text(120, 80, 'Stage Selection', {
         fontSize: '24px',
         color: '#ffffff'
     }).setOrigin(0.5);
-    overlay.add([menuBtn, menuText]);
+    overlay.add([mapBtn, mapText]);
 
     // Button interactions:
     restartBtn.on('pointerdown', () => {
@@ -180,10 +180,10 @@ export function showEndScreen(scene, winner){
         scene.scene.restart();  // restart this battle scene
     });
 
-    menuBtn.on('pointerdown', () => {
+    mapBtn.on('pointerdown', () => {
         overlay.destroy();
         // scene.scale.off('resize');
-        scene.scene.start('mainMenu');  // switch to menu scene
+        scene.scene.start('map');  // switch to menu scene
     });
 
     // // ESC to restart (fallback):
