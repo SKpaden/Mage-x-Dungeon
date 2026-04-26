@@ -2,6 +2,7 @@ import { getRegistryData, setRegistryData } from "../data/registryData.js";
 import { getCompletedStages, getStageLabels, getStages, getUnlockedStages } from "../managers/stageManager.js";
 import { createBackBtn, destroyBackBtn } from "../ui/backButton.js";
 import { initBg } from "../ui/helpers.js";
+import { createMenuButton, destroyMenu } from "../ui/menu.js";
 
 export default class MapScene extends Phaser.Scene{
     constructor(){ super({ key: 'map'}); }
@@ -44,6 +45,7 @@ export default class MapScene extends Phaser.Scene{
         this.labels = [];
         this.selectedStage = null;
 
+        this.menuBtn = createMenuButton(this, uiStats.menuBtnX, uiStats.menuBtnY, uiStats.menuBtnDims);
         this.backBtn = createBackBtn(this, 'mainMenu');
 
         // Put stage displays on map:
@@ -97,6 +99,8 @@ export default class MapScene extends Phaser.Scene{
         this.events.once("shutdown", () => {
             this.scale.off('resize', this.resizeHandler);
             this.resizeHandler = null;  // clear reference
+            // Menu + Back button:
+            destroyMenu(this);
             destroyBackBtn(this);
         });
 

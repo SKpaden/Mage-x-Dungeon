@@ -4,6 +4,9 @@ import { initBg, initMessage, initTurnText, initPortraitDims, initPortraitDimsWi
 import { initCombatLog, logCombat } from '../ui/combatLog.js';
 import { resizeAllContainers } from '../ui/portraitFactory.js';
 import { uiStats } from '../ui/uiStats.js';
+import { getRegistryData } from '../data/registryData.js';
+import { createBackBtn, destroyBackBtn } from '../ui/backButton.js';
+import { createMenuButton, destroyMenu } from '../ui/menu.js';
 
 export default class BattleScene extends Phaser.Scene {
     constructor() { super({ key: 'battle' }); }
@@ -18,6 +21,8 @@ export default class BattleScene extends Phaser.Scene {
 
         this.load.image('Rakthir.jpg', 'assets/portraits/Rakthir.jpg');
         this.load.image('Kresh.jpg', 'assets/portraits/Kresh.jpg');
+        this.load.image('Demon Spawn.jpg', 'assets/portraits/Demon Spawn.jpg');
+        this.load.image('Caltraxa.jpg', 'assets/portraits/Caltraxa.jpg');
 
         // SKills:
         this.load.image('Claw Strike.jpg', 'assets/skill icons/Claw Strike.jpg');
@@ -36,11 +41,19 @@ export default class BattleScene extends Phaser.Scene {
         this.load.image('Poison Activation.jpg', 'assets/skill icons/Poison Activation.jpg');
         this.load.image('Endless Suffering.jpg', 'assets/skill icons/Endless Suffering.jpg');
 
+        this.load.image('Lightning Strike.jpg', 'assets/skill icons/Lightning Strike.jpg');
+        this.load.image('Energy Burst.jpg', 'assets/skill icons/Energy Burst.jpg');
+        this.load.image('Chain Lightning.jpg', 'assets/skill icons/Chain Lightning.jpg');
+        this.load.image('Surging Gaze.jpg', 'assets/skill icons/Surging Gaze.jpg');
+
         // Backgrounds:
         this.load.image('battlefield', 'assets/backgrounds/battlefield.jpg');
     }
 
     create() {
+        this.menuBtn = createMenuButton(this, uiStats.menuBtnX, uiStats.menuBtnY, uiStats.menuBtnDims);
+        this.backBtn = createBackBtn(this, 'map');
+        
         this.bg = initBg(this, 'battlefield', 0x202020);
         initGameState(this);
         this.log = initCombatLog(this, 20, this.scale.height / 2);  // 20 padding left of log element, middle on y-axis
@@ -50,7 +63,8 @@ export default class BattleScene extends Phaser.Scene {
         initEventListeners(this);
         initPortraitDimsWithScaleManager(this);
 
-        initBattle(this);
+        const stage = getRegistryData(this, 'selectedStage');
+        initBattle(this, stage);
         advanceToNextTurn(this);
 
         this.resizeHandler = () => {
@@ -84,6 +98,9 @@ export default class BattleScene extends Phaser.Scene {
         this.events.once("shutdown", () => {
             this.scale.off('resize', this.resizeHandler);
             this.resizeHandler = null;  // clear reference
+            // Menu + Back button:
+            destroyMenu(this);
+            destroyBackBtn(this);
         });
     }
 

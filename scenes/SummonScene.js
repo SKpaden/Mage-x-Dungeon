@@ -126,6 +126,8 @@ export default class SummonScene extends Phaser.Scene {
             // Menu + Back button:
             destroyMenu(this);
             destroyBackBtn(this);
+            // Tween:
+            this.currentTween.destroy();
         });
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -263,6 +263,8 @@ img.collection-inspect-icon:active{
     justify-content: center;
     align-items: top;
     text-align: center;
+
+    z-index: 1000 !important;
 }
 .base-menu.hidden{
     display: none !important;
@@ -380,16 +382,17 @@ img.collection-select-img.selected:hover{
     font-size: 2rem;
 }
 #team-select-battle-btn.active {
-    color: orangered;
-    border: 5px solid orangered;
+    color: black;
+    background-color: #1aff1a;
+    border: 5px solid #1aff1a;
     animation: pulseGreenBorder 2s infinite;
     cursor: pointer;
 }
 /* Add fade-in and out effect to make the button more visible: */
 @keyframes pulseGreenBorder {
-    0% { border: 5px solid orangered; }  /* green border */
-    50% { border: 5px solid yellow; }  /* fade to no border */
-    100% { border: 5px solid orangered; }
+    0% { border: 5px solid #1aff1a; }  /* green border */
+    50% { border: 5px solid red; }  /* fade to no border */
+    100% { border: 5px solid #1aff1a; }
 }
 
 /* ----------------------------------------------------------------------------------------------------------------------------------------------------- */

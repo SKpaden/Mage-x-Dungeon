@@ -1,5 +1,7 @@
 import { getRegistryData, setRegistryData } from "../data/registryData.js";
 import { createOrRetrieveAccount } from "../managers/accountManager.js";
+import { createBackBtn, destroyBackBtn } from "../ui/backButton.js";
+import { createMenuButton, destroyMenu } from "../ui/menu.js";
 
 export default class TeamSelectScene extends Phaser.Scene{
     constructor() { super({key: 'teamSelect'}); }
@@ -33,16 +35,13 @@ export default class TeamSelectScene extends Phaser.Scene{
 
         this.cameras.main.setBackgroundColor(uiStats.cameraBgColor);  // set background color of scene
 
+        this.menuBtn = createMenuButton(this, uiStats.menuBtnX, uiStats.menuBtnY, uiStats.menuBtnDims);
+        this.backBtn = createBackBtn(this, 'map');
+
         setVariableUiStats(this);
 
         this.title = this.add.text(this.scale.width / 2, uiStats.titleOffset, "Select Your Team",
                                    {fontSize: uiStats.titleFontSize, color: uiStats.titleColor}).setOrigin(0.5);
-
-        // Button to go back to stage selector:
-        this.backBtn = this.add.rectangle(uiStats.titleFontSize, uiStats.titleFontSize / 2  + uiStats.margin, uiStats.titleFontSize, uiStats.titleFontSize, uiStats.backBtnColor);
-        setBackBtnInteractive(this, this.backBtn);
-
-        this.backText = this.add.text(uiStats.titleFontSize, uiStats.titleFontSize / 2  + uiStats.margin, "◄", {fontSize: uiStats.titleFontSize, color: uiStats.titleColor}).setOrigin(0.5);
         
         // Hero display:
         let styleString = `background-color: ${uiStats.collectionBgColor}; width: ${uiStats.collectionWidth}; height: ${uiStats.collectionHeight};`;
@@ -84,17 +83,6 @@ export default class TeamSelectScene extends Phaser.Scene{
             this.title.x = this.scale.width / 2;
             this.title.y = uiStats.titleOffset;
             this.title.setFontSize(uiStats.titleFontSize);
-
-            // Back btn:
-            this.backBtn.x = uiStats.titleFontSize;
-            this.backBtn.y = uiStats.titleFontSize / 2 + uiStats.margin;
-            this.backBtn.displayWidth = uiStats.titleFontSize;
-            this.backBtn.displayHeight = uiStats.titleFontSize;
-
-            // Back btn text:
-            this.backText.setFontSize(uiStats.titleFontSize);
-            this.backText.x = uiStats.titleFontSize;
-            this.backText.y = uiStats.titleFontSize / 2 + uiStats.margin;
         }
 
         // Responsive design:
@@ -104,6 +92,9 @@ export default class TeamSelectScene extends Phaser.Scene{
         this.events.once("shutdown", () => {
             this.scale.off('resize', this.resizeHandler);
             this.resizeHandler = null;  // clear reference
+            // Menu + Back button:
+            destroyMenu(this);
+            destroyBackBtn(this);
         });
 
 

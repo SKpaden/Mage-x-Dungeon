@@ -2,7 +2,7 @@ import { uiStats } from "./uiStats.js";
 import { gameState } from "../game/gameState.js";
 import { getAffectedTargets } from "../game/combat.js";
 
-let escBtn = null;  // register keyboard key
+let rBtn = null;  // register keyboard key
 
 // Removes tints from preview targets.
 export function clearAffectedAllies(){
@@ -20,8 +20,8 @@ export function clearAffectedTargets(){
 
 // Inits event listeners for skill display.
 export function initSkillEventListener(scene){
-    escBtn = scene.input.keyboard.addKey("ESC");
-    escBtn.on('down', () => handleEscDown(scene));
+    rBtn = scene.input.keyboard.addKey("R");
+    rBtn.on('down', () => handleRDown(scene));
 }
 
 // Shows visual cue (tint) on all targets that would be affected by gameState.pendingSkill.
@@ -79,7 +79,7 @@ export function showSkills(scene, container){
             .on('pointerdown', (pointer) => {
                 if (pointer.button !== 0 || skill.currentCD) return;  // only left click and available skills!
                 gameState.pendingSkill = skill;
-                scene.message.setText(`Use ${skill.name}? Hover enemies!`);
+                scene.message.setText(`Use ${skill.name}? Hover enemies! Press 'R' to reset.`);
                 skillContainer.destroy();  // clean up and destroy all created objects/elements
             })
             .on('pointerover', () => skillText.setVisible(true))  // tooltip
@@ -124,7 +124,7 @@ function addSkillTooltip(scene, skill, x, y, width = 300, height = 150){  // wid
 }
 
 // Callback whenever player wants to unselect a skill.
-function handleEscDown(scene){
+function handleRDown(scene){
     if (gameState.turn !== 'player' || !gameState.pendingSkill) return;
     
     if (scene.currentSkillContainer) {
