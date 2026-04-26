@@ -120,8 +120,12 @@ export function getHeroTeam(){
     return [createHeroFromTemplate(1), createHeroFromTemplate(2), createHeroFromTemplate(4), createHeroFromTemplate(7), createHeroFromTemplate(6)];
 }
 
-export function getEnemyTeam(){
-    return [createHeroFromTemplate(5), createHeroFromTemplate(6), createHeroFromTemplate(6), createHeroFromTemplate(6), createHeroFromTemplate(5)];
+export function getEnemyTeam(ids){
+    const enemies = [];
+    ids.forEach((id) => {
+        enemies.push(createHeroFromTemplate(id));
+    })
+    return enemies;
 }
 
 // Testing Docs:
@@ -487,6 +491,94 @@ const heroTemplates = {
                 'Water': {
                     current: 1.2,
                     base: 1.2
+                }
+            }
+        }
+    },
+    8: {
+        id: 8,
+        name: "Demon Spawn",
+        portrait: 'Demon Spawn.jpg',
+        maxHp: 200,
+        speed: 16,
+        skillIds: [1],
+        skillPriorities: [0],
+        resistances: { physical: 0.8, fire: 1.0 },
+        passives: null,
+        tags: ['Demon', 'Physical'],
+        description: "A demonic grunt summoned from the depths of hell.",
+        stats: {
+            'speed': {
+                current: 16,
+                base: 16
+            },
+            'hp': {
+                current: 200,
+                base: 200
+            },
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 1.5,
+                    base: 1.5
+                },
+                'Water': {
+                    current: 0.5,
+                    base: 0.5
+                }
+            }
+        }
+    },
+    9: {
+        id: 9,
+        name: "Caltraxa",
+        portrait: 'Caltraxa.jpg',
+        maxHp: 400,
+        speed: 26,
+        skillIds: [16,17,18,19],
+        skillPriorities: [3,2,1,0],
+        resistances: { physical: 0.8, fire: 1.0 },
+        passives: [
+            { type: 'DebuffImmunity', params: { debuffNames: ['Shock'] } },
+        ],
+        tags: ['Electro', 'Elemental', 'Magic'],
+        description: "A Draconoid sorceress of ancient dragon descent. Legends describe her as the most powerful lightning conjurer in the entire land.",
+        stats: {
+            'speed': {
+                current: 26,
+                base: 26
+            },
+            'hp': {
+                current: 400,
+                base: 400
+            },
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Fire': {
+                    current: 1.5,
+                    base: 1.5
+                },
+                'Electro': {
+                    current: 2.0,
+                    base: 2.0
+                },
+                'Water': {
+                    current: 0.5,
+                    base: 0.5
                 }
             }
         }

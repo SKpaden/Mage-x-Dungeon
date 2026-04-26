@@ -292,6 +292,70 @@ export function getSkillTemplates(){
             cooldown: 3,
             description: "Increases the duration of all enemy debuffs by 2 turns.",
         },
+        // Lightning Strike:
+        16: {
+            name: 'Lightning Strike',
+            icon: 'Lightning Strike.jpg',
+            targets: 'single',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'single',
+                                            dmg: 50,
+                                            element: 'Electro'
+                                        }
+                },
+            ],
+            cooldown: 0,
+            description: "Unleashed a powerful lightning strike upon a single enemy and shock them.",
+        },
+        // Energy Burst:
+        17: {
+            name: 'Energy Burst',
+            icon: 'Energy Burst.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'all',
+                                            dmg: 80,
+                                            element: 'Electro'
+                                        }
+                },
+            ],
+            cooldown: 3,
+            description: "Concentrates all atmospheric energy into a focused orb until it bursts, unleashing heavy injuries upon each foe and shocking them.",
+        },
+        // Chain Lightning:
+        18: {
+            name: 'Chain Lightning',
+            icon: 'Chain Lightning.jpg',
+            targets: 'adjacent',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'adjacent',
+                                            dmg: 100,
+                                            element: 'Electro'
+                                        }
+                },
+            ],
+            cooldown: 3,
+            description: "Unleashed a powerful chain lightning that jumps to adjacent targets and shocks them.",
+        },
+        // Surging Gaze:
+        19: {
+            name: 'Surging Gaze',
+            icon: 'Surging Gaze.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'all',
+                                            dmg: 100,
+                                            element: 'Electro'
+                                        }
+                },
+            ],
+            cooldown: 3,
+            description: "Conjures a glowing eye within a lightning storm, which gazes into each enemy's soul, thereby applying a Shock debuff and lowering their speed.",
+        },
     };
 
     return skillTemplates;
