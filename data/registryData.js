@@ -1,4 +1,16 @@
 /**
+ * Gets the selected player team from the registry and maps it to an array of Characters.
+ * @param {Phaser.Scene} scene The current Phaser scene object
+ * @returns {Array.<Character>} The array of Character objects
+ */
+export function getSelectedPlayerTeam(scene){
+    // Read team from registry:
+    let heroes = getRegistryData(scene, 'playerTeam');  // Array.<CollectionEntry>
+    heroes = heroes.map((entry) => entry.hero);  // Array.<Character>
+    return heroes;
+}
+
+/**
  * Gets data from the registry with a key.
  * @param {Phaser.Scene} scene  The current Phaser scene
  * @param {String} key          The key for the data

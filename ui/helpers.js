@@ -28,30 +28,6 @@ export function initMessage(scene){
 }
 
 // Writes portrait dimensions to uiStats.
-export function initPortraitDims(scene){
-    const tempPortrait = scene.make.image({
-        x: 0,
-        y: 0,
-        key: 'my-hero',
-        scale: uiStats.portraitScale,
-        add: false  // <- crucial: do NOT add to scene
-    });
-
-    const portraitWidth = tempPortrait.displayWidth;
-    const portraitHeight = tempPortrait.displayHeight;
-
-    // No need to destroy, it was never added...
-    const halfW = portraitWidth / 2;
-    const halfH = portraitHeight / 2;
-
-    uiStats.portraitWidth = portraitWidth;
-    uiStats.portraitHeight = portraitHeight;
-    uiStats.halfW = halfW;
-    uiStats.halfH = halfH;
-    console.log(portraitHeight/scene.scale.height);
-}
-
-// Writes portrait dimensions to uiStats.
 export function initPortraitDimsWithScaleManager(scene){
     var tempPortrait = scene.make.image({
         x: 0,

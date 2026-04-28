@@ -109,7 +109,7 @@ function createBorderGraphics(scene, x, y, width, height, borderRadius, color){
 }
 
 function createCharacterContainerAlt(scene, x, y, character, scale, team, index){
-const imgKey = character.portrait;
+    const imgKey = character.portrait;
     if(!scene.textures.exists(imgKey)){
         console.warn(`Failed to load ${imgKey}!`);
     }

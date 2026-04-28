@@ -1,6 +1,3 @@
-import { getHeroTeam, getEnemyTeam } from "../data/characters.js";
-import { getRegistryData } from "../data/registryData.js";
-import { getStageEnemies } from "../managers/stageManager.js";
 import { createHeroPortraitAlt, createEnemyPortraitAlt } from "../ui/portraitFactory.js";
 import { initSkillEventListener } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
@@ -33,9 +30,9 @@ export function updateQeue(){
 }
 
 // Initialises battle.
-export function initBattle(scene, stage){
-    initPlayerTeamAlt(scene);
-    initEnemyTeamAlt(scene, stage);
+export function initBattle(scene, heroes, enemies){
+    initPlayerTeamAlt(scene, heroes);
+    initEnemyTeamAlt(scene, enemies);
     buildQueue();
 }
 
@@ -59,17 +56,14 @@ export function initGameState(scene){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ALT FUNCTIONS WITH CLASSES:
 
-export function initPlayerTeamAlt(scene){
-    // Read team from registry:
-    const heroes = getRegistryData(scene, 'playerTeam');  // Array.<CollectionEntry>
-
+export function initPlayerTeamAlt(scene, heroes){
     gameState.playerAlive = heroes.length;
 
     const spaceNeeded = heroes.length * uiStats.portraitWidth + (heroes.length-1)*uiStats.margin;  // #portraits*width + margins between them
     const whiteSpacePerSide = (scene.scale.width - spaceNeeded)/2;  // how much space on either side? (for xPos of first portrait)
     var xPos = whiteSpacePerSide + uiStats.portraitWidth/2;  // REMEMBER: CENTER-BASED POSITIONING!
     for (let index = 0; index < heroes.length; index++) {
-        const hero = heroes[index].hero;
+        const hero = heroes[index];
         gameState.combinedSpeed += hero.getSpeed();
         const container = createHeroPortraitAlt(scene, xPos, uiStats.halfH + 20, hero, uiStats.portraitScale, 'player', index);  // stats
         xPos+=uiStats.portraitWidth + uiStats.margin;  // enough spacing with margin   
@@ -77,9 +71,7 @@ export function initPlayerTeamAlt(scene){
     }
 }
 
-export function initEnemyTeamAlt(scene, stage){
-    const enemies = getEnemyTeam(getStageEnemies(stage));
-
+export function initEnemyTeamAlt(scene, enemies){
     gameState.enemyAlive = enemies.length;
     
     const spaceNeeded = enemies.length * uiStats.portraitWidth + (enemies.length-1)*uiStats.margin;  // #portraits*width + margins between them
