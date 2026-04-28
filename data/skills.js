@@ -356,6 +356,66 @@ export function getSkillTemplates(){
             cooldown: 3,
             description: "Conjures a glowing eye within a lightning storm, which gazes into each enemy's soul, thereby applying a Shock debuff and lowering their speed.",
         },
+        // Charge:
+        20: {
+            name: 'Charge',
+            icon: 'Charge.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'BoostTurnMeter', params: { area: 'all', amount: 0.2 } },
+            ],
+            cooldown: 3,
+            description: "Boosts all allies turn meter by 20%.",
+            type: 'Support'
+        },
+        // Strike:
+        21: {
+            name: 'Strike',
+            icon: 'Strike.jpg',
+            targets: 'single',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'single',
+                                            dmg: 30,
+                                            element: 'Physical'
+                                        }
+                }
+            ],
+            cooldown: 0,
+            description: "Strikes an enemy with the weapon dealing physical damage."
+        },
+        // Execution:
+        22: {
+            name: 'Execution',
+            icon: 'Execution.jpg',
+            targets: 'single',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'single',
+                                            dmg: 200,
+                                            element: 'Physical'
+                                        }
+                }
+            ],
+            cooldown: 3,
+            description: "A powerful single target attack to annihilate a foe."
+        },
+        // Preparation: Should later place buffs on self (inc spd, atk, crit)
+        23: {
+            name: 'Preparation',
+            icon: 'Preparation.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'all',
+                                            dmg: 100,
+                                            element: 'Physical'
+                                        }
+                }
+            ],
+            cooldown: 3,
+            description: "Prepares a powerful attack to unleash upon all enemies."
+        },
     };
 
     return skillTemplates;

@@ -583,4 +583,106 @@ const heroTemplates = {
             }
         }
     },
+    10: {
+        id: 10,
+        name: "Undead General",
+        portrait: 'Undead General.jpg',
+        maxHp: 800,
+        speed: 18,
+        skillIds: [21,20],
+        skillPriorities: [1,0],
+        resistances: { physical: 0.8, fire: 1.0 },
+        passives: [
+            { type: 'DebuffImmunity', params: { debuffNames: ['Bleed'] } },
+        ],
+        tags: ['Physical', 'Tank', 'Undead'],
+        description: "An undead revenant knight. In his living times, he was a renowned general with plenty of battle experience. Now, as merely a husk of his former self, he surves a dark necromancer as the commander of his undead hordes. A cruel fate for a man of his caliber.",
+        stats: {
+            'speed': {
+                current: 18,
+                base: 18
+            },
+            'hp': {
+                current: 800,
+                base: 800
+            },
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Blood': {
+                    current: 1.5,
+                    base: 1.5
+                },
+                'Fire': {
+                    current: 1.5,
+                    base: 1.5
+                },
+                'Electro': {
+                    current: 2.0,
+                    base: 2.0
+                },
+                'Water': {
+                    current: 0.5,
+                    base: 0.5
+                }
+            }
+        }
+    },
+    11: {
+        id: 11,
+        name: "Royal Guard",
+        portrait: 'Royal Guard.jpg',
+        maxHp: 750,
+        speed: 20,
+        skillIds: [1, 22, 23],
+        skillPriorities: [2,1,0],
+        resistances: { physical: 0.8, fire: 1.0 },
+        passives: [
+            { type: 'DebuffImmunity', params: { debuffNames: ['Bleed'] } },
+        ],
+        tags: ['Draconoid', 'Physical', 'Tank'],
+        description: "A Draconoid royal guard serving kings and queens in the kingdom. These royal guards never leave their leader's side and would give their lives to protect them.",
+        stats: {
+            'speed': {
+                current: 20,
+                base: 20
+            },
+            'hp': {
+                current: 750,
+                base: 750
+            },
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Blood': {
+                    current: 1.5,
+                    base: 1.5
+                },
+                'Fire': {
+                    current: 1.5,
+                    base: 1.5
+                },
+                'Electro': {
+                    current: 2.0,
+                    base: 2.0
+                },
+                'Water': {
+                    current: 0.5,
+                    base: 0.5
+                }
+            }
+        }
+    },
 };

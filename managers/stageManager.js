@@ -95,10 +95,10 @@ function unlockNextStage(stage, unlocked){
 
 const stageEnemies = {
     1: [8, 8, 8],
-    2: [8, 8, 9, 8, 8],
-    // 3: [1, 2, 3, 4, 5],
-    4: [8, 8, 9, 8, 8],
-    5: [8, 6, 7, 2, 8]
+    2: [8, 8, 10, 8, 8],
+    3: [1, 2, 3, 4, 5],
+    4: [8, 11, 9, 11, 8],
+    5: [11, 6, 7, 2, 11]
 }
 const stages = [1,2,3,4,5];
 const stageLabels = ['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4', 'Stage 5'];
