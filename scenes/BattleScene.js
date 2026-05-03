@@ -1,6 +1,6 @@
 import { initBattle, initEventListeners, initGameState } from '../game/gameState.js';
 import { advanceToNextTurn } from '../game/turnManager.js';
-import { initBg, initMessage, initTurnText, initPortraitDimsWithScaleManager, updateText } from '../ui/helpers.js';
+import { initBg, initMessage, initTurnText, initPortraitDimsWithScaleManager, updateText, resizeEndScreen } from '../ui/helpers.js';
 import { initCombatLog, logCombat } from '../ui/combatLog.js';
 import { resizeAllContainers } from '../ui/portraitFactory.js';
 import { uiStats } from '../ui/uiStats.js';
@@ -23,6 +23,8 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     create() {
+        setVariableUiStats(this);
+
         this.menuBtn = createMenuButton(this, uiStats.menuBtnX, uiStats.menuBtnY, uiStats.menuBtnDims);
         this.backBtn = createBackBtn(this, 'map');
         
@@ -50,6 +52,7 @@ export default class BattleScene extends Phaser.Scene {
         this.load.start();  // run the queue
 
         this.resizeHandler = () => {
+            setVariableUiStats(this);
             // BG:
             this.bg.destroy();
             this.bg = initBg(this, 'battlefield', 0x202020);
@@ -71,6 +74,9 @@ export default class BattleScene extends Phaser.Scene {
 
             // Resize cahracter displays:
             resizeAllContainers(this);
+
+            // Resize end screen (if present):
+            resizeEndScreen(this);
         }
 
         // For dynamic resizing:
@@ -83,7 +89,37 @@ export default class BattleScene extends Phaser.Scene {
             // Menu + Back button:
             destroyMenu(this);
             destroyBackBtn(this);
+            // End overlay:
+            const endOverlay = this.endOverlay;
+            if (endOverlay){
+                endOverlay.destroy();
+                this.endOverlay = null;
+            }
         });
+
+        /**
+         * Sets variable uiStats after a resize event.
+         * @param {Phaser.Scene} scene The current Phaser scene object
+         */
+        function setVariableUiStats(scene){
+            const sceneHalfWidth = scene.scale.width / 2;
+            const sceneHalfheight = scene.scale.height / 2;
+            const scene10thHeight = Math.floor(scene.scale.height / 10);
+            const scene22ndHeight = Math.floor(scene.scale.height / 22);
+            
+            uiStats.sceneHalfW = sceneHalfWidth;
+            uiStats.sceneHalfH = sceneHalfheight;
+
+            uiStats.endButtonWidth = scene.scale.width / 6;
+            uiStats.endButtonHeight = scene10thHeight;
+            uiStats.endButtonFontSize = Math.floor(scene.scale.height/ 30);
+            uiStats.endSubTextFontSize = scene22ndHeight;
+            uiStats.endTitleFontSize = scene10thHeight;
+            // Positioning:
+            uiStats.endButtonYOffset = sceneHalfheight - scene10thHeight;
+            uiStats.endTitleYOffset = -sceneHalfheight + scene10thHeight * 3/4;
+            uiStats.endSubtextYOffset = -sceneHalfheight + 5/4 * scene10thHeight + scene22ndHeight;
+        }
     }
 
     update() {}

@@ -36,6 +36,17 @@ export function getStageLabels(){
 }
 
 /**
+ * Gets the stage rewards for the completed stage.
+ * @param {int} stage Stage ID
+ * @returns {Object} The object containing shard and hero reward
+ */
+export function getStageReward(stage){
+    const rewards = stageRewards[stage];
+    if (rewards) return rewards;
+    throw new Error("Invalid stage for rewards: " + stage);
+}
+
+/**
  * Gets the unlocked stages or initializes with the first stage.
  * @param {Phaser.Scene} scene  The current Phaser scene object
  * @returns {Array.<int>}       The unlocked stages
@@ -93,6 +104,8 @@ function unlockNextStage(stage, unlocked){
     if (!unlocked.includes(nextStage)) unlocked.push(nextStage);  // unlock only if locked
 }
 
+
+// Constants for hard-coded stage encounters and rewards:
 const stageEnemies = {
     1: [8, 8, 8],
     2: [8, 8, 10, 8, 8],
@@ -107,4 +120,27 @@ const unlockLookup = {
     2: 3,
     3: 4,
     4: 5
+}
+
+const stageRewards = {
+    1: {
+        shards: 10,
+        heroID: 8  // Demon Spawn
+    },
+    2: {
+        shards: 25,
+        heroID: 10  // Undead General
+    },
+    3: {
+        shards: 50,
+        heroID: 4 // Poison
+    },
+    4: {
+        shards: 75,
+        heroID: 11  // Royal Guard
+    },
+    5: {
+        shards: 100,
+        heroID: 6  // Rakthir
+    }
 }

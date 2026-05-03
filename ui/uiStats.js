@@ -27,6 +27,9 @@ export const uiStats = {
     enemyLogColor: '#ED0000',
     enemyPlayerTargetColor: 0xff0000,
     enemyAllyTargetColor: 0x00ff00,
+    endBtnBaseColor: 0x4a7c59,
+    endBtnHoverColor: 0x6a9c79,
+    endBtnActiveColor: 0x8aeca9,
     // Hover target preview:
     enemyHoverTint: 0x820000,
     enemyTargetTint: '0xff4444',
@@ -39,4 +42,17 @@ export const uiStats = {
     // negativePopupOptions: {fontSize: '26px', color: '#ED0000', backgroundColor: 'rgba(0,0,0,0.8)'},
     // positivePopupOptions: {fontSize: '26px', color: '#00aa00', backgroundColor: 'rgba(0,0,0,0.8)'},
     popupDuration: 800,
+    // ================= End screen =================
+    endButtonWidth: null,
+    endButtonHeight: null,
+    endButtonFontSize: null,
+    endSubTextFontSize: null,
+    endTitleFontSize: null,
+    // Positioning:
+    endButtonYOffset: null,
+    endTitleYOffset: null,
+    endSubtextYOffset: null,
+    // ================= Scene Dimensions =================
+    sceneHalfW: null,
+    sceneHalfH: null,
 };
