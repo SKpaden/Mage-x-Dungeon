@@ -33,6 +33,7 @@ export function updateQeue(){
 export function initBattle(scene, heroes, enemies){
     initPlayerTeamAlt(scene, heroes);
     initEnemyTeamAlt(scene, enemies);
+    resetCharacters();
     buildQueue();
 }
 
@@ -94,6 +95,14 @@ export function initEnemyTeamAlt(scene, enemies){
 export function resetCharacters(){
     resetChars(gameState.playerContainers);
     resetChars(gameState.enemyContainers);
+}
+
+
+export function successfulRevival(container){
+    const team = container.getData('team');
+    if (team === 'player'){
+        gameState.playerAlive++;
+    } else gameState.enemyAlive++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

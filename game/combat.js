@@ -107,7 +107,6 @@ export function endBattle(scene){
     }
 
     showEndScreen(scene, gameState.winner);
-    resetCharacters();
 }
 
 // Gets indeces of all from gameState.pendingSkill affected targets.
@@ -122,5 +121,19 @@ export function getAffectedTargets(area, hoveredIndex, team){
     } else {  // 'adjacent'
         const adj = [hoveredIndex, hoveredIndex - 1, hoveredIndex + 1];  // order matters to go from middle->left->right
         return adj.filter(i => (i >= 0 && i < team.length && team[i].getData('hp') > 0));
+    }
+}
+
+export function getReviveTargets(area, hoveredIndex, team){
+    if (area === 'single') return [hoveredIndex];
+    else if (area === 'all'){
+        const indeces = [];
+        team.forEach(member => {
+            if (member.getData('hp') === 0) indeces.push(member.getData('teamIndex'));
+        });
+        return indeces;
+    } else {
+        const adj = [hoveredIndex, hoveredIndex - 1, hoveredIndex + 1];
+        return adj.filter(i => (i >= 0 && i < team.length && team[i].getData('hp') === 0));
     }
 }

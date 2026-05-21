@@ -26,6 +26,7 @@ export class Debuff{
     // Lookup for default elemental debuffs.
     static defaultElementalDebuffs = {
         'Dark': new Debuff("Scared", 1, 0, null, null, true, "cc", null),
+        'Blood': new Debuff("Bleed", 3, 50, 'Blood', null, false, "elemental", null),
         'Electro': new Debuff('Shock', 2, 10, 'Electro', null, false, 'elemental', null),
         'Fire': new Debuff('Burn', 3, 20, 'Fire', null, false, 'elemental', null),
         'Light': new Debuff('Blinded', 3, 0, 'Light', null, false, 'elemental', null),

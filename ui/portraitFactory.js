@@ -76,7 +76,12 @@ export function updateHP(container, newHp) {
     container.setData('hp', newHp);
 }
 
-// Redraws the turn meter matching the passed value.
+/**
+ * Redraws the turn meter display of the container.
+ * @param {Phaser.Scene} scene The current Phaser Scene object
+ * @param {Object} container The Phaser container game object
+ * @param {float} value The percentage of the turn meter
+ */
 export function updateTurnMeter(scene, container, value){
     const tmGraphics = container.getData('tmGraphics');
     tmGraphics.clear();
@@ -303,20 +308,23 @@ function setAllyInteractive(scene, container, portrait, options, tint){
         // Player chose a character AND it's the player's turn AND this target is not dead...
         if (gameState.turn === 'player'  && gameState.pendingSkill){
             if (gameState.pendingSkill.type === 'Attack') return;  // don't show on attack skills
-            if (container.getData('hp') > 0 || gameState.pendingSkill.type === 'Revive'){  // always allow to target alive allies or with a revive spell
+            if (container.getData('hp') > 0 && gameState.pendingSkill.type === 'Support' || container.getData('hp') === 0 && gameState.pendingSkill.type === 'Revive'){  // always allow to target alive allies or with a revive spell
                 const skill = gameState.pendingSkill;
                 gameState.pendingSkill = null;  // prevent spamming!
                 clearAffectedAllies();  // remove targeting visuals
-                applySkill(scene, container.getData('teamIndex'), skill);               
+                applySkill(scene, container.getData('teamIndex'), skill);
             }
         }
     })
     .on('pointerover', () => {
-        if(gameState.pendingSkill && gameState.turn === 'player' && container.getData('hp') > 0){
-            if (gameState.pendingSkill.type !== 'Attack')
-            previewTargets(scene, gameState.pendingSkill, container.getData('teamIndex'), gameState.playerContainers, uiStats.allyTargetTint);
+        if(gameState.pendingSkill && gameState.turn === 'player' && gameState.pendingSkill.type !== 'Attack'){
+            if (gameState.pendingSkill.type === 'Revive' && container.getData('hp') > 0 || gameState.pendingSkill.type === 'Support' && container.getData('hp') === 0){
+                portrait.setTint(uiStats.invalidTargetTint);
+                return;
+            }
+            previewTargets(scene, container, gameState.pendingSkill, container.getData('teamIndex'), gameState.playerContainers, uiStats.allyTargetTint);
         } else {
-            portrait.setTint(tint);
+            // portrait.setTint(tint);
         }
     })
     .on('pointerout', () => {
@@ -357,10 +365,13 @@ function setEnemyInteractive(scene, container, portrait, options, tint){
     })
     .on('pointerover', () => {
         if(gameState.pendingSkill && gameState.turn === 'player'){
-            if (gameState.pendingSkill.type !== 'Attack') return;  // don't preview on ally skills
-            previewTargets(scene, gameState.pendingSkill, container.getData('teamIndex'), gameState.enemyContainers, uiStats.enemyTargetTint);
+            if (gameState.pendingSkill.type !== 'Attack') {
+                portrait.setTint(uiStats.invalidTargetTint);
+                return;
+            }  // don't preview on ally skills
+            previewTargets(scene, container, gameState.pendingSkill, container.getData('teamIndex'), gameState.enemyContainers, uiStats.enemyTargetTint);
         } else {
-            portrait.setTint(tint);
+            // portrait.setTint(tint);
         }
     })
     .on('pointerout', () => {

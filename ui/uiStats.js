@@ -35,6 +35,7 @@ export const uiStats = {
     enemyTargetTint: '0xff4444',
     allyHoverTint: 0x00ff00,
     allyTargetTint: '0x44ff44',
+    invalidTargetTint: 0x2f2f2f,
     // Popups:
     negativePopupOptions: {fontSize: '26px', color: '#ED0000', align: 'center'},
     positivePopupOptions: {fontSize: '26px', color: '#00aa00', align: 'center'},

@@ -1,10 +1,13 @@
+import { gameState, successfulRevival } from "../game/gameState.js";
 import { Account } from "../managers/accountManager.js";
+import { showPositivePopup } from "../ui/popups.js";
+import { updateHP, updateTurnMeter } from "../ui/portraitFactory.js";
 import { getPassiveObjects } from "./passives.js";
 import { createSkillFromTemplate, Skill } from "./skills.js";
 import { StatManager } from "./statManager.js";
 
 export class Character{
-    constructor(id, name, portrait, maxHp, speed, skills, skillPriorities, resistences, passives, tags, description, stats){  // add id maybe
+    constructor(id, name, portrait, maxHp, speed, skills, skillPriorities, resistences, passives, tags, description, stats){
         this.id = id;
         this.name = name;
         this.portrait = portrait;
@@ -56,6 +59,15 @@ export class Character{
         return this.statManager.getCurrentStat('speed');
     }
 
+    heal(scene, container, amount, x, y){
+        // const oldHp = this.statManager.getCurrentStat('hp');
+        const oldHp = container.getData('hp');
+        const newAmount = Math.min(this.statManager.getBaseStat('hp'), oldHp + amount);
+        this.statManager.setCurrentStat('hp', newAmount);
+        showPositivePopup(scene, x, y, `+${amount}`);
+        updateHP(container, newAmount);
+    }
+
     // Puts all skills on CD.
     lockout(){
         // Potential resist logic here ==> return false:
@@ -78,9 +90,37 @@ export class Character{
         // this.resetStats();  // later maybe
     }
 
+    /**
+     * Resets all Skills' cooldowns of the Character.
+     * @returns {boolen} Whether reducing CDs was successful or not
+     */
     resetCDs(){
         // Potential effects that deny reset here ==> return false.
         this.skills.forEach((skill) => skill.currentCD = 0);
+        return true;
+    }
+
+    /**
+     * Revives the Character with an amount of hp and tm.
+     * @param {Phaser.Scene} scene The current Phaser Scene object
+     * @param {Object} container The Phaser container game object belonging to the Character
+     * @param {float} hpPerc The revive hp percentage
+     * @param {float} tmPerc The revive tm percentage
+     * @returns {boolean} Whether the revive has been successful or not
+     */
+    revive(scene, container, hpPerc, tmPerc){
+        const newHp = Math.floor(hpPerc * this.statManager.getBaseStat('hp'));
+        const newTm = Math.floor(tmPerc * gameState.combinedSpeed);
+
+        updateHP(container, newHp);
+        container.setData('turnMeter', newTm);
+        updateTurnMeter(scene, container, tmPerc);
+        // trigger revive event ==> perhaps a denial ==> return false
+
+        // updateDisplayAfterRevive(scene, container);
+        showPositivePopup(scene, container.x, container.y, 'Revive');
+        container.clearAlpha();
+        successfulRevival(container);
         return true;
     }
 
@@ -265,8 +305,8 @@ const heroTemplates = {
                 base: 12
             },
             'hp': {
-                current: 250,
-                base: 250
+                current: 450,
+                base: 450
             },
             'dmgDealtMult': {
                 current: 1.0,
@@ -306,8 +346,8 @@ const heroTemplates = {
                 base: 10
             },
             'hp': {
-                current: 250,
-                base: 250
+                current: 550,
+                base: 550
             },
             'dmgDealtMult': {
                 current: 1.0,
@@ -347,8 +387,8 @@ const heroTemplates = {
                 base: 24
             },
             'hp': {
-                current: 250,
-                base: 250
+                current: 350,
+                base: 350
             },
             'dmgDealtMult': {
                 current: 1.0,
@@ -472,8 +512,8 @@ const heroTemplates = {
                 base: 28
             },
             'hp': {
-                current: 250,
-                base: 250
+                current: 650,
+                base: 650
             },
             'dmgDealtMult': {
                 current: 1.0,
@@ -677,6 +717,57 @@ const heroTemplates = {
                 'Electro': {
                     current: 2.0,
                     base: 2.0
+                },
+                'Water': {
+                    current: 0.5,
+                    base: 0.5
+                }
+            }
+        }
+    },
+    12: {
+        id: 12,
+        name: "Ellana",
+        portrait: 'Ellana.jpg',
+        maxHp: 500,
+        speed: 22,
+        skillIds: [24, 25, 26],
+        skillPriorities: [2,1,0],
+        resistances: { physical: 0.8, fire: 1.0 },
+        passives: [
+            { type: 'DebuffImmunity', params: { debuffNames: ['Bleed', 'Leech'] } },
+        ],
+        tags: ['Blood', 'Debuffs', 'Vampire'],
+        description: "Ellana is high-born vampire royalty. Although she tries to suppress her hunger for blood, she occasionally gives in to the appetite, though only for people who she deems to be unworthy of life.",
+        stats: {
+            'speed': {
+                current: 22,
+                base: 22
+            },
+            'hp': {
+                current: 500,
+                base: 500
+            },
+            'dmgDealtMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'dmgTakenMult': {
+                current: 1.0,
+                base: 1.0
+            },
+            'resistances': {
+                'Blood': {
+                    current: 2.0,
+                    base: 2.0
+                },
+                'Fire': {
+                    current: 1.5,
+                    base: 1.5
+                },
+                'Electro': {
+                    current: 0.5,
+                    base: 0.5
                 },
                 'Water': {
                     current: 0.5,

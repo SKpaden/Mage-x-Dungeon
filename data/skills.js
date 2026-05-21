@@ -2,6 +2,7 @@ import { createActionFromTemplate } from "./skillParts.js";
 import { Debuff } from "../game/debuffs.js";
 import { delay } from "../ui/helpers.js";
 import { uiStats } from "../ui/uiStats.js";
+import { SkillContext } from "./skillContext.js";
 
 export class Skill{
     constructor(name, icon, targets, actions, cooldown, description, type = 'Attack'){
@@ -24,8 +25,10 @@ export class Skill{
 
     // Apply skill method, unique to every skill ==> override.
     async apply(scene, source, target, index, allies, enemies){
+        const skillContext = new SkillContext(scene, source, target, index, allies, enemies);
         for (let i = 0; i < this.actions.length; i++){
-            await this.actions[i].execute(scene, source, target, index, allies, enemies);
+            // await this.actions[i].execute(scene, source, target, index, allies, enemies);
+            await this.actions[i].execute(skillContext);
             if (i < this.actions.length-1) await delay(scene, uiStats.debuffDelay);  // no delay after last action
         }
     }
@@ -158,7 +161,7 @@ export function getSkillTemplates(){
             actions: [
                 { className: 'DealDamage', params: {
                                             area: 'all',
-                                            dmg: 2500,
+                                            dmg: 25,
                                             element: 'Dark'
                                         }
                 }
@@ -415,6 +418,54 @@ export function getSkillTemplates(){
             ],
             cooldown: 3,
             description: "Prepares a powerful attack to unleash upon all enemies."
+        },
+        // Blood Tentacle:
+        24: {
+            name: 'Blood Tentacle',
+            icon: 'Blood Tentacle.jpg',
+            targets: 'single',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'single',
+                                            dmg: 50,
+                                            element: 'Blood'
+                                        }
+                },
+                { className: 'HealBasedOnDamage', params: { percentage: 0.3 } },
+                { className: 'ApplyDebuff', params: { area: 'single', debuff: new Debuff('Leech', 3, 0, 'Blood', null, false, 'elemental', null) } }
+
+            ],
+            cooldown: 0,
+            description: "A single target bloody tentacle to apply leech and bleed to the target. Heals by 30% of the damage dealt."
+        },
+        // Siphon Blood:
+        25: {
+            name: 'Siphon Blood',
+            icon: 'Siphon Blood.jpg',
+            targets: 'all',
+            actions: [
+                { className: 'DealDamage', params: {
+                                            area: 'all',
+                                            dmg: 20,
+                                            element: 'Blood'
+                                        }
+                },
+                { className: 'HealBasedOnDamage', params: { percentage: 0.3 } },
+            ],
+            cooldown: 5,
+            description: "Siphons the blood ao all enemies. Heals by 30% of the damage dealt."
+        },
+        // Reanimate:
+        26: {
+            name: 'Reanimate',
+            icon: 'Reanimate.jpg',
+            targets: 'single',
+            actions: [
+                { className: 'Revive', params: { area: 'single', hp: 0.5, tm: 0.5 } },
+            ],
+            cooldown: 3,
+            description: "Revives a single ally with 50% HP and 50% turn meter.",
+            type: 'Revive'
         },
     };
 

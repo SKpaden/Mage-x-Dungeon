@@ -1,6 +1,6 @@
 import { uiStats } from "./uiStats.js";
 import { gameState } from "../game/gameState.js";
-import { getAffectedTargets } from "../game/combat.js";
+import { getAffectedTargets, getReviveTargets } from "../game/combat.js";
 
 let rBtn = null;  // register keyboard key
 
@@ -25,12 +25,21 @@ export function initSkillEventListener(scene){
 }
 
 // Shows visual cue (tint) on all targets that would be affected by gameState.pendingSkill.
-export function previewTargets(scene, skill, index, targetedTeam, color){
-    const affectedTargets = getAffectedTargets(skill.targets, index, targetedTeam);
-    targetedTeam.forEach((enemy, i) => {
-        const isAffected = affectedTargets.includes(i) && enemy.getData('hp') > 0;
-        enemy.list[0].setTint(isAffected ? color : 0x88ccff);  // red for affected, blue for valid
-    });
+export function previewTargets(scene, container, skill, index, targetedTeam, color){
+    const hp = container.getData('hp');
+    if (hp === 0 && skill.type === 'Revive'){
+        const affectedTargets = getReviveTargets(skill.targets, index, targetedTeam);
+        affectedTargets.forEach((index) => {
+            const enemy = targetedTeam[index];
+            enemy.list[0].setTint(color);
+        })
+    } else if (hp > 0){
+        const affectedTargets = getAffectedTargets(skill.targets, index, targetedTeam);
+        targetedTeam.forEach((enemy, i) => {
+            const isAffected = affectedTargets.includes(i) && enemy.getData('hp') > 0;
+            enemy.list[0].setTint(isAffected ? color : 0x88ccff);  // red for affected, blue for valid
+        });        
+    }
 }
 
 // Called whenever the window size changes. Resizes the skill display to fit new screen size.

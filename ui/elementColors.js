@@ -1,5 +1,6 @@
 const elementColors = {
     'Dark': '#b700ff',
+    'Blood': '#ed0000',
     'Electro': 'rgb(70, 21, 248)',
     'Fire': '#ed4b00',
     'Light': '#e5ff00',
