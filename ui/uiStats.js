@@ -18,7 +18,7 @@ export const uiStats = {
     portraitBorderWidth: 2,
     portraitHighlightBorderWidth: 6,
     // Async:
-    debuffDelay: 600,
+    debuffDelay: 400,
     reactionDelay: 400,
     // Colors:
     portraitDefaultBorderColor: 0xFFe836,
