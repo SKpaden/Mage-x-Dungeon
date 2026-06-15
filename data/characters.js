@@ -33,7 +33,7 @@ export class Character{
     // Add a passive to array of passives and register its event.
     addPassive(passive){
         this.passives.push(passive);
-        passive.registerEvents(this.passiveEvents);
+        // passive.registerEvents(this.passiveEvents);
     }
 
     /**
@@ -544,7 +544,7 @@ const heroTemplates = {
         skillIds: [1],
         skillPriorities: [0],
         resistances: { physical: 0.8, fire: 1.0 },
-        passives: null,
+        passives: [{ type: 'DebuffImmunity', params: { debuffNames: ['Poison'] } }],
         tags: ['Demon', 'Physical'],
         description: "A demonic grunt summoned from the depths of hell.",
         stats: {

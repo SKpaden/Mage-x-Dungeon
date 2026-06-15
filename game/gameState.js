@@ -1,6 +1,9 @@
+import { registerCombatUIListeners } from "../ui/combatUIListeners.js";
 import { createHeroPortraitAlt, createEnemyPortraitAlt } from "../ui/portraitFactory.js";
 import { initSkillEventListener } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
+import { CombatEngine } from "./combatEngine.js";
+import { Debuff } from "./debuffs.js";
 
 export const gameState = {
     turn: 'player',
@@ -35,6 +38,38 @@ export function initBattle(scene, heroes, enemies){
     initEnemyTeamAlt(scene, enemies);
     resetCharacters();
     buildQueue();
+
+    const playerContainer = gameState.playerContainers[0];
+    const enemyContainer = gameState.enemyContainers[0];
+
+    const engine = new CombatEngine([playerContainer], [enemyContainer]);
+
+    scene.combatEngine = engine;
+    registerCombatUIListeners(scene.combatEngine, scene);
+    
+    // engine.eventBus.on("afterTakeDamage", ctx => {
+    //     console.log("Damage applied:", ctx.modifiedDamage);
+    // });
+
+    // engine.runIntent({
+    //     type: "intent:dealDamage",
+    //     source: playerContainer,
+    //     target: enemyContainer,
+    //     amount: 100,
+    //     element: "Physical"
+    // });
+
+    // // Debuffs:
+    // // engine.eventBus.on("afterApplyDebuff", ctx => {
+    // //     console.log("Debuff applied:", ctx.debuff.name);
+    // // });
+
+    // engine.runIntent({
+    //     type: "intent:applyDebuff",
+    //     source: playerContainer,
+    //     target: enemyContainer,
+    //     debuff: new Debuff("Poison", 3, 20, "Poison", null, false, "elemental", null)
+    // });
 }
 
 // Maybe useful for later.

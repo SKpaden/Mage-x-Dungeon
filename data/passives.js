@@ -5,7 +5,7 @@ export class Passive {
         this.description = description;
     }
 
-    registerEvents(events) {
+    registerEvents(eventBus, ownerContainer) {
     }
 }
 
@@ -16,10 +16,22 @@ export class DebuffImmunityPassive extends Passive {
         this.debuffNames = debuffNames;
     }
 
-    // Registers the event to events array:
-    registerEvents(events) {
-        events.set('onApplyDebuff', (debuff, source) => {
-            return !this.debuffNames.includes(debuff.name);
+    // // Registers the event to events array:
+    // registerEvents(events) {
+    //     events.set('onApplyDebuff', (debuff, source) => {
+    //         return !this.debuffNames.includes(debuff.name);
+    //     });
+    // }
+
+    registerEvents(eventBus, ownerContainer) {
+        eventBus.on("beforeApplyDebuff", ctx => {
+            if (ctx.target !== ownerContainer) return;
+
+            if (this.debuffNames.includes(ctx.debuff.name)) {
+                ctx.blocked = true;
+                eventBus.emit("onDebuffBlocked", ctx);
+                console.log("Debuff blocked by passive!");
+            }
         });
     }
 

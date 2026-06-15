@@ -141,9 +141,12 @@ export class DealDamage extends SkillPart{
     async execute(skillContext){
         const { area = 'single', dmg, element = 'Physical'} = this.params;
         const affectedTargets = getAffectedTargets(area, skillContext.index, skillContext.enemies);
-        const logQueueKey = getLogTarget();  // where to log?
+        skillContext.affectedTargets = affectedTargets;
 
-        playPhysicalAttackTween(skillContext.scene, skillContext.source, skillContext.target.x, skillContext.target.y);  // only play when dmg, but fine for now
+        const logQueueKey = getLogTarget();  // where to log?
+        skillContext.logQueueKey = logQueueKey;
+
+        // playPhysicalAttackTween(skillContext.scene, skillContext.source, skillContext.target.x, skillContext.target.y);  // only play when dmg, but fine for now
 
         // Should a debuff be applied from an elemental Skill?
         let debuff = null;
@@ -153,22 +156,24 @@ export class DealDamage extends SkillPart{
 
         let debuffsApplied = 0;
 
-        // Go through all targets:
-        for (let i = 0; i < affectedTargets.length; i++){
-            const targetIndex = affectedTargets[i];
-            const currentTarget = skillContext.enemies[targetIndex];
-            const char = currentTarget.getData('char');
-            //const finalDmg = char.triggerEvent('onDealDamage', scene, source, dmg, element);
-            const finalDmg = dmg;  // placeholder
-            
-            skillContext.results.damageDealt.set(char, finalDmg);  // write to SkillContext
+        // Trigger dmg pipeline once:
+        skillContext.dmg = dmg;
+        skillContext.element = element;
+        await skillContext.scene.combatEngine.eventBus.emit("intent:dealDamage", skillContext);  // works but no UI updates etc
 
-            const allowDebuff = (await Reaction.triggerReactions(skillContext.scene, skillContext.source, currentTarget, skillContext.allies, skillContext.enemies, logQueueKey, element, finalDmg)).allowElementalDebuff;
-            // Apply debuff:
-            if (debuff && allowDebuff){
-                debuffsApplied += debuff.applyDebuff(skillContext.scene, skillContext.source, currentTarget, false);
-                updateDebuffDisplay(skillContext.scene, currentTarget);
-            }
+        // Default elemental debuff:
+        if (debuff && skillContext.allowElementalDebuff){
+            skillContext.debuff = debuff;
+            await skillContext.scene.combatEngine.eventBus.emit("intent:applyDebuff", skillContext);
+        }
+        
+        return;
+
+        const allowDebuff = (await Reaction.triggerReactions(skillContext.scene, skillContext.source, currentTarget, skillContext.allies, skillContext.enemies, logQueueKey, element, finalDmg)).allowElementalDebuff;
+        // Apply debuff:
+        if (debuff && allowDebuff){
+            debuffsApplied += debuff.applyDebuff(skillContext.scene, skillContext.source, currentTarget, false);
+            updateDebuffDisplay(skillContext.scene, currentTarget);
         }
         gameState.logQueue[logQueueKey].debuffsApplied += debuffsApplied;
         await Reaction.processReactionQueue(skillContext.scene, skillContext.source, skillContext.allies, skillContext.enemies);  // process Reactions in gameState queue
