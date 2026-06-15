@@ -102,6 +102,11 @@ export default class MapScene extends Phaser.Scene{
             // Menu + Back button:
             destroyMenu(this);
             destroyBackBtn(this);
+            if (this.confirmContainer){
+                // Had to clean this up manually, otherwise runtime error for resize. This is because the scene object does not get destroyed on stop => fields remain:
+                this.confirmContainer.destroy();
+                this.confirmContainer = null;
+            }
         });
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -138,9 +143,6 @@ export default class MapScene extends Phaser.Scene{
                 .on('pointerout', () => yesBtn.setFillStyle(uiStats.confirmBtnBaseColor))
                 .on('pointerdown', () => {
                     setRegistryData(scene, "selectedStage", circle.stage);
-                    // Had to clean this up manually, otherwise runtime error for resize. This is because the scene object does not get destroyed on stop => fields remain:
-                    scene.confirmContainer.destroy();
-                    scene.confirmContainer = null;
 
                     scene.scene.start('teamSelect');
                 });
