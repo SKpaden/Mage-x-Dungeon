@@ -51,8 +51,8 @@ export class Debuff{
     // Checks if a debuff list contains a debuff with name.
     static containsDebuff(debuffs, name){
         var contains = false;
-        debuffs.forEach(element => {
-            if (element.name === name) contains = true;
+        debuffs.forEach(debuff => {
+            if (debuff.name === name) contains = true;
         });
         return contains;
     }
