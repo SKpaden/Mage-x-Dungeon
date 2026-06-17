@@ -2,6 +2,8 @@ import { CombatEventBus } from '../eventBus/combatEventBus.js';
 import { registerDamagePipeline } from '../eventBus/pipelines/damagePipeline.js';
 import { registerDeathPipeline } from '../eventBus/pipelines/deathPipeline.js';
 import { registerDebuffPipeline } from '../eventBus/pipelines/debuffPipeline.js';
+import { registerHealPipeline } from '../eventBus/pipelines/healPipeline.js';
+import { registerTMPipeline } from '../eventBus/pipelines/turnMeterPipeline.js';
 
 export class CombatEngine {
     constructor(playerTeam, enemies) {
@@ -14,6 +16,8 @@ export class CombatEngine {
         registerDamagePipeline(this);
         registerDeathPipeline(this);
         registerDebuffPipeline(this);
+        registerHealPipeline(this);
+        registerTMPipeline(this);
 
         this.registerPassives();
     }

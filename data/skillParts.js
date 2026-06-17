@@ -102,16 +102,12 @@ export class ApplyDebuff extends SkillPart{
     async execute(context){
         const { area = 'single', debuff, targets = 'enemies'} = this.params;
         const targetedTeam = targets === 'enemies' ? context.enemies : context.allies;
-        // works for 2 Actions: first enemies, then allies, but I need to be careful when targeting one team and applying debuffs to both teams
-        // ==> getAffectecTargets() not quite correct for both teams.
-        // But: It makes no sense to target enemies with 'adjacent' and also have adjacent on ally team, so it's fine I think.
-        let affectedTargets = getAffectedTargets(area, context.index, targetedTeam);
-        
-        affectedTargets.forEach(i => {
-            const unit = targetedTeam[i];
-            debuff.applyDebuff(context.scene, context.source, unit);  // add to debuff application count here
-            updateDebuffDisplay(context.scene, unit);
-        })
+        const affectedTargets = getAffectedTargets(area, context.index, targetedTeam);
+        // Set SkillPart-specific context data:
+        context.affectedTargets = affectedTargets;
+        context.debuff = debuff;
+        // Trigger event:
+        await context.scene.combatEngine.eventBus.emit("intent:applyDebuff", context);
     }
 }
 
@@ -123,12 +119,12 @@ export class BoostTurnMeter extends SkillPart{
     // async execute(scene, source, target, index, allies, enemies){
     async execute(context){
         const { area = 'single', amount} = this.params;
-        let affectedTargets = getAffectedTargets(area, context.index, context.allies);
-        affectedTargets.forEach(i => {
-            const unit = context.allies[i];
-            boostTurnMeter(context.scene, unit, amount);
-            showPositivePopup(context.scene, unit.x, unit.y, 'Boost\nTurn Meter');
-        });
+        const affectedTargets = getAffectedTargets(area, context.index, context.allies);
+        // Set context data for this SkillPart:
+        context.affectedTargets = affectedTargets;
+        context.data.amount = amount;
+        // Trigger event:
+        context.scene.combatEngine.eventBus.emit("intent:boostTM", context);
     }
 }
 
@@ -146,8 +142,6 @@ export class DealDamage extends SkillPart{
         const logQueueKey = getLogTarget();  // where to log?
         skillContext.logQueueKey = logQueueKey;
 
-        // playPhysicalAttackTween(skillContext.scene, skillContext.source, skillContext.target.x, skillContext.target.y);  // only play when dmg, but fine for now
-
         // Should a debuff be applied from an elemental Skill?
         let debuff = null;
         if (element !== 'Physical'){
@@ -163,20 +157,12 @@ export class DealDamage extends SkillPart{
 
         // Default elemental debuff:
         if (debuff && skillContext.allowElementalDebuff){
+            // Add a small delay between damage numbers and debuff popup:
+            skillContext.flags.popupDelay = true;
+            skillContext.data.delay = 300;
             skillContext.debuff = debuff;
             await skillContext.scene.combatEngine.eventBus.emit("intent:applyDebuff", skillContext);
         }
-        
-        return;
-
-        const allowDebuff = (await Reaction.triggerReactions(skillContext.scene, skillContext.source, currentTarget, skillContext.allies, skillContext.enemies, logQueueKey, element, finalDmg)).allowElementalDebuff;
-        // Apply debuff:
-        if (debuff && allowDebuff){
-            debuffsApplied += debuff.applyDebuff(skillContext.scene, skillContext.source, currentTarget, false);
-            updateDebuffDisplay(skillContext.scene, currentTarget);
-        }
-        gameState.logQueue[logQueueKey].debuffsApplied += debuffsApplied;
-        await Reaction.processReactionQueue(skillContext.scene, skillContext.source, skillContext.allies, skillContext.enemies);  // process Reactions in gameState queue
     }
 }
 
@@ -187,16 +173,11 @@ export class DealDamage extends SkillPart{
 export class HealBasedOnDamage extends SkillPart {
     async execute(context) {
         const percentage = this.params.percentage;
-        let totalDamage = 0;
+        // const area = this.params.area;
 
-        for (const dmg of context.results.damageDealt.values()) {
-            totalDamage += dmg;
-        }
-
-        const healAmount = Math.floor(totalDamage * percentage);
-        context.source.getData('char').heal(context.scene, context.source, healAmount, context.source.x, context.source.y);
-
-        context.results.healingDone.set(context.source.id, healAmount);
+        context.data.amount = percentage;
+        context.affectedTargets = [context.source.getData("teamIndex")];
+        context.scene.combatEngine.eventBus.emit("intent:healBasedOnDamage", context);
     }
 }
 

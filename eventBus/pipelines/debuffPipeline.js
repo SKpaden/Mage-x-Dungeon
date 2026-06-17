@@ -1,4 +1,5 @@
 import { Debuff } from "../../game/debuffs.js";
+import { delay } from "../../ui/helpers.js";
 
 export function registerDebuffPipeline(engine) {
 
@@ -8,6 +9,10 @@ export function registerDebuffPipeline(engine) {
         const source = ctx.source;
 
         const affectedTargets = ctx.affectedTargets;
+
+        if (ctx.flags.popupDelay){
+            await delay(ctx.scene, ctx.data.delay);
+        }
 
         for (let i = 0; i < ctx.affectedTargets.length; i++){
             const currentIndex = ctx.affectedTargets[i];
@@ -29,9 +34,9 @@ export function registerDebuffPipeline(engine) {
         
                 // 3. Post-event:
                 await engine.eventBus.emit("afterApplyDebuff", ctx);
+            } else {
+                await engine.eventBus.emit("onDebuffBlocked", ctx);  // for UI and perhaps passives
             }
-            // await engine.eventBus.emit("onDebuffBlocked", ctx);
         }
-
     });
 }

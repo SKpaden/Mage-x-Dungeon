@@ -16,6 +16,9 @@ export function registerDamagePipeline(engine) {
         for (let i = 0; i < ctx.affectedTargets.length; i++){
             const currentIndex = ctx.affectedTargets[i];
             const currentTarget = ctx.enemies[currentIndex];
+            // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
+            if (currentTarget.getData("hp") <= 0) return;  // already dead
+
             ctx.currentTarget = currentTarget;
 
             // 2. Attacker-side modifications:
@@ -43,7 +46,8 @@ export function registerDamagePipeline(engine) {
                 await engine.eventBus.emit("onActiveDeath", ctx);
             }
         }
-        gameState.logQueue[ctx.logQueueKey].debuffsApplied += 2;
+        // Placeholder:
+        gameState.logQueue[ctx.logQueueKey].debuffsApplied = ctx.results.debuffsApplied.length+99;
         // I need await here, otherwise it doesn't work, but await can't be used here:
         await Reaction.processReactionQueue(ctx.scene, ctx.source, ctx.allies, ctx.enemies);  // process Reactions in gameState queue
     });
@@ -52,24 +56,27 @@ export function registerDamagePipeline(engine) {
     engine.eventBus.on("afterDealDamage", async ctx => {
         const currentTargetDebuffs = ctx.currentTarget.getData('debuffs');
         if (Debuff.containsDebuff(currentTargetDebuffs, 'Leech')){
-            await engine.eventBus.emit("intent:heal", ctx);
         }
     });
 
+    // TODO: Make the Reactions better:
     // Global hook for triggering Reactions:
-    engine.eventBus.on("afterTakeDamage", async ctx => {
-        if (ctx.currentTarget.getData("hp") <= 0) return;  // already dead
-        
+    engine.eventBus.on("afterTakeDamage", async ctx => {        
         const char = ctx.currentTarget.getData('char');
         const debuffs = ctx.currentTarget.getData('debuffs');
         let allowElementalDebuff = true;
         let finalDmg = ctx.modifiedDamage;
+
+        const prevDmg = ctx.results.damageDealt.get(ctx.currentTarget) ?? 0;
+        ctx.results.damageDealt.set(ctx.currentTarget, prevDmg + finalDmg);  // write to context for other SkillParts (heal based on dmg etc.)
 
         // Look at all debuffs if any:
         if (debuffs.length > 0){
             const debuffFilter = {};  // what debuffs get removed by Reactions?
             for (let i = 0; i < debuffs.length; i++) {
                 const debuff = debuffs[i];
+                // Fixed major BUG: Attacking Scared enemies would remove the debuff because it's not elemental and therefore not set in debuffFilter!!!!!  
+                debuffFilter[debuff.name] = true;
                 if (debuff.type === 'elemental') {  // only elemental debuffs can trigger Reactions
                     // Use these stats maybe to tweak dmg of Reaction:
                     const duration = debuff.duration;
@@ -81,12 +88,7 @@ export function registerDamagePipeline(engine) {
                         allowElementalDebuff = false;  // element triggered Reaction ==> don't place default elemental debuff
                         gameState.reactionQueue.push(Reaction.getQueueEntry(triggeredReaction, ctx.currentTarget, ctx.enemies));
                         gameState.logQueue[ctx.logQueueKey].reactionsTriggered++;
-                    } else {
-                        debuffFilter[debuff.name] = true;
-                    }
-                // Fixed major BUG: Attacking Scared enemies would remove the debuff because it's not elemental and therefore not set in debuffFilter!!!!!    
-                } else {
-                    debuffFilter[debuff.name] = true;  // keep non-elemental ones
+                    } 
                 }
             }
             // Update debuffs:
