@@ -18,7 +18,12 @@ export class SkillContext {
         // - element
         // - logQueueKey
         // - modifiedDamage
-        // - type
+
+        // Examples: 
+        // flags.popupDelay = true;
+        // skillContext.data.delay = 300;
+        this.flags = {};  // set global flags for the Skill execution
+        this.data = {};  // pass additional data only used by some Skills/SkillParts
 
         this.results = {
             damageDealt: new Map(),   // targetId → damage
