@@ -124,7 +124,7 @@ export class BoostTurnMeter extends SkillPart{
         context.affectedTargets = affectedTargets;
         context.data.amount = amount;
         // Trigger event:
-        context.scene.combatEngine.eventBus.emit("intent:boostTM", context);
+        await context.scene.combatEngine.eventBus.emit("intent:boostTM", context);
     }
 }
 
@@ -177,7 +177,7 @@ export class HealBasedOnDamage extends SkillPart {
 
         context.data.amount = percentage;
         context.affectedTargets = [context.source.getData("teamIndex")];
-        context.scene.combatEngine.eventBus.emit("intent:healBasedOnDamage", context);
+        await context.scene.combatEngine.eventBus.emit("intent:healBasedOnDamage", context);
     }
 }
 
@@ -188,15 +188,11 @@ export class HealBasedOnDamage extends SkillPart {
  */
 export class IncreaseCD extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
-    execute(context){
+    async execute(context){
         const { area = 'all'} = this.params;
         const affectedTargets = getAffectedTargets(area, context.index, context.enemies);
-        affectedTargets.forEach(containerIndex => {
-            const container = context.enemies[containerIndex];
-            const char = container.getData('char');
-            const charHp = container.getData('hp');
-            if (charHp > 0 && char.lockout()) showNegativePopup(context.scene, container.x, container.y, "Increase\nCooldown");  // maybe pass source as arg to factor in passives
-        });
+        context.affectedTargets = affectedTargets;
+        await context.scene.combatEngine.eventBus.emit("intent:increaseCD", context);
     }
 }
 // Increases CDs on enemy team.
@@ -205,24 +201,13 @@ export class IncreaseCD extends SkillPart{
  */
 export class IncreaseDebuffDuration extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
-    execute(context){
+    async execute(context){
         const { area = 'all', includeDebuffs = 'all', amount = 1} = this.params;
         const affectedTargets = getAffectedTargets(area, context.index, context.enemies);
-        for (let i = 0; i < affectedTargets.length; i++){
-            const unitIndex = affectedTargets[i];
-            let incCount = 0;
-            const container = context.enemies[unitIndex];
-            const debuffs = container.getData('debuffs');
-            debuffs.forEach(debuff => {
-                // Exclude cc debuffs:
-                if (debuff.type !== 'cc'){
-                    debuff.duration += amount;
-                    incCount++;
-                }
-            })
-            if (incCount) showNegativePopup(context.scene, container.x, container.y, "Increase Debuff\nDuration x" + incCount);
-            updateDebuffDisplay(context.scene, container);
-        }
+        context.affectedTargets = affectedTargets;
+        context.data.amount = amount;
+        context.data.includedDebuffs = includeDebuffs;
+        await context.scene.combatEngine.eventBus.emit("intent:incDebuffDuration", context);
     }
 }
 // Resets the CDs on one or more team members.

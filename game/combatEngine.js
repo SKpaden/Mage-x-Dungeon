@@ -1,4 +1,5 @@
 import { CombatEventBus } from '../eventBus/combatEventBus.js';
+import { registerCDPipeline } from '../eventBus/pipelines/cdPipeline.js';
 import { registerDamagePipeline } from '../eventBus/pipelines/damagePipeline.js';
 import { registerDeathPipeline } from '../eventBus/pipelines/deathPipeline.js';
 import { registerDebuffPipeline } from '../eventBus/pipelines/debuffPipeline.js';
@@ -13,6 +14,7 @@ export class CombatEngine {
         this.eventBus = new CombatEventBus();
         
         // Register pipeline:
+        registerCDPipeline(this);
         registerDamagePipeline(this);
         registerDeathPipeline(this);
         registerDebuffPipeline(this);

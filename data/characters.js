@@ -70,11 +70,9 @@ export class Character{
 
     // Puts all skills on CD.
     lockout(){
-        // Potential resist logic here ==> return false:
         this.skills.forEach(skill => {
             skill.putCooldown();
         })
-        return true;
     }
 
     // Reduces cooldown of all skills by 1 turn. Call at the end of round.

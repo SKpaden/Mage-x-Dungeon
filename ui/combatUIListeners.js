@@ -29,6 +29,10 @@ export function registerCombatUIListeners(engine, scene) {
     engine.eventBus.on("onDebuffBlocked", ctx => {
         showPositivePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, "Immune");
     });
+    // Inc Debuff duration:
+    engine.eventBus.on("afterIncDebuffDuration", ctx => {
+        updateDebuffDisplay(ctx.scene, ctx.currentTarget);
+    });
 
     engine.eventBus.on("ui:positiveText", ctx => {
         showPositivePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.text);
