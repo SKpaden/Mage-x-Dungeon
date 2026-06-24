@@ -90,12 +90,9 @@ export class Character{
 
     /**
      * Resets all Skills' cooldowns of the Character.
-     * @returns {boolen} Whether reducing CDs was successful or not
      */
     resetCDs(){
-        // Potential effects that deny reset here ==> return false.
         this.skills.forEach((skill) => skill.currentCD = 0);
-        return true;
     }
 
     /**
