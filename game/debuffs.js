@@ -41,8 +41,9 @@ export class Debuff{
 
     // Checks if a debuff is allowed to be added to a debuff list.
     static allowDebuff(debuffs, name){
+        if (debuffs.length === 5) return false;
         const contains = Debuff.containsDebuff(debuffs, name);
-        if(contains && Debuff.stackingDebuffs.includes(name) || !contains){  // present AND stacking OR not present
+        if(contains && Debuff.stackingDebuffs.includes(name)  || !contains){  // present AND stacking OR not present
             return true;
         }
         return false;
