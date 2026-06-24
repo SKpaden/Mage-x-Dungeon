@@ -11,8 +11,7 @@ export function registerTMPipeline(engine) {
         const affectedTargets = ctx.affectedTargets;
 
         for (let i = 0; i < ctx.affectedTargets.length; i++){
-            const currentIndex = ctx.affectedTargets[i];
-            const currentTarget = ctx.allies[currentIndex];
+            const currentTarget = ctx.affectedTargets[i];
 
             ctx.currentTarget = currentTarget;
 

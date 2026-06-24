@@ -10,8 +10,7 @@ export function registerDeathPipeline(engine) {
     engine.eventBus.on("intent:revive", async ctx => {
         const affectedTargets = ctx.affectedTargets;
         for (let i = 0; i < affectedTargets.length; i++){
-            const currentIndex = affectedTargets[i];
-            const currentTarget = ctx.allies[currentIndex];
+            const currentTarget = affectedTargets[i];
             
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedHp = ctx.data.hp;

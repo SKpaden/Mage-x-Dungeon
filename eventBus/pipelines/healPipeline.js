@@ -5,12 +5,10 @@ export function registerHealPipeline(engine) {
     engine.eventBus.on("intent:healBasedOnDamage", async ctx => {
 
         const amount = ctx.data.amount;
-
         const affectedTargets = ctx.affectedTargets;
 
-        for (let i = 0; i < ctx.affectedTargets.length; i++){
-            const currentIndex = ctx.affectedTargets[i];
-            const currentTarget = ctx.allies[currentIndex];
+        for (let i = 0; i < affectedTargets.length; i++){
+            const currentTarget = affectedTargets[i];
             if(currentTarget.getData("hp") <= 0) continue;
 
             ctx.currentTarget = currentTarget;

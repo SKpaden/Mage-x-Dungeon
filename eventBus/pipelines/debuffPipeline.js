@@ -8,8 +8,7 @@ export function registerDebuffPipeline(engine) {
         const affectedTargets = ctx.affectedTargets;
 
         for (let i = 0; i < affectedTargets.length; i++){
-            const unitIndex = affectedTargets[i];
-            const currentTarget = ctx.enemies[unitIndex];
+            const currentTarget = affectedTargets[i];
             if (currentTarget.getData("hp") <= 0) continue;
 
             ctx.currentTarget = currentTarget;
@@ -63,8 +62,8 @@ export function registerDebuffPipeline(engine) {
         }
 
         for (let i = 0; i < affectedTargets.length; i++){
-            const currentIndex = affectedTargets[i];
-            const currentTarget = ctx.enemies[currentIndex];
+            // const currentIndex = affectedTargets[i];
+            const currentTarget = affectedTargets[i];
             if (currentTarget.getData("hp") <= 0) continue;  // skip if target died from damage
 
             ctx.currentTarget = currentTarget;
@@ -85,6 +84,8 @@ export function registerDebuffPipeline(engine) {
                 await engine.eventBus.emit("afterApplyDebuff", ctx);
             } else {
                 await engine.eventBus.emit("onDebuffBlocked", ctx);  // for UI and perhaps passives
+                ctx.data.text = debuff.name + "\nBlocked";
+                await engine.eventBus.emit("ui:positiveText", ctx);
             }
         }
     });
@@ -92,8 +93,7 @@ export function registerDebuffPipeline(engine) {
     engine.eventBus.on("intent:fullCleanse", async ctx => {
         const affectedTargets = ctx.affectedTargets;
         for (let i = 0; i < affectedTargets.length; i++){
-            const currentIndex = affectedTargets[i];
-            const currentTarget = ctx.allies[currentIndex];
+            const currentTarget = affectedTargets[i];
             if (currentTarget.getData("hp") <= 0) continue;  // skip if target died from damage
 
             ctx.currentTarget = currentTarget;
@@ -123,8 +123,7 @@ export function registerDebuffPipeline(engine) {
         const includedDebuffs = ctx.data.includedDebuffs;  // not used currently
 
         for (let i = 0; i < affectedTargets.length; i++){
-            const currentIndex = affectedTargets[i];
-            const currentTarget = ctx.enemies[currentIndex];
+            const currentTarget = affectedTargets[i];
             if (currentTarget.getData("hp") <= 0) continue;  // skip if target died from damage
 
             ctx.currentTarget = currentTarget;

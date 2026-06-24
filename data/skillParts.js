@@ -1,5 +1,5 @@
 import { getAttackOrder } from "./helpers.js";
-import { dmgTarget, getAffectedTargets } from "../game/combat.js";
+import { dmgTarget, getAffectedTargetsAsContainers } from "../game/combat.js";
 import { Debuff } from "../game/debuffs.js";
 import { gameState } from "../game/gameState.js";
 import { Reaction } from "../game/reactions.js";
@@ -39,7 +39,7 @@ export class ActivatePoison extends SkillPart{
     // async execute(scene, source, target, index, allies, enemies){
     async execute(context){
         const { area = 'all'} = this.params;
-        const affectedTargets = getAffectedTargets(area, context.index, context.enemies);
+        const affectedTargets = getAffectedTargetsAsContainers(area, context.index, context.enemies);
         context.affectedTargets = affectedTargets;
         await context.scene.combatEngine.eventBus.emit("intent:activatePoison", context);
     }
@@ -81,7 +81,7 @@ export class ApplyDebuff extends SkillPart{
     async execute(context){
         const { area = 'single', debuff, targets = 'enemies'} = this.params;
         const targetedTeam = targets === 'enemies' ? context.enemies : context.allies;
-        const affectedTargets = getAffectedTargets(area, context.index, targetedTeam);
+        const affectedTargets = getAffectedTargetsAsContainers(area, context.index, targetedTeam);
         // Set SkillPart-specific context data:
         context.affectedTargets = affectedTargets;
         context.data.debuff = debuff;
@@ -98,7 +98,7 @@ export class BoostTurnMeter extends SkillPart{
     // async execute(scene, source, target, index, allies, enemies){
     async execute(context){
         const { area = 'single', amount} = this.params;
-        const affectedTargets = getAffectedTargets(area, context.index, context.allies);
+        const affectedTargets = getAffectedTargetsAsContainers(area, context.index, context.allies);
         // Set context data for this SkillPart:
         context.affectedTargets = affectedTargets;
         context.data.amount = amount;
@@ -115,7 +115,7 @@ export class DealDamage extends SkillPart{
     // async execute(scene, source, target, index, allies, enemies){
     async execute(skillContext){
         const { area = 'single', dmg, element = 'Physical'} = this.params;
-        const affectedTargets = getAffectedTargets(area, skillContext.index, skillContext.enemies);
+        const affectedTargets = getAffectedTargetsAsContainers(area, skillContext.index, skillContext.enemies);
         skillContext.affectedTargets = affectedTargets;
 
         const logQueueKey = getLogTarget();  // where to log?
@@ -137,6 +137,7 @@ export class DealDamage extends SkillPart{
         // Default elemental debuff:
         if (debuff && skillContext.flags.allowElementalDebuff){  // doesn't work, only 1 flag for all targets...
             // Add a small delay between damage numbers and debuff popup:
+            skillContext.affectedTargets = skillContext.data.nextTargets;
             skillContext.flags.popupDelay = true;
             skillContext.data.delay = 300;
             skillContext.data.debuff = debuff;
@@ -153,7 +154,7 @@ export class FullCleanse extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
     async execute(context){
         const { area = 'all' } = this.params;
-        const affectedTargets = getAffectedTargets(area, context.index, context.allies);
+        const affectedTargets = getAffectedTargetsAsContainers(area, context.index, context.allies);
         await context.scene.combatEngine.eventBus.emit("intent:fullCleanse", context);
     }
 }
@@ -168,7 +169,7 @@ export class HealBasedOnDamage extends SkillPart {
         // const area = this.params.area;
 
         context.data.amount = percentage;
-        context.affectedTargets = [context.source.getData("teamIndex")];
+        context.affectedTargets = [context.source];
         await context.scene.combatEngine.eventBus.emit("intent:healBasedOnDamage", context);
     }
 }
@@ -182,7 +183,7 @@ export class IncreaseCD extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
     async execute(context){
         const { area = 'all'} = this.params;
-        const affectedTargets = getAffectedTargets(area, context.index, context.enemies);
+        const affectedTargets = getAffectedTargetsAsContainers(area, context.index, context.enemies);
         context.affectedTargets = affectedTargets;
         await context.scene.combatEngine.eventBus.emit("intent:increaseCD", context);
     }
@@ -195,7 +196,7 @@ export class IncreaseDebuffDuration extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
     async execute(context){
         const { area = 'all', includeDebuffs = 'all', amount = 1} = this.params;
-        const affectedTargets = getAffectedTargets(area, context.index, context.enemies);
+        const affectedTargets = getAffectedTargetsAsContainers(area, context.index, context.enemies);
         context.affectedTargets = affectedTargets;
         context.data.amount = amount;
         context.data.includedDebuffs = includeDebuffs;
@@ -210,7 +211,7 @@ export class ResetCD extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
     async execute(context){
         const { area = 'all'} = this.params;
-        const affectedTargets = getAffectedTargets(area, context.index, context.allies);
+        const affectedTargets = getAffectedTargetsAsContainers(area, context.index, context.allies);
         context.affectedTargets = affectedTargets;
         await context.scene.combatEngine.eventBus.emit("intent:resetCD", context);
     }
@@ -224,7 +225,7 @@ export class Revive extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
     async execute(context){
         const { area = 'all', hp, tm} = this.params;
-        const affectedTargets = getAffectedTargets(area, context.index, context.allies);
+        const affectedTargets = getAffectedTargetsAsContainers(area, context.index, context.allies);
         context.affectedTargets = affectedTargets;
         context.data.hp = hp;
         context.data.tm = tm;

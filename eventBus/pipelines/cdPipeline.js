@@ -6,8 +6,7 @@ export function registerCDPipeline(engine) {
     engine.eventBus.on("intent:increaseCD", async ctx => {
 
         for (let i = 0; i < ctx.affectedTargets.length; i++){
-            const currentIndex = ctx.affectedTargets[i];
-            const currentTarget = ctx.enemies[currentIndex];
+            const currentTarget= ctx.affectedTargets[i];
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
             if (currentTarget.getData("hp") <= 0) continue;  // already dead
 
@@ -32,8 +31,7 @@ export function registerCDPipeline(engine) {
 
     engine.eventBus.on("intent:resetCD", async ctx => {
         for (let i = 0; i < ctx.affectedTargets.length; i++){
-            const currentIndex = ctx.affectedTargets[i];
-            const currentTarget = ctx.allies[currentIndex];
+            const currentTarget = ctx.affectedTargets[i];
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
             if (currentTarget.getData("hp") <= 0) continue;  // already dead
 

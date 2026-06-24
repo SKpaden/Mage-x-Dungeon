@@ -124,6 +124,30 @@ export function getAffectedTargets(area, hoveredIndex, team){
     }
 }
 
+/**
+ * Returns an array of affected targets as containers.
+ * @param {String} area The area of the Skill ('all', 'adjacent', 'single')
+ * @param {int} hoveredIndex The index of the initial target
+ * @param {Array.<Object>} team The array of Phaser containers of the charcters belonging to the initial target's team
+ * @returns {Array.<Object>} The array of affected targets by the Skill.
+ */
+export function getAffectedTargetsAsContainers(area, hoveredIndex, team){
+    if (area === 'single') return [team[hoveredIndex]];
+    let results = [];
+    if (area === 'all'){
+        team.forEach(enemy => {
+            if (enemy.getData('hp') > 0) results.push(enemy);
+        });
+    } else {  // 'adjacent'
+        const adj = [hoveredIndex, hoveredIndex - 1, hoveredIndex + 1];  // order matters to go from middle->left->right
+        const filteredIndexes = adj.filter(i => (i >= 0 && i < team.length && team[i].getData('hp') > 0));
+        filteredIndexes.forEach(i => {
+            results.push(team[i]);
+        });
+    }
+    return results;
+}
+
 export function getReviveTargets(area, hoveredIndex, team){
     if (area === 'single') return [hoveredIndex];
     else if (area === 'all'){
