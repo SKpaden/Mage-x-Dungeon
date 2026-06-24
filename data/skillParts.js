@@ -40,29 +40,8 @@ export class ActivatePoison extends SkillPart{
     async execute(context){
         const { area = 'all'} = this.params;
         const affectedTargets = getAffectedTargets(area, context.index, context.enemies);
-        for (let i = 0; i < affectedTargets.length; i++){
-            const unitIndex = affectedTargets[i];
-            const container = context.enemies[unitIndex];
-            const debuffs = container.getData('debuffs');
-            // Count poisons:
-            let poisonCount = 0;
-            let dmgCount = 0;
-            debuffs.forEach(debuff => {
-                if (debuff.name === 'Poison'){
-                    poisonCount += debuff.duration;
-                    dmgCount += debuff.dmgPerTurn;
-                }
-            });
-            // Remove poisons:
-            const newDebuffs = debuffs.filter((debuff) => {
-                if (debuff.name === 'Poison') return false;
-                return true;
-            });
-            container.setData('debuffs', newDebuffs);
-            // Visuals + dmg:
-            updateDebuffDisplay(context.scene, container);
-            dmgTarget(context.scene, poisonCount*dmgCount, context.source, container, 'Poison x'+poisonCount, '#007700');
-        }
+        context.affectedTargets = affectedTargets;
+        await context.scene.combatEngine.eventBus.emit("intent:activatePoison", context);
     }
 }
 
@@ -156,13 +135,26 @@ export class DealDamage extends SkillPart{
         await skillContext.scene.combatEngine.eventBus.emit("intent:dealDamage", skillContext);  // works but no UI updates etc
 
         // Default elemental debuff:
-        if (debuff && skillContext.allowElementalDebuff){
+        if (debuff && skillContext.allowElementalDebuff){  // doesn't work, only 1 flag for all targets...
             // Add a small delay between damage numbers and debuff popup:
             skillContext.flags.popupDelay = true;
             skillContext.data.delay = 300;
             skillContext.debuff = debuff;
             await skillContext.scene.combatEngine.eventBus.emit("intent:applyDebuff", skillContext);
         }
+    }
+}
+
+// Removes all debuffs from one or more team members.
+/**
+ * Params: { area: 'all'/'single'}
+ */
+export class FullCleanse extends SkillPart{
+    // execute(scene, source, target, index, allies, enemies){
+    async execute(context){
+        const { area = 'all' } = this.params;
+        const affectedTargets = getAffectedTargets(area, context.index, context.allies);
+        await context.scene.combatEngine.eventBus.emit("intent:fullCleanse", context);
     }
 }
 
@@ -216,20 +208,11 @@ export class IncreaseDebuffDuration extends SkillPart{
  */
 export class ResetCD extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
-    execute(context){
+    async execute(context){
         const { area = 'all'} = this.params;
-        switch (area){
-            case 'all':
-                context.allies.forEach(container => {
-                    const char = container.getData('char');
-                    const charHp = container.getData('hp');
-                    if (charHp > 0 && char.resetCDs()) showPositivePopup(context.scene, container.x, container.y, "Decrease\nCooldown");  // maybe pass source as arg to factor in passives
-                });
-                break;
-            case 'single':
-                if (context.target.getData('char').resetCDs()) showPositivePopup(context.scene, context.target.x, context.target.y, "Decrease\nCooldown");
-                break;
-        }
+        const affectedTargets = getAffectedTargets(area, context.index, context.allies);
+        context.affectedTargets = affectedTargets;
+        await context.scene.combatEngine.eventBus.emit("intent:resetCD", context);
     }
 }
 
@@ -239,49 +222,13 @@ export class ResetCD extends SkillPart{
  */
 export class Revive extends SkillPart{
     // execute(scene, source, target, index, allies, enemies){
-    execute(context){
+    async execute(context){
         const { area = 'all', hp, tm} = this.params;
-        switch (area){
-            case 'all':
-                context.allies.forEach(container => {
-                    const char = container.getData('char');
-                    char.revive(context.scene, container, hp, tm);
-                });
-                break;
-            case 'single':
-                context.target.getData('char').revive(context.scene, context.target, hp, tm);
-                break;
-        }
-    }
-}
-
-
-// Removes all debuffs from one or more team members.
-/**
- * Params: { area: 'all'/'single'}
- */
-export class FullCleanse extends SkillPart{
-    // execute(scene, source, target, index, allies, enemies){
-    execute(context){
-        const { area = 'all' } = this.params;
-        switch (area){
-            case 'all':
-                context.allies.forEach((ally) => {
-                    ally.setData('debuffs', []);
-                    const charHp = ally.getData('hp');
-                    if (charHp > 0){
-                        updateDebuffDisplay(context.scene, ally);
-                        showPositivePopup(context.scene, ally.x, ally.y, "Cleanse");
-                    }
-                })
-                break;
-            case 'single':
-                context.target.setData('debuffs', []);
-                updateDebuffDisplay(context.scene, context.target);
-                showPositivePopup(context.scene, context.target.x, context.target.y, "Cleanse");
-                break;
-
-        }
+        const affectedTargets = getAffectedTargets(area, context.index, context.allies);
+        context.affectedTargets = affectedTargets;
+        context.data.hp = hp;
+        context.data.tm = tm;
+        await context.scene.combatEngine.eventBus.emit("intent:revive", context);
     }
 }
 

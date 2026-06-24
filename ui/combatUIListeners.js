@@ -9,11 +9,6 @@ import { uiStats } from "./uiStats.js";
 
 export function registerCombatUIListeners(engine, scene) {
 
-    engine.eventBus.on("ui:attack", ctx => {
-        // Play attack animation BEFORE damage is applied:
-        playPhysicalAttackTween(scene, ctx.source, ctx.target.x, ctx.target.y);  // Tween on original target, not current target
-    });
-
     engine.eventBus.on("afterTakeDamage", ctx => {
         // Show damage popup AFTER damage is applied:
         updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
@@ -29,18 +24,38 @@ export function registerCombatUIListeners(engine, scene) {
     engine.eventBus.on("onDebuffBlocked", ctx => {
         showPositivePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, "Immune");
     });
-    // Inc Debuff duration:
-    engine.eventBus.on("afterIncDebuffDuration", ctx => {
+
+    engine.eventBus.on("ui:attack", ctx => {
+        // Play attack animation BEFORE damage is applied:
+        playPhysicalAttackTween(scene, ctx.source, ctx.target.x, ctx.target.y);  // Tween on original target, not current target
+    });
+
+    engine.eventBus.on("ui:debuffUpdate", ctx => {
         updateDebuffDisplay(ctx.scene, ctx.currentTarget);
+    });
+
+    engine.eventBus.on("ui:negativeText", ctx => {
+        showNegativePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.text);
     });
 
     engine.eventBus.on("ui:positiveText", ctx => {
         showPositivePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.text);
-    })
+    });
 
-    engine.eventBus.on("ui:negativeText", ctx => {
-        showNegativePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.text);
-    })
+    engine.eventBus.on("ui:revive", ctx => {
+        updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
+        updateTurnMeter(ctx.scene, ctx.currentTarget, ctx.data.modifiedTM);
+        showPositivePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.text);
+        ctx.currentTarget.clearAlpha();
+    });
+
+    engine.eventBus.on("ui:takeDamage", ctx => {
+        const color = ctx.data.element ? getDefaultElementColor(ctx.data.element) : ctx.data.color;
+        // Show damage popup AFTER damage is applied:
+        updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
+        showDmgPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.text, {fontSize: uiStats.dmgPopupFontsize, color: color, align: 'center'});
+    });
+    
 
     // Target died:
     // TODO: Needs to change a bit if a Debuff tick kills target ==> no SkillContext present currently ==> no ctx.currentTarget...

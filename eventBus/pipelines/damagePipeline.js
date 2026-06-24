@@ -6,20 +6,48 @@ import { updateDebuffDisplay } from "../../ui/portraitFactory.js";
 
 export function registerDamagePipeline(engine) {
 
+    engine.eventBus.on("damageTarget", async ctx => {  // not used yet
+        const target = ctx.currentTarget;
+        if (currentTarget.getData("hp") <= 0) return;  // already dead
+
+        ctx.data.modifiedDamage = ctx.data.dmg;
+        // 2. Attacker-side modifications:
+        await engine.eventBus.emit("beforeDealDamage", ctx);  // mutate ctx.modifiedDamage
+
+        // 3. Defender-side modifications:
+        await engine.eventBus.emit("beforeTakeDamage", ctx);  // mutate ctx.modifiedDamage
+
+        const defenderChar = ctx.currentTarget.getData('char');
+
+        // 5. Apply final damage:
+        const hp = ctx.currentTarget.getData('hp');
+        const newHp = Math.max(0, hp - ctx.modifiedDamage);
+        ctx.currentTarget.setData('hp', newHp);
+
+        // 6. Notify listeners:
+        await engine.eventBus.emit("afterDealDamage", ctx);  // Passives hook into this + Leech
+        await engine.eventBus.emit("afterTakeDamage", ctx);  // triggers Reactions
+
+        await engine.eventBus.emit("ui:takeDamage", ctx);
+
+        // 7. Death check:
+        if (newHp <= 0) {
+            await engine.eventBus.emit("onActiveDeath", ctx);
+        }
+    });
+
     // 1. Entry point: a SkillPart emitted an intent:
     engine.eventBus.on("intent:dealDamage", async ctx => {
         await engine.eventBus.emit("ui:attack", ctx);  // trigger attack Tween
-        
-        // Prepare context fields:
-        ctx.modifiedDamage = ctx.dmg;
 
         for (let i = 0; i < ctx.affectedTargets.length; i++){
             const currentIndex = ctx.affectedTargets[i];
             const currentTarget = ctx.enemies[currentIndex];
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
-            if (currentTarget.getData("hp") <= 0) return;  // already dead
+            if (currentTarget.getData("hp") <= 0) continue;  // already dead
 
             ctx.currentTarget = currentTarget;
+            ctx.modifiedDamage = ctx.dmg;  // reset modifiedDamage
 
             // 2. Attacker-side modifications:
             await engine.eventBus.emit("beforeDealDamage", ctx);  // mutate ctx.modifiedDamage

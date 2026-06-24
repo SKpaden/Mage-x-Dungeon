@@ -5,7 +5,6 @@ export function registerHealPipeline(engine) {
     engine.eventBus.on("intent:healBasedOnDamage", async ctx => {
 
         const amount = ctx.data.amount;
-        ctx.data.modifiedAmount = amount;  // for mutating by events
 
         const affectedTargets = ctx.affectedTargets;
 
@@ -15,6 +14,7 @@ export function registerHealPipeline(engine) {
             if(currentTarget.getData("hp") <= 0) continue;
 
             ctx.currentTarget = currentTarget;
+            ctx.data.modifiedAmount = amount;  // for mutating by events
             const currentChar = currentTarget.getData("char");
 
             // 1. Pre-event: Increase (ally Passive) or decrease (enemy Passive) modifiedAmount.
