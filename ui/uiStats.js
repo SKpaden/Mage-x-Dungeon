@@ -30,6 +30,8 @@ export const uiStats = {
     endBtnBaseColor: 0x4a7c59,
     endBtnHoverColor: 0x6a9c79,
     endBtnActiveColor: 0x8aeca9,
+    // Durations:
+    attackTweenDuration: 150,
     // Hover target preview:
     enemyHoverTint: 0x820000,
     enemyTargetTint: '0xff4444',

@@ -19,7 +19,7 @@ export function playPhysicalAttackTween(scene, container, targetX, targetY){
     else offset = uiStats.halfH;  // container above target
     scene.tweens.add({
         targets: container,
-        duration: 150,
+        duration: uiStats.attackTweenDuration,
         x: targetX,
         y: targetY + offset,
         z: 100,
