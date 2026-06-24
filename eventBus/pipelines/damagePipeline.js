@@ -2,43 +2,17 @@ import { Debuff } from "../../game/debuffs.js";
 import { gameState } from "../../game/gameState.js";
 import { Reaction } from "../../game/reactions.js";
 import { getDefaultElementColor } from "../../ui/elementColors.js";
+import { delay } from "../../ui/helpers.js";
 import { updateDebuffDisplay } from "../../ui/portraitFactory.js";
+import { uiStats } from "../../ui/uiStats.js";
 
 export function registerDamagePipeline(engine) {
-
-    engine.eventBus.on("damageTarget", async ctx => {  // not used yet
-        const target = ctx.currentTarget;
-        if (currentTarget.getData("hp") <= 0) return;  // already dead
-
-        ctx.data.modifiedDamage = ctx.data.dmg;
-        // 2. Attacker-side modifications:
-        await engine.eventBus.emit("beforeDealDamage", ctx);  // mutate ctx.modifiedDamage
-
-        // 3. Defender-side modifications:
-        await engine.eventBus.emit("beforeTakeDamage", ctx);  // mutate ctx.modifiedDamage
-
-        const defenderChar = ctx.currentTarget.getData('char');
-
-        // 5. Apply final damage:
-        const hp = ctx.currentTarget.getData('hp');
-        const newHp = Math.max(0, hp - ctx.modifiedDamage);
-        ctx.currentTarget.setData('hp', newHp);
-
-        // 6. Notify listeners:
-        await engine.eventBus.emit("afterDealDamage", ctx);  // Passives hook into this + Leech
-        await engine.eventBus.emit("afterTakeDamage", ctx);  // triggers Reactions
-
-        await engine.eventBus.emit("ui:takeDamage", ctx);
-
-        // 7. Death check:
-        if (newHp <= 0) {
-            await engine.eventBus.emit("onActiveDeath", ctx);
-        }
-    });
 
     // 1. Entry point: a SkillPart emitted an intent:
     engine.eventBus.on("intent:dealDamage", async ctx => {
         await engine.eventBus.emit("ui:attack", ctx);  // trigger attack Tween
+
+        ctx.data.totalLeechHeal = 0;  // potentially heal from Leech
 
         for (let i = 0; i < ctx.affectedTargets.length; i++){
             const currentTarget = ctx.affectedTargets[i];
@@ -73,16 +47,30 @@ export function registerDamagePipeline(engine) {
                 await engine.eventBus.emit("onActiveDeath", ctx);
             }
         }
+        await engine.eventBus.emit("afterAllDamage", ctx);  // all targets processed
+
         // Placeholder:
         gameState.logQueue[ctx.logQueueKey].debuffsApplied = ctx.results.debuffsApplied.length+99;
         // I need await here, otherwise it doesn't work, but await can't be used here:
         await Reaction.processReactionQueue(ctx.scene, ctx.source, ctx.allies, ctx.enemies);  // process Reactions in gameState queue
     });
 
+    engine.eventBus.on("afterAllDamage", async ctx => {
+        if (ctx.data.totalLeechHeal > 0) {
+            ctx.affectedTargets = [ctx.source];
+            ctx.data.amount = ctx.data.totalLeechHeal;
+            ctx.flags.leeched = true;
+            await delay(ctx.scene, uiStats.attackTweenDuration*2);  // let attack finish (*2 because of yoyo = true)
+            await engine.eventBus.emit("intent:heal", ctx);
+            ctx.flags.leeched = false;  // reset flag
+        }
+    });
+
     // Global check for Leech Debuff:
     engine.eventBus.on("afterDealDamage", async ctx => {
         const currentTargetDebuffs = ctx.currentTarget.getData('debuffs');
         if (Debuff.containsDebuff(currentTargetDebuffs, 'Leech')){
+            ctx.data.totalLeechHeal += ctx.data.modifiedDamage * 0.2;  // fixed 20% Leech heal
         }
     });
 
