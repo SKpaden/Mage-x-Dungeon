@@ -12,12 +12,12 @@ export function registerCombatUIListeners(engine, scene) {
     engine.eventBus.on("afterTakeDamage", ctx => {
         // Show damage popup AFTER damage is applied:
         updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
-        showDmgPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.element ? `-${ctx.modifiedDamage}\n${ctx.element}` : `-${ctx.modifiedDamage}`, {fontSize: uiStats.dmgPopupFontsize, color: getDefaultElementColor(ctx.element), align: 'center'});
+        showDmgPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.element ? `-${ctx.data.modifiedDamage}\n${ctx.data.element}` : `-${ctx.data.modifiedDamage}`, {fontSize: uiStats.dmgPopupFontsize, color: getDefaultElementColor(ctx.data.element), align: 'center'});
     });
 
     // Successful Debuff application:
     engine.eventBus.on("afterApplyDebuff", ctx => {
-        playDebuffPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.debuff.name, uiStats.negativePopupOptions);
+        playDebuffPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.debuff.name, uiStats.negativePopupOptions);
         updateDebuffDisplay(ctx.scene, ctx.currentTarget);
     });
     // Debuff blocked:

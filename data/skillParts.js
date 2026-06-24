@@ -84,7 +84,7 @@ export class ApplyDebuff extends SkillPart{
         const affectedTargets = getAffectedTargets(area, context.index, targetedTeam);
         // Set SkillPart-specific context data:
         context.affectedTargets = affectedTargets;
-        context.debuff = debuff;
+        context.data.debuff = debuff;
         // Trigger event:
         await context.scene.combatEngine.eventBus.emit("intent:applyDebuff", context);
     }
@@ -130,16 +130,16 @@ export class DealDamage extends SkillPart{
         let debuffsApplied = 0;
 
         // Trigger dmg pipeline once:
-        skillContext.dmg = dmg;
-        skillContext.element = element;
+        skillContext.data.dmg = dmg;
+        skillContext.data.element = element;
         await skillContext.scene.combatEngine.eventBus.emit("intent:dealDamage", skillContext);  // works but no UI updates etc
 
         // Default elemental debuff:
-        if (debuff && skillContext.allowElementalDebuff){  // doesn't work, only 1 flag for all targets...
+        if (debuff && skillContext.flags.allowElementalDebuff){  // doesn't work, only 1 flag for all targets...
             // Add a small delay between damage numbers and debuff popup:
             skillContext.flags.popupDelay = true;
             skillContext.data.delay = 300;
-            skillContext.debuff = debuff;
+            skillContext.data.debuff = debuff;
             await skillContext.scene.combatEngine.eventBus.emit("intent:applyDebuff", skillContext);
         }
     }

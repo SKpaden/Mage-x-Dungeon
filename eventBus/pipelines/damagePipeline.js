@@ -47,7 +47,7 @@ export function registerDamagePipeline(engine) {
             if (currentTarget.getData("hp") <= 0) continue;  // already dead
 
             ctx.currentTarget = currentTarget;
-            ctx.modifiedDamage = ctx.dmg;  // reset modifiedDamage
+            ctx.data.modifiedDamage = ctx.data.dmg;  // reset modifiedDamage
 
             // 2. Attacker-side modifications:
             await engine.eventBus.emit("beforeDealDamage", ctx);  // mutate ctx.modifiedDamage
@@ -62,7 +62,7 @@ export function registerDamagePipeline(engine) {
     
             // 5. Apply final damage:
             const hp = ctx.currentTarget.getData('hp');
-            const newHp = Math.max(0, hp - ctx.modifiedDamage);
+            const newHp = Math.max(0, hp - ctx.data.modifiedDamage);
             ctx.currentTarget.setData('hp', newHp);
     
             // 6. Notify listeners:
@@ -93,7 +93,7 @@ export function registerDamagePipeline(engine) {
         const char = ctx.currentTarget.getData('char');
         const debuffs = ctx.currentTarget.getData('debuffs');
         let allowElementalDebuff = true;
-        let finalDmg = ctx.modifiedDamage;
+        let finalDmg = ctx.data.modifiedDamage;
 
         const prevDmg = ctx.results.damageDealt.get(ctx.currentTarget) ?? 0;
         ctx.results.damageDealt.set(ctx.currentTarget, prevDmg + finalDmg);  // write to context for other SkillParts (heal based on dmg etc.)
@@ -110,7 +110,7 @@ export function registerDamagePipeline(engine) {
                     const duration = debuff.duration;
                     finalDmg = finalDmg*duration;
                     
-                    const triggeredReaction = Reaction.getTriggeredReaction(debuff, ctx.element, finalDmg);
+                    const triggeredReaction = Reaction.getTriggeredReaction(debuff, ctx.data.element, finalDmg);
                     if (triggeredReaction) {
                         debuffFilter[debuff.name] = false;
                         allowElementalDebuff = false;  // element triggered Reaction ==> don't place default elemental debuff
@@ -129,6 +129,6 @@ export function registerDamagePipeline(engine) {
         if (!gameState.logQueue[ctx.logQueueKey]['targets'].includes(ctx.currentTarget)) gameState.logQueue[ctx.logQueueKey]['targets'].push(ctx.currentTarget);
         gameState.logQueue[ctx.logQueueKey]['dmg'].push(finalDmg);
         
-        ctx.allowElementalDebuff = allowElementalDebuff;  // set flag
+        ctx.flags.allowElementalDebuff = allowElementalDebuff;  // set flag
     })
 }
