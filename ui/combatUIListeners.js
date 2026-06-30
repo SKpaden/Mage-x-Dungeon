@@ -10,9 +10,11 @@ import { uiStats } from "./uiStats.js";
 export function registerCombatUIListeners(engine, scene) {
 
     engine.eventBus.on("afterTakeDamage", ctx => {
+        const color = ctx.data.element ? getDefaultElementColor(ctx.data.element) : ctx.data.color;
+        const text = ctx.data.text ? ctx.data.text : `-${ctx.data.modifiedDamage}\n${ctx.data.element}`;
         // Show damage popup AFTER damage is applied:
         updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
-        showDmgPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.element ? `-${ctx.data.modifiedDamage}\n${ctx.data.element}` : `-${ctx.data.modifiedDamage}`, {fontSize: uiStats.dmgPopupFontsize, color: getDefaultElementColor(ctx.data.element), align: 'center'});
+        showDmgPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, text, {fontSize: uiStats.dmgPopupFontsize, color: color, align: 'center'});
     });
 
     // Successful Debuff application:

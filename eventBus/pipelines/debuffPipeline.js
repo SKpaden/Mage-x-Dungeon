@@ -1,7 +1,13 @@
 import { Debuff } from "../../game/debuffs.js";
+import { gameState } from "../../game/gameState.js";
 import { delay } from "../../ui/helpers.js";
 
 export function registerDebuffPipeline(engine) {
+
+    engine.eventBus.on("afterApplyDebuff", ctx => {
+        if (!gameState.logQueue[ctx.logQueueKey].debuffsApplied) gameState.logQueue[ctx.logQueueKey].debuffsApplied = 0;
+        gameState.logQueue[ctx.logQueueKey].debuffsApplied++;
+    });
 
     // 1. Entry point: a SkillPart emitted an intent:
     engine.eventBus.on("intent:activatePoison", async ctx => {

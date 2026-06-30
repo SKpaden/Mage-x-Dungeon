@@ -1,4 +1,4 @@
-import { dmgTarget, getAffectedTargets } from "./combat.js";
+import { dmgTarget, getAffectedTargets, getAffectedTargetsAsContainers } from "./combat.js";
 import { gameState } from "./gameState.js";
 import { getDefaultElementColor } from "../ui/elementColors.js";
 import { delay } from "../ui/helpers.js";
@@ -32,7 +32,7 @@ export class Reaction{
             // ...
         },
         'Light': {
-            'Dark': (dmg) => new Reaction('Void Surge', 'adjacent', dmg, null, getReactionColor('Void Surge')),
+            'Dark': (dmg) => new Reaction('Void Surge', 'all', dmg, null, getReactionColor('Void Surge')),
             // ...
         },
         'Water': {
@@ -45,7 +45,7 @@ export class Reaction{
 
     // Returns an object to add to the Reaction queue in gameState.
     static getQueueEntry(reaction, target, team){
-        const affectedTargets = getAffectedTargets(reaction.area, target.getData('teamIndex'), team);
+        const affectedTargets = getAffectedTargetsAsContainers(reaction.area, target.getData('teamIndex'), team);
         return {targets: affectedTargets, reaction: reaction};
     }
 
