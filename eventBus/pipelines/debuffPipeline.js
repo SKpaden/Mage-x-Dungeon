@@ -84,10 +84,10 @@ export function registerDebuffPipeline(engine) {
                 if (Debuff.allowDebuff(debuffs, debuff.name)){
                     debuffs.push(debuff.createCopy(source));
                     currentTarget.setData('debuffs', debuffs);
+                    // 3. Post-event:
+                    await engine.eventBus.emit("afterApplyDebuff", ctx);
                 }
         
-                // 3. Post-event:
-                await engine.eventBus.emit("afterApplyDebuff", ctx);
             } else {
                 await engine.eventBus.emit("onDebuffBlocked", ctx);  // for UI and perhaps passives
                 ctx.data.text = debuff.name + "\nBlocked";
