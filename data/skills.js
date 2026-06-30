@@ -3,6 +3,7 @@ import { Debuff } from "../game/debuffs.js";
 import { delay } from "../ui/helpers.js";
 import { uiStats } from "../ui/uiStats.js";
 import { SkillContext } from "./skillContext.js";
+import { getLogTarget } from "../ui/combatLog.js";
 
 export class Skill{
     constructor(name, icon, targets, actions, cooldown, description, type = 'Attack'){
@@ -25,7 +26,8 @@ export class Skill{
 
     // Apply skill method, unique to every skill ==> override.
     async apply(scene, source, target, index, allies, enemies){
-        const skillContext = new SkillContext(scene, source, target, index, allies, enemies);
+        const logQueueKey = getLogTarget();  // where to log?
+        const skillContext = new SkillContext(scene, source, target, index, allies, enemies, logQueueKey);
         for (let i = 0; i < this.actions.length; i++){
             // await this.actions[i].execute(scene, source, target, index, allies, enemies);
             await this.actions[i].execute(skillContext);

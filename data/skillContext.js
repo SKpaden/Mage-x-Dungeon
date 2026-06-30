@@ -1,13 +1,14 @@
 export class SkillContext {
-    constructor(scene, source, target, index, allies, enemies, affectedTargets = null) {
+    constructor(scene, source, target, index, allies, enemies, logQueueKey, affectedTargets = null) {
         this.scene = scene;
         this.source = source;
         this.target = target;
         this.index = index,
         this.allies = allies;
         this.enemies = enemies;
+        this.logQueueKey = logQueueKey;
 
-        this.affectedTargets = affectedTargets ? affectedTargets : [index];
+        this.affectedTargets = affectedTargets ? affectedTargets : [target];
         this.currentTarget = null;  // events need to process current targets, not just the original target
 
         // Pipelines might add these flags / fields:

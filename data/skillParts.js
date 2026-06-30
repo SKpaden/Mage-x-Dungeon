@@ -4,7 +4,6 @@ import { Debuff } from "../game/debuffs.js";
 import { gameState } from "../game/gameState.js";
 import { Reaction } from "../game/reactions.js";
 import { boostTurnMeter } from "../game/turnMeterManager.js";
-import { getLogTarget } from "../ui/combatLog.js";
 import { playPhysicalAttackTween } from "../ui/combatTweens.js";
 import { delay } from "../ui/helpers.js";
 import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
@@ -117,9 +116,6 @@ export class DealDamage extends SkillPart{
         const { area = 'single', dmg, element = 'Physical'} = this.params;
         const affectedTargets = getAffectedTargetsAsContainers(area, skillContext.index, skillContext.enemies);
         skillContext.affectedTargets = affectedTargets;
-
-        const logQueueKey = getLogTarget();  // where to log?
-        skillContext.logQueueKey = logQueueKey;
 
         // Should a debuff be applied from an elemental Skill?
         let debuff = null;
