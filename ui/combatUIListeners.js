@@ -22,10 +22,6 @@ export function registerCombatUIListeners(engine, scene) {
         playDebuffPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.debuff.name, uiStats.negativePopupOptions);
         updateDebuffDisplay(ctx.scene, ctx.currentTarget);
     });
-    // Debuff blocked:
-    engine.eventBus.on("onDebuffBlocked", ctx => {
-        showPositivePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, "Immune");
-    });
 
     engine.eventBus.on("ui:attack", ctx => {
         // Play attack animation BEFORE damage is applied:
@@ -34,6 +30,10 @@ export function registerCombatUIListeners(engine, scene) {
 
     engine.eventBus.on("ui:debuffUpdate", ctx => {
         updateDebuffDisplay(ctx.scene, ctx.currentTarget);
+    });
+
+    engine.eventBus.on("ui:hpUpdate", ctx => {
+        updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
     });
 
     engine.eventBus.on("ui:negativeText", ctx => {
