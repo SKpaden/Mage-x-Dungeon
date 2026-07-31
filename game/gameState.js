@@ -39,10 +39,7 @@ export function initBattle(scene, heroes, enemies){
     resetCharacters();
     buildQueue();
 
-    const playerContainer = gameState.playerContainers[0];
-    const enemyContainer = gameState.enemyContainers[0];
-
-    const engine = new CombatEngine([playerContainer], [enemyContainer]);
+    const engine = new CombatEngine(gameState.playerContainers, gameState.enemyContainers);
 
     scene.combatEngine = engine;
     registerCombatUIListeners(scene.combatEngine, scene);
