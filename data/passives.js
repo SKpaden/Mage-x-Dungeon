@@ -25,7 +25,7 @@ export class DebuffImmunityPassive extends Passive {
 
     registerEvents(eventBus, ownerContainer) {
         eventBus.on("beforeApplyDebuff", ctx => {
-            if (ctx.target !== ownerContainer) return;
+            if (ctx.currentTarget !== ownerContainer) return;
 
             if (this.debuffNames.includes(ctx.data.debuff.name)) {
                 ctx.flags.blocked = true;
