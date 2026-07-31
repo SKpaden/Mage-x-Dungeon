@@ -1,6 +1,9 @@
+import { StatManager } from "../../data/statManager.js";
 import { Debuff } from "../../game/debuffs.js";
 import { gameState } from "../../game/gameState.js";
+import { setLogTarget } from "../../ui/combatLog.js";
 import { delay } from "../../ui/helpers.js";
+import { uiStats } from "../../ui/uiStats.js";
 
 export function registerDebuffPipeline(engine) {
 
@@ -26,15 +29,11 @@ export function registerDebuffPipeline(engine) {
             const newDebuffs = debuffs.filter(debuff => {
                 if (debuff.name === 'Poison'){
                     poisonCount += debuff.duration;
-                    dmgCount += debuff.dmgPerTurn*debuff.duration;
+                    dmgCount += debuff.getTickDmg(currentTarget) * debuff.duration;
                     return false;
                 } return true;
             });
-            // // Remove poisons:
-            // const newDebuffs = debuffs.filter((debuff) => {
-            //     if (debuff.name === 'Poison') return false;
-            //     return true;
-            // });
+
             currentTarget.setData('debuffs', newDebuffs);
 
             ctx.data.color = '#007700';
@@ -163,5 +162,79 @@ export function registerDebuffPipeline(engine) {
                 await engine.eventBus.emit("ui:positiveText", ctx);
             }
         }
+    });
+
+    // Tick debuffs on target (called at start of a unit's turn).
+    engine.eventBus.on("intent:tickDebuffs", async ctx => {
+        const currentTarget = ctx.target;
+        if (currentTarget.getData("hp") <= 0) return;
+
+        ctx.currentTarget = currentTarget;
+        let skipTurn = null;
+
+        const debuffs = currentTarget.getData('debuffs') || [];
+
+        // Execute ticks and filter expired debuffs:
+        const newDebuffs = [];
+        for (const deb of debuffs){
+            ctx.source = deb.source;
+            if (deb.skip()) skipTurn = deb.name;
+            
+            // { keep: this.duration > 0, baseTickDmg: dmg, debuff: this, skipTurn: this.skipTurn }
+            const results = await deb.tick(ctx.scene, currentTarget, ctx);
+
+            if (results.keep) newDebuffs.push(deb);
+            ctx.data.tickDmg = results.baseTickDmg;
+            ctx.data.modifiedTickDmg = ctx.data.tickDmg;
+            await engine.eventBus.emit("onBeforeTickDebuff", ctx);
+
+            // Popup:
+            ctx.data.text = ctx.data.tickDmg ? `-${ctx.data.modifiedTickDmg}\n${deb.name}` : deb.name;
+            await engine.eventBus.emit("ui:negativeText", ctx);
+            await delay(ctx.scene, uiStats.debuffDelay);
+
+            if (results.chosenTarget){
+                const char = currentTarget.getData('char');
+                try{
+                    setLogTarget(deb.name);
+                    // Use the unit's basic skill:
+                    await delay(ctx.scene, uiStats.controlDelay);
+                    await char.skills[0].apply(ctx.scene, ctx.target, results.chosenTarget, results.chosenTarget.getData('teamIndex'), ctx.allies, ctx.allies);
+                    await delay(ctx.scene, uiStats.controlDelay);
+                } catch (e){
+                    console.error('ControlDebuff forced action failed', e);
+                }
+            }            
+
+
+            // Apply final damage:
+            // const hp = StatManager.getContainerStat(currentTarget, 'hp');
+            const hp = currentTarget.getData('hp');
+            const newHp = Math.max(0, hp - ctx.data.modifiedTickDmg);
+            StatManager.getContainerStat(currentTarget, 'hp', newHp);
+            currentTarget.setData('hp', newHp);
+
+
+            // Passives hook into this post-event:
+            await engine.eventBus.emit("onAfterTickDebuff", ctx);
+    
+            // Notify listeners:
+            await engine.eventBus.emit("afterTakeDamage", ctx);  // triggers Reactions
+    
+            // Death check:
+            if (newHp <= 0) {
+                await engine.eventBus.emit("onActiveDeath", ctx);
+                ctx.flags.skipTurn = 'Death';
+                return;
+            }
+        }
+
+        currentTarget.setData("debuffs", newDebuffs);
+        // Update UI:
+        await engine.eventBus.emit("ui:debuffUpdate", ctx);
+        await engine.eventBus.emit("ui:hpUpdate", ctx);
+
+        // Attach skipTurn result:
+        if (skipTurn) ctx.flags.skipTurn = skipTurn;
     });
 }

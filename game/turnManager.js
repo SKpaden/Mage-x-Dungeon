@@ -1,11 +1,12 @@
 import { applySkillToPlayer, checkDeath, checkWinner, endBattle } from "./combat.js";
 import { gameState } from "./gameState.js";
 import { fillAllTurnMeters, resetTurnMeter } from "./turnMeterManager.js";
-import { logCombat } from "../ui/combatLog.js";
+import { getLogTarget, logCombat, setLogTarget } from "../ui/combatLog.js";
 import { delay, removeHighlight, setHighlight, setPlayerTarget, updateText } from "../ui/helpers.js";
 import { getPortraitTween, updateDebuffDisplay} from "../ui/portraitFactory.js";
 import { showSkills } from "../ui/skillUI.js";
 import { uiStats } from "../ui/uiStats.js";
+import { SkillContext } from "../data/skillContext.js";
 
 // Decides who acts next in turn order.
 export function advanceToNextTurn(scene){
@@ -54,9 +55,9 @@ async function enemyTurn(scene, unit){
     const char =  unit.getData('char');
     char.reduceCooldowns();
     const debuffSkip = await processDebuffs(scene, unit);
-    if (checkDeath(scene, unit)) {  // maybe do something specific to only death before
-        if (checkWinner()) return endBattle(scene);
-    }
+
+    if (checkWinner()) return endBattle(scene);
+
     if (debuffSkip){  // at least one debuff skips turn
         logCombat(scene, `<strong>${unit.getData('name')}</strong>  skipped turn because of <strong>"${debuffSkip}"</strong>!`, '#ED0000', '[Enemy]');
         endTurn(scene, unit);
@@ -78,9 +79,9 @@ async function enemyTurn(scene, unit){
 async function playerTurn(scene, unit){
     unit.getData('char').reduceCooldowns();
     const debuffSkip = await processDebuffs(scene, unit);
-    if (checkDeath(scene, unit)) {  // maybe do something specific to only death before
-        if (checkWinner()) return endBattle(scene);
-    }
+
+    if (checkWinner()) return endBattle(scene);
+
     if (debuffSkip){  // at least one debuff skips turn
         logCombat(scene, `<strong>${unit.getData('name')}</strong>  skipped turn because of <strong>"${debuffSkip}"</strong>!`, '#00aa00', '[You]');
         await delay(scene, 1000);
@@ -96,23 +97,12 @@ async function playerTurn(scene, unit){
 
 // Processes all debuffs at the start of a turn.
 async function processDebuffs(scene, target){
-    let skipTurn = null;
-    let debuffs = target.getData('debuffs') || [];
-    // Sequential popups with await:
-    for (const deb of debuffs) {
-        deb.showDebuffPopupAsync(scene, target.x, target.y);
-        await delay(scene, uiStats.debuffDelay);  // wait for this popup to finish
-    }
-    debuffs = debuffs.filter(deb => {
-        if (deb.skip()) skipTurn = deb.name;  // skip turn?
-        deb.tick(scene, target);
-        return deb.duration > 0;
-    });
+    // Delegate debuff ticking to the combat engine's event pipeline.
+    const engine = scene.combatEngine;
+    const team = target.getData("team");
+    setLogTarget('debuffs');
+    const ctx = new SkillContext(scene, null, target, target.getData("teamIndex"), engine.getAllies(team), engine.getEnemies(team), getLogTarget());
 
-    const remainingHp = target.getData('hp');
-    if (remainingHp <= 0) skipTurn = 'Death';
-    remainingHp > 0 ? target.setData('debuffs', debuffs) : target.setData('debuffs', []);
-    
-    updateDebuffDisplay(scene, target);
-    return skipTurn;
+    await engine.eventBus.emit("intent:tickDebuffs", ctx);
+    return ctx.flags && ctx.flags.skipTurn ? ctx.flags.skipTurn : null;
 }
