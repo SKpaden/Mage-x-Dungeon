@@ -59,15 +59,6 @@ export class Character{
         return this.statManager.getCurrentStat('speed');
     }
 
-    heal(scene, container, amount, x, y){
-        // const oldHp = this.statManager.getCurrentStat('hp');
-        const oldHp = container.getData('hp');
-        const newAmount = Math.min(this.statManager.getBaseStat('hp'), oldHp + amount);
-        this.statManager.setCurrentStat('hp', newAmount);
-        showPositivePopup(scene, x, y, `+${amount}`);
-        updateHP(container, newAmount);
-    }
-
     // Puts all skills on CD.
     lockout(){
         this.skills.forEach(skill => {
@@ -539,7 +530,8 @@ const heroTemplates = {
         skillIds: [1],
         skillPriorities: [0],
         resistances: { physical: 0.8, fire: 1.0 },
-        passives: [{ type: 'DebuffImmunity', params: { debuffNames: ['Poison'] } }],
+        // passives: [{ type: 'DebuffImmunity', params: { debuffNames: ['Poison'] } }],
+        passives: null,
         tags: ['Demon', 'Physical'],
         description: "A demonic grunt summoned from the depths of hell.",
         stats: {

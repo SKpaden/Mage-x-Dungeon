@@ -1,3 +1,4 @@
+import { StatManager } from "../../data/statManager.js";
 
 
 export function registerHealPipeline(engine) {
@@ -15,7 +16,7 @@ export function registerHealPipeline(engine) {
         const affectedTargets = ctx.affectedTargets;
 
         for (const currentTarget of affectedTargets){
-            if(currentTarget.getData("hp") <= 0) continue;
+            if(StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;
 
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedAmount = amount;  // for mutating by events
@@ -26,10 +27,10 @@ export function registerHealPipeline(engine) {
             await engine.eventBus.emit("beforeHeal", ctx);  // potentially mutates modifiedAmount
 
             const healAmount = Math.floor(ctx.data.modifiedAmount);
-            const oldHp = currentTarget.getData('hp');
+            const oldHp = StatManager.getContainerStat(currentTarget, "hp");
             const newAmount = Math.min(currentChar.statManager.getBaseStat('hp'), oldHp + healAmount);
             currentChar.statManager.setCurrentStat('hp', newAmount);
-            currentTarget.setData("hp", newAmount);
+            StatManager.setContainerStat(ctx.currentTarget, "hp", newAmount);
 
             ctx.data.healAmount = healAmount;
             await engine.eventBus.emit("afterHeal", ctx);
@@ -46,7 +47,7 @@ export function registerHealPipeline(engine) {
 
         for (let i = 0; i < affectedTargets.length; i++){
             const currentTarget = affectedTargets[i];
-            if(currentTarget.getData("hp") <= 0) continue;
+            if(StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;
 
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedAmount = amount;  // for mutating by events
@@ -62,10 +63,10 @@ export function registerHealPipeline(engine) {
             }
 
             const healAmount = Math.floor(totalDamage * ctx.data.modifiedAmount);
-            const oldHp = currentTarget.getData('hp');
+            const oldHp = StatManager.getContainerStat(currentTarget, "hp");
             const newAmount = Math.min(currentChar.statManager.getBaseStat('hp'), oldHp + healAmount);
             currentChar.statManager.setCurrentStat('hp', newAmount);
-            currentTarget.setData("hp", newAmount);
+            StatManager.setContainerStat(ctx.currentTarget, "hp", newAmount);
 
             ctx.data.healAmount = healAmount;
             await engine.eventBus.emit("afterHeal", ctx);

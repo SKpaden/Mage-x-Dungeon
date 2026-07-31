@@ -1,3 +1,4 @@
+import { StatManager } from "../../data/statManager.js";
 import { Debuff } from "../../game/debuffs.js";
 import { gameState } from "../../game/gameState.js";
 import { delay } from "../../ui/helpers.js";
@@ -14,7 +15,7 @@ export function registerDamagePipeline(engine) {
         for (let i = 0; i < ctx.affectedTargets.length; i++){
             const currentTarget = ctx.affectedTargets[i];
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
-            if (currentTarget.getData("hp") <= 0) continue;  // already dead
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // already dead
 
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedDamage = ctx.data.dmg;  // reset modifiedDamage
@@ -31,9 +32,9 @@ export function registerDamagePipeline(engine) {
             // ctx.modifiedDamage *= 20;
     
             // 5. Apply final damage:
-            const hp = ctx.currentTarget.getData('hp');
+            const hp = StatManager.getContainerStat(ctx.currentTarget, "hp");
             const newHp = Math.max(0, hp - ctx.data.modifiedDamage);
-            ctx.currentTarget.setData('hp', newHp);
+            StatManager.setContainerStat(ctx.currentTarget, "hp", newHp);
     
             // 6. Notify listeners:
             await engine.eventBus.emit("afterDealDamage", ctx);  // Passives hook into this + Leech
@@ -56,7 +57,7 @@ export function registerDamagePipeline(engine) {
 
         for (const currentTarget of ctx.affectedTargets){
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
-            if (currentTarget.getData("hp") <= 0) continue;  // already dead
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // already dead
 
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedDamage = ctx.data.dmg;  // reset modifiedDamage
@@ -71,9 +72,9 @@ export function registerDamagePipeline(engine) {
             const defenderChar = ctx.currentTarget.getData('char');
 
             // 5. Apply final damage:
-            const hp = ctx.currentTarget.getData('hp');
+            const hp = StatManager.getContainerStat(ctx.currentTarget, "hp");
             const newHp = Math.max(0, hp - ctx.data.modifiedDamage);
-            ctx.currentTarget.setData('hp', newHp);
+            StatManager.setContainerStat(ctx.currentTarget, "hp", newHp);
 
             ctx.data.text = `-${ctx.data.modifiedDamage}\n${reaction.name}`
 

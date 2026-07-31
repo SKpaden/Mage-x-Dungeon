@@ -130,8 +130,8 @@ export class Debuff{
             }
             return 0;
         }
-
-        if (target.getData('hp') > 0){  // debuff set AND target lives
+        
+        if (StatManager.getContainerStat(target, "hp") > 0){  // debuff set AND target lives
             const debuffs = target.getData('debuffs') || [];
             if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
                 debuffs.push(this.createCopy(source));
@@ -220,7 +220,7 @@ export class StatAffectingDebuff extends Debuff{
             return 0;  // trigger event and see if debuff is allowed
         }
 
-        if (target.getData('hp') > 0){  // debuff set AND target lives
+        if (StatManager.getContainerStat(target, "hp") > 0){  // debuff set AND target lives
             const debuffs = target.getData('debuffs') || [];
             if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
                 debuffs.push(this.createCopy(source));
@@ -300,7 +300,7 @@ export class ControlDebuff extends Debuff{
 
         const allies = ctx.allies;
         // Choose a random ally (excluding self) that is alive:
-        const candidates = allies.filter(c => c !== target && c.getData('hp') > 0);
+        const candidates = allies.filter(c => c !== target && StatManager.getContainerStat(c, "hp") > 0);
         if (candidates.length > 0){
             const rand = Math.floor(Math.random() * candidates.length);
             chosen = candidates[rand];

@@ -4,6 +4,7 @@ import { clearAffectedAllies, clearAffectedTargets, previewTargets, resizeSkillD
 import { uiStats } from "./uiStats.js";
 import { Debuff } from "../game/debuffs.js";
 import { setHighlight } from "./helpers.js";
+import { StatManager } from "../data/statManager.js";
 
 // Creates enemy portraits with Character class.
 export function createEnemyPortraitAlt(scene, x, y, character, scale, team, index){
@@ -55,7 +56,7 @@ export function updateHP(container, newHp) {
     const halfW = container.getData('halfW');
     const halfH = container.getData('halfH');
     const displayWidth = container.getData('displayWidth');
-    const maxHp = container.getData('maxHp');
+    const maxHp = StatManager.getContainerStat(container, "hp", false);
     hpGraphics.clear();
     // Redraw grey bg:
     hpGraphics.fillStyle(0xBDB9B9, 1.0);
@@ -73,7 +74,7 @@ export function updateHP(container, newHp) {
     // Update text:
     const hpText = container.getData('hpText');
     hpText.setText(`${newHp}/${maxHp}`);
-    container.setData('hp', newHp);
+    StatManager.setContainerStat(container, "hp", newHp);
 }
 
 /**
@@ -158,8 +159,6 @@ function createCharacterContainerAlt(scene, x, y, character, scale, team, index)
         'hpGraphics': hpGraphics,
         'borderGraphics': borderGraphics,
         'hpText': hpText,
-        'hp': character.maxHp,
-        'maxHp': character.hp,
         'speed': character.speed,
         'skills': character.skills,
         // 'debuffs': [new Debuff('Wet', 3, 0, 'Water'), new Debuff('Shock', 2, 10, 'Electro')],
@@ -290,7 +289,7 @@ function resizeCharacterDisplay(scene, container, newX, newY, newScale){
     borderGraphics.strokeRoundedRect(-uiStats.halfW, -uiStats.halfH, portrait.displayWidth, portrait.displayHeight, uiStats.borderRadius);
 
     // Redraw HP bar (reuse your updateHP logic):
-    const currentHp = container.getData('hp');
+    const currentHp = StatManager.getContainerStat(container, "hp");
     updateHP(container, currentHp);  // clears and redraws with new dimensions
 
     // Redraw turn meter:
@@ -308,7 +307,7 @@ function setAllyInteractive(scene, container, portrait, options, tint){
         // Player chose a character AND it's the player's turn AND this target is not dead...
         if (gameState.turn === 'player'  && gameState.pendingSkill){
             if (gameState.pendingSkill.type === 'Attack') return;  // don't show on attack skills
-            if (container.getData('hp') > 0 && gameState.pendingSkill.type === 'Support' || container.getData('hp') === 0 && gameState.pendingSkill.type === 'Revive'){  // always allow to target alive allies or with a revive spell
+            if (StatManager.getContainerStat(container, "hp") > 0 && gameState.pendingSkill.type === 'Support' || StatManager.getContainerStat(container, "hp") === 0 && gameState.pendingSkill.type === 'Revive'){  // always allow to target alive allies or with a revive spell
                 const skill = gameState.pendingSkill;
                 gameState.pendingSkill = null;  // prevent spamming!
                 clearAffectedAllies();  // remove targeting visuals
@@ -318,7 +317,7 @@ function setAllyInteractive(scene, container, portrait, options, tint){
     })
     .on('pointerover', () => {
         if(gameState.pendingSkill && gameState.turn === 'player' && gameState.pendingSkill.type !== 'Attack'){
-            if (gameState.pendingSkill.type === 'Revive' && container.getData('hp') > 0 || gameState.pendingSkill.type === 'Support' && container.getData('hp') === 0){
+            if (gameState.pendingSkill.type === 'Revive' && StatManager.getContainerStat(container, "hp") > 0 || gameState.pendingSkill.type === 'Support' && StatManager.getContainerStat(container, "hp") === 0){
                 portrait.setTint(uiStats.invalidTargetTint);
                 return;
             }
@@ -355,7 +354,7 @@ function setEnemyInteractive(scene, container, portrait, options, tint){
     .on('pointerdown', (pointer) => {
         if (pointer.button !== 0) return;  // only left click!
         // Player chose a character AND it's the player's turn AND this target is not dead...
-        if (gameState.turn === 'player'  && container.getData('hp') > 0 && gameState.pendingSkill){
+        if (gameState.turn === 'player'  && StatManager.getContainerStat(container, "hp") > 0 && gameState.pendingSkill){
             if (gameState.pendingSkill.type !== 'Attack') return;  // don't show on support skills
             const skill = gameState.pendingSkill;
             gameState.pendingSkill = null;  // prevent spamming!

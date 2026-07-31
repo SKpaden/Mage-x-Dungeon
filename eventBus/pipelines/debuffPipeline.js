@@ -18,7 +18,7 @@ export function registerDebuffPipeline(engine) {
 
         for (let i = 0; i < affectedTargets.length; i++){
             const currentTarget = affectedTargets[i];
-            if (currentTarget.getData("hp") <= 0) continue;
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;
 
             ctx.currentTarget = currentTarget;
 
@@ -42,9 +42,9 @@ export function registerDebuffPipeline(engine) {
             ctx.data.text = `-${ctx.data.dmg}\nPoison x${poisonCount}`;
 
             // 5. Apply final damage:
-            const hp = ctx.currentTarget.getData('hp');
+            const hp = StatManager.getContainerStat(currentTarget, "hp");
             const newHp = Math.max(0, hp - ctx.data.modifiedDamage);
-            ctx.currentTarget.setData('hp', newHp);
+            StatManager.setContainerStat(ctx.currentTarget, "hp", newHp);
 
             await engine.eventBus.emit("ui:takeDamage", ctx);
             await engine.eventBus.emit("ui:debuffUpdate", ctx);
@@ -69,7 +69,7 @@ export function registerDebuffPipeline(engine) {
         for (let i = 0; i < affectedTargets.length; i++){
             // const currentIndex = affectedTargets[i];
             const currentTarget = affectedTargets[i];
-            if (currentTarget.getData("hp") <= 0) continue;  // skip if target died from damage
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // skip if target died from damage
 
             ctx.currentTarget = currentTarget;
             ctx.flags.blocked = false;
@@ -99,7 +99,7 @@ export function registerDebuffPipeline(engine) {
         const affectedTargets = ctx.affectedTargets;
         for (let i = 0; i < affectedTargets.length; i++){
             const currentTarget = affectedTargets[i];
-            if (currentTarget.getData("hp") <= 0) continue;  // skip if target died from damage
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // skip if target died from damage
 
             ctx.currentTarget = currentTarget;
             ctx.data.blockedCleanses = {};  // maybe store which ones are allowed and which ones aren't
@@ -129,7 +129,7 @@ export function registerDebuffPipeline(engine) {
 
         for (let i = 0; i < affectedTargets.length; i++){
             const currentTarget = affectedTargets[i];
-            if (currentTarget.getData("hp") <= 0) continue;  // skip if target died from damage
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // skip if target died from damage
 
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedAmount = ctx.data.amount;
@@ -167,7 +167,7 @@ export function registerDebuffPipeline(engine) {
     // Tick debuffs on target (called at start of a unit's turn).
     engine.eventBus.on("intent:tickDebuffs", async ctx => {
         const currentTarget = ctx.target;
-        if (currentTarget.getData("hp") <= 0) return;
+        if (StatManager.getContainerStat(currentTarget, "hp") <= 0) return;
 
         ctx.currentTarget = currentTarget;
         let skipTurn = null;
@@ -208,11 +208,9 @@ export function registerDebuffPipeline(engine) {
 
 
             // Apply final damage:
-            // const hp = StatManager.getContainerStat(currentTarget, 'hp');
-            const hp = currentTarget.getData('hp');
+            const hp = StatManager.getContainerStat(currentTarget, 'hp');
             const newHp = Math.max(0, hp - ctx.data.modifiedTickDmg);
-            StatManager.getContainerStat(currentTarget, 'hp', newHp);
-            currentTarget.setData('hp', newHp);
+            StatManager.setContainerStat(ctx.currentTarget, "hp", newHp);
 
 
             // Passives hook into this post-event:

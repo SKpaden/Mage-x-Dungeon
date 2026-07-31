@@ -1,9 +1,10 @@
 import { createActionFromTemplate } from "./skillParts.js";
-import { Debuff } from "../game/debuffs.js";
+import { ControlDebuff, Debuff } from "../game/debuffs.js";
 import { delay } from "../ui/helpers.js";
 import { uiStats } from "../ui/uiStats.js";
 import { SkillContext } from "./skillContext.js";
 import { getLogTarget } from "../ui/combatLog.js";
+import { StatManager } from "./statManager.js";
 
 export class Skill{
     constructor(name, icon, targets, actions, cooldown, description, type = 'Attack'){
@@ -41,7 +42,7 @@ export class Skill{
         let chosenTarget;
         if (this.type === 'Support'){
             allies.forEach(container => {
-                const hp = container.getData('hp');
+                const hp = StatManager.getContainerStat(container, "hp");
                 if (hp && hp < minHp){  // > 0, but smallest ==> === 0 only for revive skills (later)
                     minHp = hp;
                     chosenTarget = container;
@@ -51,7 +52,7 @@ export class Skill{
             return;
         } else {
             enemies.forEach(container => {
-                const hp = container.getData('hp');
+                const hp = StatManager.getContainerStat(container, "hp");
                 if (hp && hp < minHp){  // > 0, but smallest ==> === 0 only for revive skills (later)
                     minHp = hp;
                     chosenTarget = container;
@@ -150,7 +151,8 @@ export function getSkillTemplates(){
             icon: 'Holy Light.jpg',
             targets: 'single',
             actions: [
-                { className: 'ApplyDebuff', params: { area: 'single', debuff: new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null) } }
+                // { className: 'ApplyDebuff', params: { area: 'single', debuff: new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null) } }
+                { className: 'ApplyDebuff', params: { area: 'single', debuff: new ControlDebuff("Mind Control", 1) } }
             ],
             cooldown: 2,
             description: "Blinds a single target for 3 turns."

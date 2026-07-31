@@ -1,5 +1,5 @@
 import { getAttackOrder } from "./helpers.js";
-import { dmgTarget, getAffectedTargetsAsContainers } from "../game/combat.js";
+import { getAffectedTargetsAsContainers } from "../game/combat.js";
 import { Debuff } from "../game/debuffs.js";
 import { gameState } from "../game/gameState.js";
 import { Reaction } from "../game/reactions.js";
@@ -9,6 +9,7 @@ import { delay } from "../ui/helpers.js";
 import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
 import { updateDebuffDisplay } from "../ui/portraitFactory.js";
 import { uiStats } from "../ui/uiStats.js";
+import { StatManager } from "./statManager.js";
 
 // Class to extend from. SkillParts are reusable actions inside a skill (e.g., decrease CD).
 class SkillPart{
@@ -59,7 +60,7 @@ export class AllyAttack extends SkillPart{  // works overall, but logQueue is no
             const attackerIndex = shuffledIndexes[i];
             const ally = context.allies[attackerIndex];
             const char = ally.getData('char')  // get char class to access skills
-            const allyHp = ally.getData('hp');
+            const allyHp = StatManager.getContainerStat(ally, "hp");
             if (allyHp > 0){
                 const allySkill = char.skills[0];
                 await allySkill.apply(context.scene, ally, context.target, context.index, context.allies, context.enemies);

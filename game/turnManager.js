@@ -1,4 +1,4 @@
-import { applySkillToPlayer, checkDeath, checkWinner, endBattle } from "./combat.js";
+import { applySkillToPlayer, checkWinner, endBattle } from "./combat.js";
 import { gameState } from "./gameState.js";
 import { fillAllTurnMeters, resetTurnMeter } from "./turnMeterManager.js";
 import { getLogTarget, logCombat, setLogTarget } from "../ui/combatLog.js";

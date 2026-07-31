@@ -6,6 +6,7 @@ import { logCombat, processLogQueue, setLogTarget } from "../ui/combatLog.js";
 import { uiStats } from "../ui/uiStats.js";
 import { endTurn } from "./turnManager.js";
 import { updateStageAccountData } from "../managers/accountManager.js";
+import { StatManager } from "../data/statManager.js";
 
 // Applies skill to current target.
 export function applySkill(scene, index, skill){
@@ -32,21 +33,6 @@ export function applySkillToPlayer(scene, source, target, index, team){
 
     // Scene, source, i, allies, enemies, skill:
     processSkill(scene, source, index, gameState.enemyContainers, team, skill);
-}
-
-// Checks if the target died and updates gameState.
-export function checkDeath(scene, target){
-    const remainingHp = target.getData('hp');
-    const team = target.getData('team');
-    if (remainingHp <= 0){
-        team === 'player' ? gameState.playerAlive-=1 : gameState.enemyAlive-=1;
-        target.setData('debuffs', []);
-        updateDebuffDisplay(scene, target);
-        target.setData('turnMeter', 0);
-        updateTurnMeter(scene, target, 0);
-        return true;
-    }
-    return false;
 }
 
 // Checks if there is a winner.
@@ -78,25 +64,6 @@ export async function processSkill(scene, source, index, allies, enemies, skill)
     endTurn(scene, source);
 }
 
-// Source deals dmg damage to target. Returns boolean whether dmg was dealt or not (false on dead targets);
-export function dmgTarget(scene, dmg, source, target, text=null, textColor = '#ED0000', textOnly = false){
-    const currentHp = target.getData('hp');
-    if (currentHp <= 0) return false;  // target is already dead ==> no dmg dealt
-
-    // Maybe for later better logging or smth:
-    const sourceName = source.getData('name');
-    const targetName = target.getData('name');
-    const newHp = Math.max(0, (currentHp - dmg));
-    updateHP(target, newHp);
-
-    showDmgPopup(scene, target.x, target.y, text ? `-${dmg}\n${text}` : `-${dmg}`, {fontSize: uiStats.dmgPopupFontsize, color: textColor, align: 'center'});
-
-    if (dmg === 0) return false;  // still show dmg "popup" but return false that no dmg was dealt => no screen shake
-    
-    checkDeath(scene, target);
-    return true;
-}
-
 // Ends battle after it's over.
 export function endBattle(scene){
     if (gameState.winner === 'enemy'){
@@ -115,12 +82,12 @@ export function getAffectedTargets(area, hoveredIndex, team){
     else if (area === 'all'){
         const indeces = [];
         team.forEach(enemy => {
-            if (enemy.getData('hp') > 0) indeces.push(enemy.getData('teamIndex'));
+            if (StatManager.getContainerStat(enemy, "hp") > 0) indeces.push(enemy.getData('teamIndex'));
         });
         return indeces;
     } else {  // 'adjacent'
         const adj = [hoveredIndex, hoveredIndex - 1, hoveredIndex + 1];  // order matters to go from middle->left->right
-        return adj.filter(i => (i >= 0 && i < team.length && team[i].getData('hp') > 0));
+        return adj.filter(i => (i >= 0 && i < team.length && StatManager.getContainerStat(team[i], "hp") > 0));
     }
 }
 
@@ -136,11 +103,11 @@ export function getAffectedTargetsAsContainers(area, hoveredIndex, team){
     let results = [];
     if (area === 'all'){
         team.forEach(enemy => {
-            if (enemy.getData('hp') > 0) results.push(enemy);
+            if (StatManager.getContainerStat(enemy, "hp") > 0) results.push(enemy);
         });
     } else {  // 'adjacent'
         const adj = [hoveredIndex, hoveredIndex - 1, hoveredIndex + 1];  // order matters to go from middle->left->right
-        const filteredIndexes = adj.filter(i => (i >= 0 && i < team.length && team[i].getData('hp') > 0));
+        const filteredIndexes = adj.filter(i => (i >= 0 && i < team.length && StatManager.getContainerStat(team[i], "hp") > 0));
         filteredIndexes.forEach(i => {
             results.push(team[i]);
         });
@@ -153,11 +120,11 @@ export function getReviveTargets(area, hoveredIndex, team){
     else if (area === 'all'){
         const indeces = [];
         team.forEach(member => {
-            if (member.getData('hp') === 0) indeces.push(member.getData('teamIndex'));
+            if (StatManager.getContainerStat(member, "hp") === 0) indeces.push(member.getData('teamIndex'));
         });
         return indeces;
     } else {
         const adj = [hoveredIndex, hoveredIndex - 1, hoveredIndex + 1];
-        return adj.filter(i => (i >= 0 && i < team.length && team[i].getData('hp') === 0));
+        return adj.filter(i => (i >= 0 && i < team.length && StatManager.getContainerStat(team[i], "hp") === 0));
     }
 }

@@ -1,6 +1,7 @@
 import { uiStats } from "./uiStats.js";
 import { gameState } from "../game/gameState.js";
 import { getAffectedTargets, getReviveTargets } from "../game/combat.js";
+import { StatManager } from "../data/statManager.js";
 
 let rBtn = null;  // register keyboard key
 
@@ -26,7 +27,7 @@ export function initSkillEventListener(scene){
 
 // Shows visual cue (tint) on all targets that would be affected by gameState.pendingSkill.
 export function previewTargets(scene, container, skill, index, targetedTeam, color){
-    const hp = container.getData('hp');
+    const hp = StatManager.getContainerStat(container, "hp");
     if (hp === 0 && skill.type === 'Revive'){
         const affectedTargets = getReviveTargets(skill.targets, index, targetedTeam);
         affectedTargets.forEach((index) => {
@@ -36,7 +37,7 @@ export function previewTargets(scene, container, skill, index, targetedTeam, col
     } else if (hp > 0){
         const affectedTargets = getAffectedTargets(skill.targets, index, targetedTeam);
         targetedTeam.forEach((enemy, i) => {
-            const isAffected = affectedTargets.includes(i) && enemy.getData('hp') > 0;
+            const isAffected = affectedTargets.includes(i) && StatManager.getContainerStat(enemy, "hp") > 0;
             enemy.list[0].setTint(isAffected ? color : 0x88ccff);  // red for affected, blue for valid
         });        
     }

@@ -1,4 +1,4 @@
-import { dmgTarget } from "../game/combat.js";
+import { StatManager } from "../data/statManager.js";
 import { gameState } from "../game/gameState.js";
 import { playDebuffPopup, playPhysicalAttackTween } from "./combatTweens.js";
 import { getDefaultElementColor } from "./elementColors.js";
@@ -13,7 +13,7 @@ export function registerCombatUIListeners(engine, scene) {
         const color = ctx.data.element ? getDefaultElementColor(ctx.data.element) : ctx.data.color;
         const text = ctx.data.text ? ctx.data.text : `-${ctx.data.modifiedDamage}\n${ctx.data.element}`;
         // Show damage popup AFTER damage is applied:
-        updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
+        updateHP(ctx.currentTarget, StatManager.getContainerStat(ctx.currentTarget, "hp"));
         showDmgPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, text, {fontSize: uiStats.dmgPopupFontsize, color: color, align: 'center'});
     });
 
@@ -33,7 +33,7 @@ export function registerCombatUIListeners(engine, scene) {
     });
 
     engine.eventBus.on("ui:hpUpdate", ctx => {
-        updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
+        updateHP(ctx.currentTarget, StatManager.getContainerStat(ctx.currentTarget, "hp"));
     });
 
     engine.eventBus.on("ui:negativeText", ctx => {
@@ -45,7 +45,7 @@ export function registerCombatUIListeners(engine, scene) {
     });
 
     engine.eventBus.on("ui:revive", ctx => {
-        updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
+        updateHP(ctx.currentTarget, StatManager.getContainerStat(ctx.currentTarget, "hp"));
         updateTurnMeter(ctx.scene, ctx.currentTarget, ctx.data.modifiedTM);
         showPositivePopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.text);
         ctx.currentTarget.clearAlpha();
@@ -54,7 +54,7 @@ export function registerCombatUIListeners(engine, scene) {
     engine.eventBus.on("ui:takeDamage", ctx => {
         const color = ctx.data.element ? getDefaultElementColor(ctx.data.element) : ctx.data.color;
         // Show damage popup AFTER damage is applied:
-        updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
+        updateHP(ctx.currentTarget, StatManager.getContainerStat(ctx.currentTarget, "hp"));
         showDmgPopup(ctx.scene, ctx.currentTarget.x, ctx.currentTarget.y, ctx.data.text, {fontSize: uiStats.dmgPopupFontsize, color: color, align: 'center'});
     });
     
@@ -73,6 +73,6 @@ export function registerCombatUIListeners(engine, scene) {
     })
 
     engine.eventBus.on("afterHeal", ctx => {
-        updateHP(ctx.currentTarget, ctx.currentTarget.getData("hp"));
+        updateHP(ctx.currentTarget, StatManager.getContainerStat(ctx.currentTarget, "hp"));
     })
 }
