@@ -223,10 +223,10 @@ function createHpText(scene, x, y, text, fontOptions){
 // Displays debuffs of character.
 function displayDebuffs(scene, container, xOffset, yOffset){
     const debuffs = container.getData('debuffs') || [];
-    const debuffContainer = scene.add.container(xOffset-uiStats.margin-10, -yOffset+20);  // top right of image
+    const debuffContainer = scene.add.container(xOffset - uiStats.debuffPad, -yOffset+20);  // top right of image
     var yStep = 0;
     debuffs.forEach(debuff => {
-        const debuffDisplay = scene.add.text(0, yStep, debuff.name + " (" + debuff.duration + ")", {fontSize: '12px', color: '#ff0000', fontFamily: 'Arial'}).setOrigin(0,0.5);
+        const debuffDisplay = scene.add.text(0, yStep, debuff.name + " (" + debuff.duration + ")", {fontSize: '12px', color: '#ff0000', fontFamily: 'Arial'}).setOrigin(1,0.5);
         yStep+=20;
         debuffContainer.add(debuffDisplay);
     });
