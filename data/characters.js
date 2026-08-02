@@ -37,6 +37,22 @@ export class Character{
     }
 
     /**
+     * Gets the current damage dealing multiplier.
+     * @returns {float} The damage dealt multiplier
+     */
+    getDmgDealtMult(){
+        return this.statManager.getCurrentStat('dmgDealtMult');
+    }
+
+    /**
+     * Gets the current damage taking multiplier.
+     * @returns {float} The damage taken multiplier
+     */
+    getDmgTakenMult(){
+        return this.statManager.getCurrentStat('dmgTakenMult');
+    }
+
+    /**
      * Returns the relative path for the hero portrait.
      * @returns {String}    The path to the hero portrait
      */
