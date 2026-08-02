@@ -74,7 +74,6 @@ export function updateHP(container, newHp) {
     // Update text:
     const hpText = container.getData('hpText');
     hpText.setText(`${newHp}/${maxHp}`);
-    StatManager.setContainerStat(container, "hp", newHp);
 }
 
 /**
