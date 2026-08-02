@@ -1,9 +1,10 @@
 import { createActionFromTemplate } from "./skillParts.js";
-import { Debuff } from "../game/debuffs.js";
+import { ControlDebuff, Debuff, StatAffectingDebuff } from "../game/debuffs.js";
 import { delay } from "../ui/helpers.js";
 import { uiStats } from "../ui/uiStats.js";
 import { SkillContext } from "./skillContext.js";
 import { getLogTarget } from "../ui/combatLog.js";
+import { StatManager } from "./statManager.js";
 
 export class Skill{
     constructor(name, icon, targets, actions, cooldown, description, type = 'Attack'){
@@ -41,7 +42,7 @@ export class Skill{
         let chosenTarget;
         if (this.type === 'Support'){
             allies.forEach(container => {
-                const hp = container.getData('hp');
+                const hp = StatManager.getContainerStat(container, "hp");
                 if (hp && hp < minHp){  // > 0, but smallest ==> === 0 only for revive skills (later)
                     minHp = hp;
                     chosenTarget = container;
@@ -51,7 +52,7 @@ export class Skill{
             return;
         } else {
             enemies.forEach(container => {
-                const hp = container.getData('hp');
+                const hp = StatManager.getContainerStat(container, "hp");
                 if (hp && hp < minHp){  // > 0, but smallest ==> === 0 only for revive skills (later)
                     minHp = hp;
                     chosenTarget = container;
@@ -177,6 +178,18 @@ export function getSkillTemplates(){
             icon: 'Revenge.jpg',
             targets: 'all',
             actions: [
+                {
+                    className: 'ApplyDebuff', params: {
+                        area: 'all',
+                        debuff: new StatAffectingDebuff({ name: "Vulnerable", duration: 2, stat: "dmgTakenMult", effect: { amount: 0.25, op: 'inc'}})
+                    }
+                },
+                {
+                    className: 'ApplyDebuff', params: {
+                        area: 'all',
+                        debuff: new StatAffectingDebuff({ name: "Slowed", duration: 2, stat: "speed", effect: { amount: 0.25, op: 'dec'}})
+                    }
+                },
                 { className: 'DealDamage', params: {
                                         area: 'all',
                                         dmg: 120,
@@ -185,7 +198,7 @@ export function getSkillTemplates(){
                 }
             ],
             cooldown: 3,
-            description: "A powerful physical AoE attack."
+            description: "Exposes enemies' weaknesses by placing a Vulnurable debuff on all enemies. Then attack all enemies with a powerful physical AoE attack."
         },
         // Intimidate:
         7: {

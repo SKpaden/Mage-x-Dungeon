@@ -1,4 +1,4 @@
-import { dmgTarget, getAffectedTargets, getAffectedTargetsAsContainers } from "./combat.js";
+import { getAffectedTargets, getAffectedTargetsAsContainers } from "./combat.js";
 import { gameState } from "./gameState.js";
 import { getDefaultElementColor } from "../ui/elementColors.js";
 import { delay } from "../ui/helpers.js";
@@ -98,8 +98,8 @@ export class Reaction{
         if (!gameState.logQueue[key]['targets'].includes(target)) gameState.logQueue[key]['targets'].push(target);
         gameState.logQueue[key]['dmg'].push(finalDmg);
         
-        const dealtDmg = dmgTarget(scene, finalDmg, source, target, element, getDefaultElementColor(element), false);  // replace color by getDefaultColor(element)
-        return {allowElementalDebuff: allowElementalDebuff, dealtDmg: dealtDmg};
+        // const dealtDmg = dmgTarget(scene, finalDmg, source, target, element, getDefaultElementColor(element), false);  // replace color by getDefaultColor(element)
+        // return {allowElementalDebuff: allowElementalDebuff, dealtDmg: dealtDmg};
     }
 
     // Processes all queued elemental Reactions.
@@ -120,14 +120,6 @@ export class Reaction{
     }
 
     /////////////////////////////////////////////////////////////////// NON-STATIC ///////////////////////////////////////////////////////////////////
-
-    // Activates a Reaction on a single target.
-    activate(scene, source, target){
-        if (!gameState.logQueue[this.name]['targets'].includes(target)) gameState.logQueue[this.name]['targets'].push(target);
-        gameState.logQueue[this.name]['dmg'].push(this.dmg);
-
-        return dmgTarget(scene, this.dmg, source, target, this.name, this.color, false);
-    }
     
     // Triggers a Reaction to all targets.
     processReaction(scene, targets, source, allies, enemies){

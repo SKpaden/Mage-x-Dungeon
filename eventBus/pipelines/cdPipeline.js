@@ -1,3 +1,4 @@
+import { StatManager } from "../../data/statManager.js";
 
 
 export function registerCDPipeline(engine) {
@@ -8,7 +9,7 @@ export function registerCDPipeline(engine) {
         for (let i = 0; i < ctx.affectedTargets.length; i++){
             const currentTarget= ctx.affectedTargets[i];
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
-            if (currentTarget.getData("hp") <= 0) continue;  // already dead
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // already dead
 
             ctx.currentTarget = currentTarget;
             ctx.flags.blocked = false;  // reset flags
@@ -33,7 +34,7 @@ export function registerCDPipeline(engine) {
         for (let i = 0; i < ctx.affectedTargets.length; i++){
             const currentTarget = ctx.affectedTargets[i];
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
-            if (currentTarget.getData("hp") <= 0) continue;  // already dead
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // already dead
 
             ctx.currentTarget = currentTarget;
             ctx.flags.blocked = false;  // reset flags

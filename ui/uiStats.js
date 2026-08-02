@@ -4,6 +4,7 @@ export const uiStats = {
     paddingHpBar: 3,  // how much padding of HP bar rectangle (outer vs inner bar)
     hpBarHeight: 30,
     tmHeight: 10,
+    debuffPad: 5,
     borderRadius: 5,
     dmgPopupFontsize: '32px',
     iconBaseDims: 960,  // base img size for icons
@@ -18,6 +19,7 @@ export const uiStats = {
     portraitBorderWidth: 2,
     portraitHighlightBorderWidth: 6,
     // Async:
+    controlDelay: 700,
     debuffDelay: 400,
     reactionDelay: 400,
     // Colors:

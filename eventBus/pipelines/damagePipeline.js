@@ -1,3 +1,4 @@
+import { StatManager } from "../../data/statManager.js";
 import { Debuff } from "../../game/debuffs.js";
 import { gameState } from "../../game/gameState.js";
 import { delay } from "../../ui/helpers.js";
@@ -14,26 +15,25 @@ export function registerDamagePipeline(engine) {
         for (let i = 0; i < ctx.affectedTargets.length; i++){
             const currentTarget = ctx.affectedTargets[i];
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
-            if (currentTarget.getData("hp") <= 0) continue;  // already dead
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // already dead
 
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedDamage = ctx.data.dmg;  // reset modifiedDamage
 
+            const defenderChar = ctx.currentTarget.getData('char');
+
             // 2. Attacker-side modifications:
             await engine.eventBus.emit("beforeDealDamage", ctx);  // mutate ctx.modifiedDamage
+            ctx.data.modifiedDamage = Math.floor(ctx.data.modifiedDamage * defenderChar.getDmgDealtMult());
     
             // 3. Defender-side modifications:
             await engine.eventBus.emit("beforeTakeDamage", ctx);  // mutate ctx.modifiedDamage
-    
-            // 4. Apply resistances:
-            const defenderChar = ctx.currentTarget.getData('char');
-    
-            // ctx.modifiedDamage *= 20;
+            ctx.data.modifiedDamage = Math.floor(ctx.data.modifiedDamage * defenderChar.getDmgTakenMult());
     
             // 5. Apply final damage:
-            const hp = ctx.currentTarget.getData('hp');
+            const hp = StatManager.getContainerStat(ctx.currentTarget, "hp");
             const newHp = Math.max(0, hp - ctx.data.modifiedDamage);
-            ctx.currentTarget.setData('hp', newHp);
+            StatManager.setContainerStat(ctx.currentTarget, "hp", newHp);
     
             // 6. Notify listeners:
             await engine.eventBus.emit("afterDealDamage", ctx);  // Passives hook into this + Leech
@@ -56,7 +56,7 @@ export function registerDamagePipeline(engine) {
 
         for (const currentTarget of ctx.affectedTargets){
             // Check if the enemy is still alive (caused issue with AllyAttack SkillPart ==> same death counted multiple times):
-            if (currentTarget.getData("hp") <= 0) continue;  // already dead
+            if (StatManager.getContainerStat(currentTarget, "hp") <= 0) continue;  // already dead
 
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedDamage = ctx.data.dmg;  // reset modifiedDamage
@@ -71,9 +71,9 @@ export function registerDamagePipeline(engine) {
             const defenderChar = ctx.currentTarget.getData('char');
 
             // 5. Apply final damage:
-            const hp = ctx.currentTarget.getData('hp');
+            const hp = StatManager.getContainerStat(ctx.currentTarget, "hp");
             const newHp = Math.max(0, hp - ctx.data.modifiedDamage);
-            ctx.currentTarget.setData('hp', newHp);
+            StatManager.setContainerStat(ctx.currentTarget, "hp", newHp);
 
             ctx.data.text = `-${ctx.data.modifiedDamage}\n${reaction.name}`
 
@@ -121,7 +121,8 @@ export function registerDamagePipeline(engine) {
     engine.eventBus.on("afterTakeDamage", async ctx => {
         const prevDmg = ctx.results.damageDealt.get(ctx.currentTarget) ?? 0;
         ctx.results.damageDealt.set(ctx.currentTarget, prevDmg + ctx.data.modifiedDamage);  // write to context for other SkillParts (heal based on dmg etc.)
-
+        if (!ctx.logQueueKey) return;
+        
         if (!gameState.logQueue[ctx.logQueueKey]['targets'].includes(ctx.currentTarget)) {
             gameState.logQueue[ctx.logQueueKey]['targets'].push(ctx.currentTarget);
         }

@@ -1,3 +1,4 @@
+import { StatManager } from "../../data/statManager.js";
 import { gameState, successfulRevival } from "../../game/gameState.js";
 
 
@@ -17,7 +18,7 @@ export function registerDeathPipeline(engine) {
             ctx.data.modifiedTM = ctx.data.tm;
             ctx.flags.blocked = false;  
 
-            if (currentTarget.getData("hp") > 0) continue;  // not dead ==> skip
+            if (StatManager.getContainerStat(ctx.currentTarget, "hp") > 0) continue;  // not dead ==> skip
 
             await engine.eventBus.emit("beforeRevive", ctx);  // potentially mutates ctx with flags and data (modifiedHp/TM)
 
@@ -26,7 +27,7 @@ export function registerDeathPipeline(engine) {
                 const newHp = Math.floor(ctx.data.modifiedHp * char.statManager.getBaseStat('hp'));
                 const newTm = Math.floor(ctx.data.modifiedTM * gameState.combinedSpeed);
                 // Update data:
-                currentTarget.setData('hp', newHp);
+                StatManager.setContainerStat(ctx.currentTarget, "hp", newHp);
                 currentTarget.setData('turnMeter', newTm);
                 
                 await engine.eventBus.emit("afterRevive", ctx);  // for effects after revive (place buff after revive or boost TM on revive)
@@ -50,6 +51,8 @@ export function registerDeathPipeline(engine) {
         if (ctx.flags.death) {
             const team = ctx.currentTarget.getData('team');
             team === 'player' ? gameState.playerAlive-=1 : gameState.enemyAlive-=1;
+            const char = ctx.currentTarget.getData("char");
+            char.statManager.clearAllTemporaryModifiers();  // clean temporary modifiers for important stats
             ctx.currentTarget.setData("debuffs", []);  // reset debuffs
             // ctx.currentTarget.setData("buffs", []);  // much later maybe
             ctx.currentTarget.setData("turnMeter", 0);
