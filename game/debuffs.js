@@ -6,6 +6,48 @@ import { showNegativePopup, showPositivePopup } from "../ui/popups.js";
 import { updateHP } from "../ui/portraitFactory.js";
 import { uiStats } from "../ui/uiStats.js";
 
+/**
+ * @typedef {Object} StatEffect
+ * @property {number} amount
+ * @property {'dec'|'inc'} [op='dec']
+ */
+
+/**
+ * @typedef {Object} StatAffectingDebuffOptions
+ * @property {string} name
+ * @property {number} [duration=1]
+ * @property {string} stat
+ * @property {StatEffect} effect
+ * @property {string} [type='normal']
+ * @property {boolean} [stackable=false]
+ * @property {string|null} [appliedBy=null]
+ * @property {string} [description='Debuff Description']
+ */
+
+/**
+ * Base debuff type used by the combat system.
+ *
+ * A debuff can:
+ * - deal damage over time
+ * - apply a trigger effect
+ * - alter turn flow
+ * - register lifecycle hooks such as onApply/onTick/onRemove
+ *
+ * @class
+ * @property {string} name - Display name of the debuff.
+ * @property {number} duration - Remaining duration in turns.
+ * @property {number|Object} dmgPerTurn - Absolute damage or percent-based damage config.
+ * @property {string|null} element - Element associated with the debuff.
+ * @property {Function|Object|null} triggerEffect - Optional effect hook.
+ * @property {boolean} skipTurn - Whether this debuff causes the unit to skip its turn.
+ * @property {'elemental'|'cc'|'normal'} type - Debuff category.
+ * @property {any|null} appliedBy - Source that applied the debuff.
+ * @property {string} description - Human-readable description.
+ * @property {string|null} icon - Optional icon key.
+ * @property {string} textColor - Popup color for the debuff.
+ * @property {number} maxStacks - Maximum allowed stacks.
+ * @property {boolean} stackable - Whether this debuff may stack.
+ */
 export class Debuff{
     /**
      * Generic debuff.
@@ -38,9 +80,6 @@ export class Debuff{
             textColor = '#ED0000',
             maxStacks = 1,
             stackable = false,
-            onApply = null,
-            onTick = null,
-            onRemove = null
         } = Debuff.normalizeOptions(args);
 
         this.name = name;
@@ -57,9 +96,6 @@ export class Debuff{
         this.textColor = textColor;
         this.maxStacks = maxStacks;
         this.stackable = stackable;
-        this.onApply = onApply;
-        this.onTick = onTick;
-        this.onRemove = onRemove;
     }
 
     // Lookup for default elemental debuffs.
@@ -119,30 +155,6 @@ export class Debuff{
 
     /////////////////////////////////////////////////////////////////// NON-STATIC ///////////////////////////////////////////////////////////////////
 
-    // Applies debuff to target if allowed. Supposed to replace old apply.
-    applyDebuff(scene, source, target, showPopup = true){
-        const allowed = target.getData('char').triggerEvent('onApplyDebuff', this, source);  // trigger event and see if debuff is allowed
-        if (!allowed){
-            if (!showPopup){  // delay to not overlap with dmg numbers
-                scene.time.delayedCall(300, () => showPositivePopup(scene, target.x, target.y, "Immune"));
-            } else{  // normal debuff application
-                showPositivePopup(scene, target.x, target.y, "Immune");
-            }
-            return 0;
-        }
-        
-        if (StatManager.getContainerStat(target, "hp") > 0){  // debuff set AND target lives
-            const debuffs = target.getData('debuffs') || [];
-            if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
-                debuffs.push(this.createCopy(source));
-                target.setData('debuffs', debuffs);
-                if (showPopup) playDebuffPopup(scene, target.x, target.y, this.name, uiStats.negativePopupOptions);
-                return 1;  // maybe more than one in the future
-            }
-        }
-        return 0;  // only really useful with resists and passives (immune to stun)
-    }
-
     /**
      * Creates and returns a new instance of the same Debuff class with the same stats, only source gets set.
      * @param {Object} source The Phaser container game object
@@ -182,7 +194,13 @@ export class Debuff{
         return this.skipTurn;
     }
 
-    // Activates debuff's effect/dmg on target.
+    /**
+     * Ticks the Debuff for one turn and returns data for the pipeline.
+     * @param {Object} scene The current Phaser Scene object
+     * @param {Object} target The target Phaser container game object
+     * @param {SkillContext} ctx The context of the current Skill
+     * @returns {Object} Data for pipeline processing
+     */
     tick(scene, target, ctx = {}){
         const dmg = this.getTickDmg(target);        
 
@@ -196,75 +214,69 @@ export class Debuff{
     }
 }
 
-// Class for debuffs that affect stats of a character.
+/**
+ * A debuff that modifies a character stat through the stat manager.
+ *
+ * @class
+ * @property {string} name The name of the Debuff
+ * @property {number} duration  The duration of the Debuff
+ * @property {string} stat  The string key to identify the affected stat
+ * @property {StatEffect} effect What modification is done to the targeted stat
+ */
 export class StatAffectingDebuff extends Debuff{
     constructor(...args){
         const opts = typeof args[0] === 'object' && args[0] !== null ? args[0] : null;
         if (opts){
             super({ ...opts, type: 'normal', dmgPerTurn: 0 });
-            this.affects = opts.affects;
-            this.value = opts.value;
+            this.stat = opts.stat;
+            this.effect = opts.effect;
         } else {
-            const [name, duration, affects, value, source = null] = args;
+            const [name, duration, stat, effect, source = null] = args;
             super({ name, duration, dmgPerTurn: 0, element: null, triggerEffect: null, skipTurn: false, type: 'normal', appliedBy: source });
-            this.affects = affects;
-            this.value = value;
+            this.stat = stat;
+            this.effect = effect;
         }
+        // Build modifier object:
+        this.modifier = {
+            id: `debuff:${this.name}:${Date.now()}:${Math.random()}`,  // unique ID
+            source: this.name,
+            temporary: true,  // cleaned up upon death
+            ...this.effect
+        };
     }
 
-    // Try to apply debuff.
-    applyDebuff(scene, source, target){
-        const allowed = target.triggerEvent('onApplyDebuff', this, source);
-        if (!allowed){
-            showPositivePopup(scene, target.x, target.y, "Immune");
-            return 0;  // trigger event and see if debuff is allowed
-        }
-
-        if (StatManager.getContainerStat(target, "hp") > 0){  // debuff set AND target lives
-            const debuffs = target.getData('debuffs') || [];
-            if (debuffs.length < 5 && Debuff.allowDebuff(debuffs, this.name)){  // max 5 debuffs AND prevent duplicates unless allowed
-                debuffs.push(this.createCopy(source));
-                target.setData('debuffs', debuffs);
-                playDebuffPopup(scene, target.x, target.y, this.name, uiStats.negativePopupOptions);
-                this.onApply(scene, target);
-                return 1;  // maybe more than one in the future
-            }
-        }
-        return 0;  // only really useful with resists and passives (immune to stun)
-    }
-
-    // Whenever Debuff gets applied => decreases current stats.
+    /**
+     * Adds this modifier to the list of modifiers of the affected stat.
+     * @param {Object} scene The current Phaser Scene object
+     * @param {Object} target The Phaser container game object
+     */
     onApply(scene, target){
         const char = target.getData('char');
         const statManager = char.statManager;
-        let current = statManager.getCurrentStat(this.affects);
-
-        if (this.value.percentage){  // percentage-based reduction
-            const base = statManager.getBaseStat(this.affects);
-            current = Math.max(1, current - Math.floor(this.value.percentage*base));
-        } else {  // absolute
-            current = Math.max(1, current - this.value.absolute);
-        }
-        statManager.setCurrentStat(this.affects, current);
+        statManager.addModifier(this.stat, this.modifier);
+        statManager.recalculateCurrent(this.stat);
     }
 
-    // Whenever Debuff gets removed => reverts decrease of current stats.
+    /**
+     * Removes this modifier from the list of modifiers of the affected stat.
+     * @param {Object} scene The current Phaser Scene object
+     * @param {Object} target The Phaser container game object
+     */
     onRemove(scene, target){
         const char = target.getData('char');
         const statManager = char.statManager;
-        let current = statManager.getCurrentStat(this.affects);
-
-        if (this.value.percentage){
-            const base = statManager.getBaseStat(this.affects);
-            current = Math.max(1, current + Math.floor(this.value.percentage*base));
-        } else {
-            current = Math.max(1, current + this.value.absolute);
-        }
-        statManager.setCurrentStat(this.affects, current);
+        statManager.removeModifier(this.stat, this.modifier.id);
+        statManager.recalculateCurrent(this.stat);
     }
 
-    // Activates debuff's effect/dmg on target.
-    tick(scene, target){
+    /**
+     * Ticks the Debuff for one turn and returns data for the pipeline.
+     * @param {Object} scene The current Phaser Scene object
+     * @param {Object} target The target Phaser container game object
+     * @param {SkillContext} ctx The context of the current Skill
+     * @returns {Object} Data for pipeline processing
+     */
+    tick(scene, target, ctx = {}){
         this.duration-=1;
         const keepDebuff = this.duration > 0;
         if (!keepDebuff) this.onRemove(scene, target);

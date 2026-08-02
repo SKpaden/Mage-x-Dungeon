@@ -1,5 +1,5 @@
 import { StatManager } from "../../data/statManager.js";
-import { Debuff } from "../../game/debuffs.js";
+import { Debuff, StatAffectingDebuff } from "../../game/debuffs.js";
 import { gameState } from "../../game/gameState.js";
 import { setLogTarget } from "../../ui/combatLog.js";
 import { delay } from "../../ui/helpers.js";
@@ -81,8 +81,10 @@ export function registerDebuffPipeline(engine) {
             if (!ctx.flags.blocked){
                 const debuffs = currentTarget.getData('debuffs') || [];
                 if (Debuff.allowDebuff(debuffs, debuff.name)){
-                    debuffs.push(debuff.createCopy(source));
+                    const debuffCopy = debuff.createCopy(source)
+                    debuffs.push(debuffCopy);
                     currentTarget.setData('debuffs', debuffs);
+                    if (debuffCopy instanceof StatAffectingDebuff) debuffCopy.onApply(ctx.scene, currentTarget);
                     // 3. Post-event:
                     await engine.eventBus.emit("afterApplyDebuff", ctx);
                 }
@@ -110,6 +112,10 @@ export function registerDebuffPipeline(engine) {
     
             // 2. Cleanse, if allowed:
             if (!ctx.flags.blocked){
+                const debuffs = currentTarget.getData("debuffs");
+                debuffs.forEach(deb => {
+                    if (deb instanceof StatAffectingDebuff) deb.onRemove(ctx.scene, currentTarget);
+                });
                 currentTarget.setData("debuffs", []);
         
                 // 3. Post-event:

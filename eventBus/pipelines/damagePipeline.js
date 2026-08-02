@@ -20,16 +20,15 @@ export function registerDamagePipeline(engine) {
             ctx.currentTarget = currentTarget;
             ctx.data.modifiedDamage = ctx.data.dmg;  // reset modifiedDamage
 
+            const defenderChar = ctx.currentTarget.getData('char');
+
             // 2. Attacker-side modifications:
             await engine.eventBus.emit("beforeDealDamage", ctx);  // mutate ctx.modifiedDamage
+            ctx.data.modifiedDamage = Math.floor(ctx.data.modifiedDamage * defenderChar.getDmgDealtMult());
     
             // 3. Defender-side modifications:
             await engine.eventBus.emit("beforeTakeDamage", ctx);  // mutate ctx.modifiedDamage
-    
-            // 4. Apply resistances:
-            const defenderChar = ctx.currentTarget.getData('char');
-    
-            // ctx.modifiedDamage *= 20;
+            ctx.data.modifiedDamage = Math.floor(ctx.data.modifiedDamage * defenderChar.getDmgTakenMult());
     
             // 5. Apply final damage:
             const hp = StatManager.getContainerStat(ctx.currentTarget, "hp");
@@ -122,7 +121,8 @@ export function registerDamagePipeline(engine) {
     engine.eventBus.on("afterTakeDamage", async ctx => {
         const prevDmg = ctx.results.damageDealt.get(ctx.currentTarget) ?? 0;
         ctx.results.damageDealt.set(ctx.currentTarget, prevDmg + ctx.data.modifiedDamage);  // write to context for other SkillParts (heal based on dmg etc.)
-
+        if (!ctx.logQueueKey) return;
+        
         if (!gameState.logQueue[ctx.logQueueKey]['targets'].includes(ctx.currentTarget)) {
             gameState.logQueue[ctx.logQueueKey]['targets'].push(ctx.currentTarget);
         }

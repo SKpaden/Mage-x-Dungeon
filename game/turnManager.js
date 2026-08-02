@@ -11,6 +11,11 @@ import { SkillContext } from "../data/skillContext.js";
 // Decides who acts next in turn order.
 export function advanceToNextTurn(scene){
     let currentUnit = fillAllTurnMeters(scene);  // fill turn meters and return unit with highest TM
+    console.log("Combined speed: " + gameState.combinedSpeed);
+
+    for (const enemy of gameState.enemyContainers){
+        console.log("Enemy speed: " + enemy.getData("char").getSpeed());
+    }
 
     if(currentUnit.getData('team') === 'player'){
         gameState.turn = 'player';
@@ -100,8 +105,7 @@ async function processDebuffs(scene, target){
     // Delegate debuff ticking to the combat engine's event pipeline.
     const engine = scene.combatEngine;
     const team = target.getData("team");
-    setLogTarget('debuffs');
-    const ctx = new SkillContext(scene, null, target, target.getData("teamIndex"), engine.getAllies(team), engine.getEnemies(team), getLogTarget());
+    const ctx = new SkillContext(scene, null, target, target.getData("teamIndex"), engine.getAllies(team), engine.getEnemies(team), null);
 
     await engine.eventBus.emit("intent:tickDebuffs", ctx);
     return ctx.flags && ctx.flags.skipTurn ? ctx.flags.skipTurn : null;

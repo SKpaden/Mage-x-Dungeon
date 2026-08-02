@@ -51,6 +51,8 @@ export function registerDeathPipeline(engine) {
         if (ctx.flags.death) {
             const team = ctx.currentTarget.getData('team');
             team === 'player' ? gameState.playerAlive-=1 : gameState.enemyAlive-=1;
+            const char = ctx.currentTarget.getData("char");
+            char.statManager.clearAllTemporaryModifiers();  // clean temporary modifiers for important stats
             ctx.currentTarget.setData("debuffs", []);  // reset debuffs
             // ctx.currentTarget.setData("buffs", []);  // much later maybe
             ctx.currentTarget.setData("turnMeter", 0);

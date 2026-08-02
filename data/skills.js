@@ -1,5 +1,5 @@
 import { createActionFromTemplate } from "./skillParts.js";
-import { ControlDebuff, Debuff } from "../game/debuffs.js";
+import { ControlDebuff, Debuff, StatAffectingDebuff } from "../game/debuffs.js";
 import { delay } from "../ui/helpers.js";
 import { uiStats } from "../ui/uiStats.js";
 import { SkillContext } from "./skillContext.js";
@@ -151,8 +151,7 @@ export function getSkillTemplates(){
             icon: 'Holy Light.jpg',
             targets: 'single',
             actions: [
-                // { className: 'ApplyDebuff', params: { area: 'single', debuff: new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null) } }
-                { className: 'ApplyDebuff', params: { area: 'single', debuff: new ControlDebuff("Mind Control", 1) } }
+                { className: 'ApplyDebuff', params: { area: 'single', debuff: new Debuff("Blinded", 3, 0, "Light", null, false, "elemental", null) } }
             ],
             cooldown: 2,
             description: "Blinds a single target for 3 turns."
@@ -179,6 +178,18 @@ export function getSkillTemplates(){
             icon: 'Revenge.jpg',
             targets: 'all',
             actions: [
+                {
+                    className: 'ApplyDebuff', params: {
+                        area: 'all',
+                        debuff: new StatAffectingDebuff({ name: "Vulnerable", duration: 2, stat: "dmgTakenMult", effect: { amount: 0.25, op: 'inc'}})
+                    }
+                },
+                {
+                    className: 'ApplyDebuff', params: {
+                        area: 'all',
+                        debuff: new StatAffectingDebuff({ name: "Slowed", duration: 2, stat: "speed", effect: { amount: 0.25, op: 'dec'}})
+                    }
+                },
                 { className: 'DealDamage', params: {
                                         area: 'all',
                                         dmg: 120,
@@ -187,7 +198,7 @@ export function getSkillTemplates(){
                 }
             ],
             cooldown: 3,
-            description: "A powerful physical AoE attack."
+            description: "Exposes enemies' weaknesses by placing a Vulnurable debuff on all enemies. Then attack all enemies with a powerful physical AoE attack."
         },
         // Intimidate:
         7: {
